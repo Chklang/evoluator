@@ -3,5 +3,162 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-  }
+    "game-motor": {
+      "projectType": "library",
+      "root": "projects/game-motor",
+      "sourceRoot": "projects/game-motor/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/game-motor/tsconfig.lib.json",
+            "project": "projects/game-motor/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/game-motor/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/game-motor/src/test.ts",
+            "tsConfig": "projects/game-motor/tsconfig.spec.json",
+            "karmaConfig": "projects/game-motor/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/game-motor/tsconfig.lib.json",
+              "projects/game-motor/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
+    },
+    "pre-history": {
+      "projectType": "application",
+      "schematics": {},
+      "root": "projects/pre-history",
+      "sourceRoot": "projects/pre-history/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/pre-history",
+            "index": "projects/pre-history/src/index.html",
+            "main": "projects/pre-history/src/main.ts",
+            "polyfills": "projects/pre-history/src/polyfills.ts",
+            "tsConfig": "projects/pre-history/tsconfig.app.json",
+            "aot": true,
+            "assets": [
+              "projects/pre-history/src/favicon.ico",
+              "projects/pre-history/src/assets"
+            ],
+            "styles": [
+              "projects/pre-history/src/styles.css"
+            ],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/pre-history/src/environments/environment.ts",
+                  "with": "projects/pre-history/src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "pre-history:build"
+          },
+          "configurations": {
+            "production": {
+              "browserTarget": "pre-history:build:production"
+            }
+          }
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "pre-history:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/pre-history/src/test.ts",
+            "polyfills": "projects/pre-history/src/polyfills.ts",
+            "tsConfig": "projects/pre-history/tsconfig.spec.json",
+            "karmaConfig": "projects/pre-history/karma.conf.js",
+            "assets": [
+              "projects/pre-history/src/favicon.ico",
+              "projects/pre-history/src/assets"
+            ],
+            "styles": [
+              "projects/pre-history/src/styles.css"
+            ],
+            "scripts": []
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/pre-history/tsconfig.app.json",
+              "projects/pre-history/tsconfig.spec.json",
+              "projects/pre-history/e2e/tsconfig.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        },
+        "e2e": {
+          "builder": "@angular-devkit/build-angular:protractor",
+          "options": {
+            "protractorConfig": "projects/pre-history/e2e/protractor.conf.js",
+            "devServerTarget": "pre-history:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "pre-history:serve:production"
+            }
+          }
+        }
+      }
+    }
+  },
+  "defaultProject": "game-motor"
 }

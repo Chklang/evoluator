@@ -1,0 +1,13 @@
+{
+    "version": "0.0.1",
+    "data": {
+        "menu": {
+            "Colony": "Colonie"
+        },
+        "resources": {
+            "wood": {
+                "name": "Bois"
+            }
+        }
+    }
+}
