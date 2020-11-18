@@ -1,0 +1,7 @@
+<ul class="select-lang">
+  <li *ngFor="let lang of (langsService.allLangs | async)"><button (click)="backgroundAction(langsService.changeLang(lang.id))" class="svg-resize" [innerHTML]="lang.logo" [title]="lang.name"></button></li>
+</ul>
+<ul>
+  <li><a [routerLink]="['colony']" tr>menu.Colony</a></li>
+</ul>
+<router-outlet></router-outlet>

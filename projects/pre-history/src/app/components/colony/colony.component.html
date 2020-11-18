@@ -1,0 +1,9 @@
+<div *ngIf="storeService.datas$ | async; let datas">
+    <ul>
+        <li *ngFor="let resource of datas.showableElements.resources">
+            <span [tr]="'resources.' + resource + '.name'"></span>
+            :
+            {{datas | resources:resource:true}}
+        </li>
+    </ul>
+</div>
