@@ -160,5 +160,8 @@
       }
     }
   },
-  "defaultProject": "game-motor"
+  "defaultProject": "game-motor",
+  "cli": {
+    "analytics": false
+  }
 }
