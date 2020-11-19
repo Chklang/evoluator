@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { Observable, of, ReplaySubject, Subject } from 'rxjs';
 import { map, shareReplay, switchMap } from 'rxjs/operators';
@@ -33,8 +33,9 @@ export class LangsService {
   constructor(
     private readonly http: HttpClient,
     private readonly sanitizer: DomSanitizer,
+    @Inject('BASE_URL') baseUrl: string
   ) {
-    this.allLangs = this.http.get<ILangRefEntrySrc[]>('/assets/langs/langs.json').pipe(
+    this.allLangs = this.http.get<ILangRefEntrySrc[]>(baseUrl + 'assets/langs/langs.json').pipe(
       map((response) => response.map((e) => ({
         ...e,
         logo: this.sanitizer.bypassSecurityTrustHtml(e.logo),
@@ -53,7 +54,7 @@ export class LangsService {
         if (this.cacheLangs[currentCodeLang.id]) {
           return of(this.cacheLangs[currentCodeLang.id]);
         }
-        return this.http.get<ILangFile>('/assets/langs/' + currentCodeLang.id + '.json').pipe(
+        return this.http.get<ILangFile>(baseUrl + 'assets/langs/' + currentCodeLang.id + '.json').pipe(
           map((response) => {
             this.cacheLangs[currentCodeLang.id] = this.flatMap(response.data);
             return this.cacheLangs[currentCodeLang.id];

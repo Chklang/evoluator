@@ -6,7 +6,14 @@ import { LangsService } from './services/langs/langs.service';
 import { StoreService } from './services/store/store.service';
 import { HttpClientModule } from '@angular/common/http';
 
-
+// Get base-href value
+export function getBaseUrl() {
+  try {
+    return document.getElementsByTagName('base')[0].href;
+  } catch (e) {
+    return '/';
+  }
+}
 
 @NgModule({
   declarations: [GameMotorComponent, ResourcesPipe, TrDirective],
@@ -16,6 +23,7 @@ import { HttpClientModule } from '@angular/common/http';
   providers: [
     LangsService,
     StoreService,
+    { provide: 'BASE_URL', useFactory: getBaseUrl, deps: [] }
   ],
   exports: [
     GameMotorComponent,

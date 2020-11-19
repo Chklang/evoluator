@@ -8,7 +8,7 @@ export const resources: IResource[] = [
         min: 1,
         resourceType: 'POPULATION',
         consumeType: 'FOR_LIVE',
-        selfGrow: 112.01,
+        selfGrow: 1.01,
         growType: 'EXPONENTIAL',
         consume: {
             food: 0.1,
