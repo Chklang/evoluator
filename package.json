@@ -18,7 +18,9 @@
     "clean": "rimraf dist",
     "watch-lib:game-motor": "ng build --project=game-motor --watch",
     "serve:pre-history": "wait-on dist/game-motor/public-api.d.ts && ng serve --project=pre-history",
-    "start": "npm run clean && run-p watch-lib:* serve:pre-history"
+    "start": "npm run clean && run-p watch-lib:* serve:pre-history",
+    "build-watch": "run-s clean watch-lib:game-motor build-watch:pre-history",
+    "build-watch:pre-history": "wait-on dist/game-motor/public-api.d.ts && ng build --project=pre-history --watch --base-href=\"/pre-history/\""
   },
   "private": true,
   "dependencies": {
