@@ -3,6 +3,7 @@ import { IBuilding, IGame, IResource } from 'game-motor';
 export const resources: IResource[] = [
     {
         name: 'population',
+        icon: 'user',
         blockedBy: {},
         max: 10,
         min: 1,
@@ -17,6 +18,7 @@ export const resources: IResource[] = [
     },
     {
         name: 'wood',
+        icon: 'tree',
         blockedBy: {},
         max: 100,
         resourceType: 'CLASSIC',
@@ -25,6 +27,7 @@ export const resources: IResource[] = [
     },
     {
         name: 'food',
+        icon: 'cutlery',
         blockedBy: {},
         max: 100,
         resourceType: 'CLASSIC',
@@ -59,7 +62,7 @@ export const buildings: IBuilding[] = [
 export const gameFromScratch: IGame = {
     time: Date.now(),
     resources: {
-        population: { quantity: 1, max: 1 },
+        population: { quantity: 1, max: 1, icon: 'user' },
     },
     buildings: {
         Scierie: 2,
