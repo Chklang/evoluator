@@ -20,7 +20,7 @@
     "serve:pre-history": "wait-on dist/game-motor/public-api.d.ts && ng serve --project=pre-history",
     "start": "npm run clean && run-p watch-lib:* serve:pre-history",
     "build-watch": "npm run clean && run-p watch-lib:game-motor build-watch:pre-history",
-    "build-watch:pre-history": "wait-on dist/game-motor/public-api.d.ts && ng build --project=pre-history --watch --base-href=\"/pre-history/\""
+    "build-watch:pre-history": "wait-on dist/game-motor/public-api.d.ts && ng build --project=pre-history --watch --base-href=\"/pre-history/\" --poll=100"
   },
   "private": true,
   "dependencies": {
