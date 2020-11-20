@@ -13,7 +13,7 @@ interface ILangFile {
 interface ILangRefEntrySrc {
   id: string;
   name: string;
-  logo: string;
+  htmlStr: string;
 }
 
 interface ILangDictionnary {
@@ -38,7 +38,7 @@ export class LangsService {
     this.allLangs = this.http.get<ILangRefEntrySrc[]>(baseUrl + 'assets/langs/langs.json').pipe(
       map((response) => response.map((e) => ({
         ...e,
-        logo: this.sanitizer.bypassSecurityTrustHtml(e.logo),
+        htmlStr: this.sanitizer.bypassSecurityTrustHtml(e.htmlStr),
       }))),
       shareReplay(1)
     );

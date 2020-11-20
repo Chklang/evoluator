@@ -1,7 +1,34 @@
-<ul class="select-lang">
-  <li *ngFor="let lang of (langsService.allLangs | async)"><button (click)="backgroundAction(langsService.changeLang(lang.id))" class="svg-resize" [innerHTML]="lang.logo" [title]="lang.name"></button></li>
-</ul>
-<ul>
-  <li><a [routerLink]="['colony']" tr>menu.Colony</a></li>
-</ul>
-<router-outlet></router-outlet>
+<div class="navbar navbar-expand">
+    
+    <a class="navbar-brand d-flex align-items-center" href="/pre-history/">
+        <i class="fa fa-fire mr-1 icon-brand h4"></i>
+        <span>PreHistory</span>
+    </a>
+    
+    <ul class="navbar-nav ml-auto">
+        <li class="nav-item" dropdown>
+            <a id="ddMenuLang" class="nav-link dropdown-toggle" dropdownToggle href (click)="false" aria-controls="ddmMenuLang">
+                <span tr>menu.Lang</span>
+            </a>
+            <div id="ddmMenuLang" class="dropdown-menu dropdown-menu-right" *dropdownMenu aria-labelledby="ddMenuLang">
+                <a *ngFor="let lang of (langsService.allLangs | async)" class="dropdown-item" (click)="backgroundAction(langsService.changeLang(lang.id))" [innerHTML]="lang.htmlStr"></a>
+            </div>
+        </li>
+    </ul>
+    
+</div>
+
+<div class="container-fluid">
+
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link" [routerLink]="['colony']" [routerLinkActive]="['active']">
+                <i class="h6 fa fa-home mr-1 icon-tab"></i>
+                <span tr>menu.Colony</span>
+            </a>
+        </li>
+    </ul>
+    
+    <router-outlet></router-outlet>
+
+</div>

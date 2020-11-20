@@ -1,4 +1,71 @@
-/* You can add global styles to this file, and also import other style files */
-.svg-resize svg {
-    height: inherit;
+body {
+    background: #263238;
+    color: #eceff1; font-size: .75rem; font-family: "Titillium Web",sans-serif;
 }
+
+a { color: #ffc107; }
+a:hover { color: #ff6f00; }
+
+.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 { margin-bottom: 0; }
+.h4, h4 { font-size: 1.5rem!important; }
+.h6, h6 { font-size: 1rem!important; }
+
+.dropdown-toggle::after { vertical-align: middle; }
+
+.dropdown-menu {
+    padding: 0;
+    background: #455a64;
+    font-size: .75rem; color: #eceff1;
+}
+
+.dropdown-item {
+    border-bottom: 1px solid rgba(0,0,0,.15);
+    padding: .5rem 1rem;
+    color: #eceff1;
+}
+.dropdown-item:hover {
+    background: #546e7a;
+    color: #eceff1;
+}
+.dropdown-item:last-child { border-bottom: 0; }
+
+.navbar {
+    background: #37474f; box-shadow: 0 0.5rem 1rem rgba(0,0,0,.05), inset 0 -1px 0 rgba(0,0,0,.1);
+    margin-bottom: .5rem;
+}
+
+.nav-tabs {
+    border-color: #37474f;
+    margin-bottom: .5rem;
+}
+
+.nav-tabs .nav-link:hover, .nav-tabs .nav-link:focus {
+    border-color: #37474f;
+}
+
+.nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
+    background: #37474f;
+    color: #eceff1;
+    border-color: #37474f;
+}
+
+.list-group-item {
+    background: #37474f;
+    padding: .5rem 1rem;
+}
+
+.list-group-item-action {
+    color: #eceff1;
+}
+
+.list-group-item-action:hover {
+    background: #455a64;
+    color: #eceff1;
+}
+
+.icon-tab { color: #26a69a; background: -webkit-linear-gradient(#26a69a, #009688); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.icon-brand { color: #ffc107; background: -webkit-linear-gradient(#ffc107, #ff6f00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.icon-resource {  color: #ab47bc; background: -webkit-linear-gradient(#ab47bc, #ba68c8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+.c-first { color: #fff!important; }
+.c-second { color: #90a4ae!important; }

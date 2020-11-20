@@ -1,5 +1,6 @@
 export interface IResource {
     name: string;
+    icon: string;
     blockedBy: Record<string, number>;
     max: number;
     min?: number;

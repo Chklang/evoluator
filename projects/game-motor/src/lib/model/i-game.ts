@@ -1,6 +1,6 @@
 export interface IGame {
     time: number;
-    resources: Record<string, { quantity: number; max: number; }>;
+    resources: Record<string, { quantity: number; max: number; icon: string; }>;
     buildings: Record<string, number>;
     showableElements: {
         resources: string[];

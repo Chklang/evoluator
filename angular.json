@@ -64,6 +64,9 @@
               "projects/pre-history/src/assets"
             ],
             "styles": [
+              "./node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "./node_modules/ngx-bootstrap/datepicker/bs-datepicker.css",
+              "./node_modules/font-awesome/css/font-awesome.css",
               "projects/pre-history/src/styles.css"
             ],
             "scripts": []
@@ -127,6 +130,8 @@
               "projects/pre-history/src/assets"
             ],
             "styles": [
+              "./node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "./node_modules/ngx-bootstrap/datepicker/bs-datepicker.css",
               "projects/pre-history/src/styles.css"
             ],
             "scripts": []

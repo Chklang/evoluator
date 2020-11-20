@@ -126,6 +126,7 @@ export class StoreService {
         game.resources[resource.name] = {
           quantity: 0,
           max: resource.max,
+          icon: resource.icon,
         };
       } else {
         game.resources[resource.name].max = resource.max;

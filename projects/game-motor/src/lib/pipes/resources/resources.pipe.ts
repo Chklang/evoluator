@@ -16,7 +16,7 @@ export class ResourcesPipe implements PipeTransform {
     quantity = this.formatNumber(quantity);
     max = this.formatNumber(max);
     if (withMax) {
-      return quantity + ' / ' + max;
+      return '<span class="c-first">' + quantity + '</span> <small class="c-second">/' + max + '</small>';
     } else {
       return String(quantity);
     }
