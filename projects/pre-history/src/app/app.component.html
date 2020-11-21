@@ -2,7 +2,7 @@
     
     <a class="navbar-brand d-flex align-items-center" href="/pre-history/">
         <i class="fa fa-fire mr-1 icon-brand h4"></i>
-        <span>PreHistory</span>
+        <span tr="game.name">PreHistory</span>
     </a>
     
     <ul class="navbar-nav ml-auto">
@@ -11,7 +11,10 @@
                 <span tr>menu.Lang</span>
             </a>
             <div id="ddmMenuLang" class="dropdown-menu dropdown-menu-right" *dropdownMenu aria-labelledby="ddMenuLang">
-                <a *ngFor="let lang of (langsService.allLangs | async)" class="dropdown-item" (click)="backgroundAction(langsService.changeLang(lang.id))" [innerHTML]="lang.htmlStr"></a>
+                <a *ngFor="let lang of (langsService.allLangs | async)" class="dropdown-item select-lang" (click)="backgroundAction(langsService.changeLang(lang.id))">
+                    <span class="flag-icon flag-icon-squared" [ngClass]="'flag-icon-' + (lang.flag || lang.id)"></span>
+                    {{lang.name}}
+                </a>
             </div>
         </li>
     </ul>

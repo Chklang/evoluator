@@ -1,8 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
 import { combineLatest, Observable, of, ReplaySubject, Subject } from 'rxjs';
-import { map, shareReplay, switchMap } from 'rxjs/operators';
+import { map, shareReplay, switchMap, tap } from 'rxjs/operators';
 import { ErrorMessage } from '../../model';
 import { ILangRefEntry, ILangRefFile, } from '../../model/translation';
 
@@ -32,15 +31,10 @@ export class LangsService {
 
   constructor(
     private readonly http: HttpClient,
-    private readonly sanitizer: DomSanitizer,
     @Inject('BASE_URL') baseUrl: string
   ) {
     this.allLangs = this.http.get<ILangRefEntrySrc[]>(baseUrl + 'assets/langs/langs.json').pipe(
-      map((response) => response.map((e) => ({
-        ...e,
-        htmlStr: this.sanitizer.bypassSecurityTrustHtml(e.htmlStr),
-      }))),
-      shareReplay(1)
+      shareReplay(1),
     );
     const defaultCodeLang$: Observable<ILangRefEntry> = this.allLangs.pipe(
       map((allLangs) => allLangs[0]),
@@ -85,6 +79,11 @@ export class LangsService {
             return this.cacheLangs[currentCodeLang.id];
           }),
         );
+      }),
+      tap((currentLang) => {
+        if (currentLang['game.name']) {
+          document.title = currentLang['game.name'];
+        }
       }),
       shareReplay(1),
     );

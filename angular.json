@@ -68,6 +68,7 @@
               "./node_modules/ngx-bootstrap/datepicker/bs-datepicker.css",
               "./node_modules/font-awesome/css/font-awesome.css",
               "./node_modules/fontsource-titillium-web/index.css",
+              "./node_modules/flag-icon-css/css/flag-icon.min.css",
               "projects/pre-history/src/styles.css"
             ],
             "scripts": []

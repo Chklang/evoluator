@@ -1,6 +1,9 @@
 {
     "version": "0.0.1",
     "data": {
+        "game": {
+            "name": "Préhistoire"
+        },
         "menu": {
             "Colony": "Colonie",
             "Lang": "Langue"
