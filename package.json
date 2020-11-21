@@ -34,6 +34,7 @@
     "@angular/router": "~11.0.0",
     "bootstrap": "4.1.1",
     "font-awesome": "^4.7.0",
+    "fontsource-titillium-web": "^3.0.9",
     "ngx-bootstrap": "^6.2.0",
     "ngx-font-awesome": "^1.0.0",
     "rxjs": "~6.6.0",
