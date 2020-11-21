@@ -1,16 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 
 @Component({
-  selector: 'lib-game-motor',
+  selector: 'lib-game-engine',
   template: `
     <p>
-      game-motor works!
+      game-engine works!
     </p>
   `,
   styles: [
   ]
 })
-export class GameMotorComponent implements OnInit {
+export class GameEngineComponent implements OnInit {
 
   constructor() { }
 

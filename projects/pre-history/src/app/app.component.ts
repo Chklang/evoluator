@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
-import { LangsService, StoreService } from 'game-motor';
+import { LangsService, StoreService } from 'game-engine';
 import { buildings, resources, gameFromScratch } from './database';
 
 @Component({

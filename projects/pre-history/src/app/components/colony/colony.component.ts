@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { StoreService } from 'game-motor';
+import { StoreService } from 'game-engine';
 import { buildings, gameFromScratch, resources } from '../../database';
 
 @Component({

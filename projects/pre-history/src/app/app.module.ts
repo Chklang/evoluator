@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
-import { GameMotorModule } from 'game-motor';
+import { GameEngineModule } from 'game-engine';
 import { AppComponent } from './app.component';
 import { ColonyComponent } from './components/colony/colony.component';
 import { AppRoutingModule } from './app-routing.module';
@@ -17,7 +17,7 @@ import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    GameMotorModule,
+    GameEngineModule,
     BrowserAnimationsModule,
     BsDropdownModule.forRoot(),
   ],

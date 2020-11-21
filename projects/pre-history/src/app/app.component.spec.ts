@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { LangsService, StoreService } from 'game-motor';
+import { LangsService, StoreService } from 'game-engine';
 import { AppComponent } from './app.component';
 
 describe('AppComponent', () => {

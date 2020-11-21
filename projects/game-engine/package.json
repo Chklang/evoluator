@@ -1,5 +1,5 @@
 {
-  "name": "game-motor",
+  "name": "game-engine",
   "version": "0.0.1",
   "peerDependencies": {
     "@angular/common": "^11.0.0",

@@ -16,9 +16,9 @@
       "dom"
     ],
     "paths": {
-      "game-motor": [
-        "dist/game-motor/game-motor",
-        "dist/game-motor"
+      "game-engine": [
+        "dist/game-engine/game-engine",
+        "dist/game-engine"
       ]
     }
   }

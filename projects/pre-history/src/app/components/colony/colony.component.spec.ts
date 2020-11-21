@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { StoreService } from 'game-motor';
+import { StoreService } from 'game-engine';
 
 import { ColonyComponent } from './colony.component';
 

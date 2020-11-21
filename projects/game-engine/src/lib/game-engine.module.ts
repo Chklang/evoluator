@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { GameMotorComponent } from './game-motor.component';
+import { GameEngineComponent } from './game-engine.component';
 import { ResourcesPipe } from './pipes/resources/resources.pipe';
 import { TrDirective } from './directives/tr/tr.directive';
 import { LangsService } from './services/langs/langs.service';
@@ -16,7 +16,7 @@ export function getBaseUrl() {
 }
 
 @NgModule({
-  declarations: [GameMotorComponent, ResourcesPipe, TrDirective],
+  declarations: [GameEngineComponent, ResourcesPipe, TrDirective],
   imports: [
     HttpClientModule,
   ],
@@ -26,9 +26,9 @@ export function getBaseUrl() {
     { provide: 'BASE_URL', useFactory: getBaseUrl, deps: [] }
   ],
   exports: [
-    GameMotorComponent,
+    GameEngineComponent,
     ResourcesPipe,
     TrDirective,
   ],
 })
-export class GameMotorModule { }
+export class GameEngineModule { }

@@ -1,4 +1,4 @@
-import { IBuilding, IGame, IResource } from 'game-motor';
+import { IBuilding, IGame, IResource } from 'game-engine';
 
 export const resources: IResource[] = [
     {
