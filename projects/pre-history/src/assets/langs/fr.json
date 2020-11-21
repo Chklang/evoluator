@@ -2,11 +2,18 @@
     "version": "0.0.1",
     "data": {
         "menu": {
-            "Colony": "Colonie"
+            "Colony": "Colonie",
+            "Lang": "Langue"
         },
         "resources": {
             "wood": {
                 "name": "Bois"
+            },
+            "population": {
+                "name": "Population"
+            },
+            "food": {
+                "name": "Nourriture"
             }
         }
     }

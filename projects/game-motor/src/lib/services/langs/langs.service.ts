@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { Observable, of, ReplaySubject, Subject } from 'rxjs';
+import { combineLatest, Observable, of, ReplaySubject, Subject } from 'rxjs';
 import { map, shareReplay, switchMap } from 'rxjs/operators';
 import { ErrorMessage } from '../../model';
 import { ILangRefEntry, ILangRefFile, } from '../../model/translation';
@@ -45,9 +45,19 @@ export class LangsService {
     const defaultCodeLang$: Observable<ILangRefEntry> = this.allLangs.pipe(
       map((allLangs) => allLangs[0]),
     );
-    this.currentTranslation$ = defaultCodeLang$.pipe(
-      switchMap((defaultCodeLang) => {
-        this.currentCodeLang$.next(defaultCodeLang);
+    this.currentTranslation$ = combineLatest([defaultCodeLang$, this.allLangs]).pipe(
+      switchMap(([defaultCodeLang, allLangs]) => {
+        if (localStorage.getItem('engine_lang')) {
+          const savedLang = localStorage.getItem('engine_lang');
+          const findLang = allLangs.find(lang => lang.id === localStorage.getItem('engine_lang'));
+          if (findLang) {
+            this.currentCodeLang$.next(findLang);
+          } else {
+            this.currentCodeLang$.next(defaultCodeLang);
+          }
+        } else {
+          this.currentCodeLang$.next(defaultCodeLang);
+        }
         return this.currentCodeLang$;
       }),
       switchMap((currentCodeLang) => {
@@ -87,6 +97,7 @@ export class LangsService {
         if (!langFound) {
           throw { code: 'LANG_NOT_FOUND', defaultMessage: 'Lang $1 not found', parameters: [codeLang] } as ErrorMessage;
         }
+        localStorage.setItem('engine_lang', codeLang);
         this.currentCodeLang$.next(langFound);
       }),
     );
