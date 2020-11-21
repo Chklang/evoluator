@@ -25,6 +25,10 @@ describe('LangsService', () => {
           provide: DomSanitizer,
           useValue: sanitizer,
         },
+        {
+          provide: 'BASE_URL',
+          useValue: '/',
+        },
       ]
     });
     service = TestBed.inject(LangsService);

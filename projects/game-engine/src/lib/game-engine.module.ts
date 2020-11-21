@@ -7,7 +7,7 @@ import { StoreService } from './services/store/store.service';
 import { HttpClientModule } from '@angular/common/http';
 
 // Get base-href value
-export function getBaseUrl() {
+export function getBaseUrl(): string {
   try {
     return document.getElementsByTagName('base')[0].href;
   } catch (e) {

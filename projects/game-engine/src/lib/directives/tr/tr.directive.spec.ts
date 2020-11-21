@@ -7,9 +7,10 @@ describe('TrDirective', () => {
   let el: ElementRef;
 
   beforeEach(() => {
+    langsService = {} as any;
     el = {
       nativeElement: {
-        innerText: "",
+        innerText: '',
       },
     };
   });

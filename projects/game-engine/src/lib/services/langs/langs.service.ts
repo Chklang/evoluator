@@ -47,15 +47,30 @@ export class LangsService {
     );
     this.currentTranslation$ = combineLatest([defaultCodeLang$, this.allLangs]).pipe(
       switchMap(([defaultCodeLang, allLangs]) => {
+        let langIsOk = false;
+        // Search last saved lang
         if (localStorage.getItem('engine_lang')) {
           const savedLang = localStorage.getItem('engine_lang');
-          const findLang = allLangs.find(lang => lang.id === localStorage.getItem('engine_lang'));
+          const findLang = allLangs.find(lang => lang.id === savedLang);
           if (findLang) {
             this.currentCodeLang$.next(findLang);
-          } else {
-            this.currentCodeLang$.next(defaultCodeLang);
+            langIsOk = true;
           }
-        } else {
+        }
+        // Else try to use navigator lang
+        if (!langIsOk) {
+          let findLang: ILangRefEntry;
+          navigator.languages.some(navigatorLang => {
+            findLang = allLangs.find(lang => lang.id === navigatorLang);
+            return findLang;
+          });
+          if (findLang) {
+            this.currentCodeLang$.next(findLang);
+            langIsOk = true;
+          }
+        }
+        // Else use default lang
+        if (!langIsOk) {
           this.currentCodeLang$.next(defaultCodeLang);
         }
         return this.currentCodeLang$;
