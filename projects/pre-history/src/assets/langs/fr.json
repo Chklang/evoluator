@@ -8,6 +8,7 @@
             "Colony": "Colonie",
             "Lang": "Langue"
         },
+        "build": "Construire",
         "resources": {
             "wood": {
                 "name": "Bois"
@@ -17,6 +18,11 @@
             },
             "food": {
                 "name": "Nourriture"
+            }
+        },
+        "buildings": {
+            "Scierie": {
+                "description": "Bâtiment de découpe du bois"
             }
         }
     }

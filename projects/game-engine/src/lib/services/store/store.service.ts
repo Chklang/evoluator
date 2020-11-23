@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { ReplaySubject, Subject } from 'rxjs';
-import { filter, switchMap, tap, withLatestFrom } from 'rxjs/operators';
-import { IGame, IResource, IGameContext } from '../../model';
+import { BehaviorSubject, Observable, ReplaySubject, Subject } from 'rxjs';
+import { concatMap, filter, finalize, map, mergeMap, switchMap, take, tap, withLatestFrom } from 'rxjs/operators';
+import { IGame, IResource, IGameContext, IBuilding } from '../../model';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +9,7 @@ import { IGame, IResource, IGameContext } from '../../model';
 export class StoreService {
   public readonly datas$: Subject<IGame> = new ReplaySubject(1);
   private readonly refreshDatas: Subject<void> = new ReplaySubject(1);
-  private refreshInProgress = false;
+  private refreshInProgress: Subject<boolean> = new BehaviorSubject(false);
 
   private gameContext$: Subject<IGameContext> = new ReplaySubject(1);
   private resourcesByKey: Record<string, IResource> = {};
@@ -28,24 +28,33 @@ export class StoreService {
       switchMap((context) => {
         this.datas$.next(this.updateShowableElements(context));
         return this.refreshDatas.pipe(
-          filter(() => {
-            if (this.refreshInProgress) {
-              return false;
-            }
-            this.refreshInProgress = true;
-            return true;
-          }),
+          switchMap(() => this.refreshInProgress.pipe(
+            filter((refreshInProgress) => {
+              if (refreshInProgress) {
+                return false;
+              }
+              return true;
+            }),
+            take(1),
+            tap(() => {
+              this.refreshInProgress.next(true);
+            }),
+          )),
         );
       }),
-      withLatestFrom(this.datas$),
-      withLatestFrom(this.gameContext$),
-    ).subscribe(([[_, oldDatas], gameContext]) => {
-      const datas: IGame = JSON.parse(JSON.stringify(oldDatas));
-      datas.calculated.nextEvent = oldDatas.calculated.nextEvent;
+      withLatestFrom(this.datas$, this.gameContext$),
+    ).subscribe(([_, oldDatas, gameContext]) => {
+      const datas: IGame = this.cloneDatas(oldDatas);
       this.updateGame(datas, gameContext);
       this.datas$.next(datas);
-      this.refreshInProgress = false;
+      this.refreshInProgress.next(false);
     });
+  }
+
+  private cloneDatas(oldGame: IGame): IGame {
+    const datas: IGame = JSON.parse(JSON.stringify(oldGame));
+    datas.calculated.nextEvent = oldGame.calculated.nextEvent;
+    return datas;
   }
 
   public init(context: IGameContext): void {
@@ -277,5 +286,41 @@ export class StoreService {
       }
     });
     game.calculated.nextEvent = game.time + (nextEmptyOrFullStorage * 1000);
+  }
+
+  public build(building: IBuilding): Observable<void> {
+    return this.refreshInProgress.pipe(
+      filter((refreshInProgress) => refreshInProgress === false),
+      take(1),
+      tap(() => this.refreshInProgress.next(true)),
+      withLatestFrom(this.datas$),
+      map(([_, oldDatas]) => {
+        const costIsOk = Object.keys(building.cost).every((costKey) => {
+          if (!oldDatas.resources[costKey]) {
+            return false;
+          }
+          if (oldDatas.resources[costKey].quantity < building.cost[costKey]) {
+            return false;
+          }
+          return true;
+        });
+        if (!costIsOk) {
+          return;
+        }
+
+        const datas: IGame = this.cloneDatas(oldDatas);
+        Object.keys(building.cost).every((costKey) => {
+          datas.resources[costKey].quantity -= building.cost[costKey];
+        });
+        if (!oldDatas.buildings[building.name]) {
+          datas.buildings[building.name] = 1;
+        } else {
+          datas.buildings[building.name]++;
+        }
+        datas.calculated.nextEvent = 0;
+        this.datas$.next(datas);
+      }),
+      finalize(() => this.refreshInProgress.next(false)),
+    );
   }
 }

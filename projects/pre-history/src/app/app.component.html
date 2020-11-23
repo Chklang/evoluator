@@ -11,7 +11,7 @@
                 <span tr>menu.Lang</span>
             </a>
             <div id="ddmMenuLang" class="dropdown-menu dropdown-menu-right" *dropdownMenu aria-labelledby="ddMenuLang">
-                <a *ngFor="let lang of (langsService.allLangs | async)" class="dropdown-item select-lang" (click)="backgroundAction(langsService.changeLang(lang.id))">
+                <a *ngFor="let lang of (langsService.allLangs | async)" class="dropdown-item select-lang" (click)="backgroundAction.execute(langsService.changeLang(lang.id))">
                     <span class="flag-icon flag-icon-squared" [ngClass]="'flag-icon-' + (lang.flag || lang.id)"></span>
                     {{lang.name}}
                 </a>

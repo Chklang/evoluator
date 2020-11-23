@@ -6,7 +6,11 @@ const routes: Routes = [
   {
     path: 'colony',
     component: ColonyComponent,
-  }
+  },
+  {
+    path: 'colony/:selectedResource',
+    component: ColonyComponent,
+  },
 ];
 
 @NgModule({

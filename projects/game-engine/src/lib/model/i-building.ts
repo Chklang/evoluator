@@ -4,4 +4,5 @@ export interface IBuilding {
     consume: Record<string, number>;
     produce: Record<string, number>;
     storage: Record<string, number>;
+    cost: Record<string, number>;
 }

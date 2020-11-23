@@ -46,6 +46,7 @@ export const buildings: IBuilding[] = [
         storage: {
             wood: 300,
         },
+        cost: {},
     },
     {
         name: 'Ferme',
@@ -55,6 +56,7 @@ export const buildings: IBuilding[] = [
             food: 1,
         },
         storage: {},
+        cost: {},
     },
 
 ];
@@ -77,3 +79,14 @@ export const gameFromScratch: IGame = {
         production: {},
     },
 };
+
+
+export const buildingsByKey: Record<string, IBuilding> = {};
+buildings.forEach((building) => {
+    buildingsByKey[building.name] = building;
+});
+
+export const resourcesByKey: Record<string, IResource> = {};
+resources.forEach((resource) => {
+    resourcesByKey[resource.name] = resource;
+});
