@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Dictionnary } from 'arrayplus';
 import { BehaviorSubject, Observable, ReplaySubject, Subject } from 'rxjs';
-import { concatMap, filter, finalize, map, mergeMap, switchMap, take, tap, withLatestFrom } from 'rxjs/operators';
+import { filter, finalize, map, switchMap, take, tap, withLatestFrom } from 'rxjs/operators';
 import {
   IGame,
   IBlocker,
@@ -125,7 +125,6 @@ export class StoreService {
       this.calculateNextEvent(game, gameContext);
     }
     this.updateUntilEvent(game, now);
-    console.log(game);
   }
 
   private updateUntilEvent(game: IGame, now: number): void {

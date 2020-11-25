@@ -14,7 +14,7 @@ import { ResearchsComponent } from './components/researchs/researchs.component';
   declarations: [
     AppComponent,
     ColonyComponent,
-    ResearchsComponent
+    ResearchsComponent,
   ],
   imports: [
     BrowserModule,

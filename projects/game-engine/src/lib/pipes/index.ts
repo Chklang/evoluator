@@ -1,2 +1,3 @@
 export * from './resources/resources.pipe';
 export * from './time/time.pipe';
+export * from './production/production.pipe';

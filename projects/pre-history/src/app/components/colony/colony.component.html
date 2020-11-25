@@ -10,6 +10,9 @@
                         <span [tr]="'resources.' + resource.name + '.name'"></span>
                     </div>
                     <div class="col-auto">
+                        ({{datas | production:resource}})
+                    </div>
+                    <div class="col-auto">
                         <span [innerHTML]="datas | resources:resource:true"></span>
                     </div>
                 </div>
