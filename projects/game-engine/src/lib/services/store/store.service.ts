@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Dictionnary } from 'arrayplus';
-import { BehaviorSubject, Observable, ReplaySubject, Subject } from 'rxjs';
-import { filter, finalize, map, switchMap, take, tap, withLatestFrom } from 'rxjs/operators';
+import { from, Observable, ReplaySubject, Subject } from 'rxjs';
+import { finalize, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 import {
   IGame,
   IBlocker,
@@ -11,15 +11,18 @@ import {
   createDictionnaryBuilding,
   createDictionnaryResource,
   IResourceBlocker,
-  IChainedFeatureUnlock,
+  IChainedUnlock,
   createDictionnaryFeature,
-  IFeature
+  IFeature,
+  IResearch,
+  createDictionnaryResearch
 } from '../../model';
 
 interface ICalculatedGameContext {
   allResources: Dictionnary<string, IResource>;
   allBuildings: Dictionnary<string, IBuilding>;
   allFeatures: Dictionnary<string, IFeature>;
+  allResearchs: Dictionnary<string, IResearch>;
   gameFromScratch: IGame;
 }
 @Injectable({
@@ -28,7 +31,7 @@ interface ICalculatedGameContext {
 export class StoreService {
   public readonly datas$: Subject<IGame> = new ReplaySubject(1);
   private readonly refreshDatas: Subject<void> = new ReplaySubject(1);
-  private refreshInProgress: Subject<boolean> = new BehaviorSubject(false);
+  private nextLock: Promise<void> = Promise.resolve();
 
   private gameContext$: Subject<ICalculatedGameContext> = new ReplaySubject(1);
   private resourcesByKey: Record<string, IResource> = {};
@@ -47,27 +50,14 @@ export class StoreService {
       switchMap((context) => {
         this.datas$.next(this.updateShowableElements(context));
         return this.refreshDatas.pipe(
-          switchMap(() => this.refreshInProgress.pipe(
-            filter((refreshInProgress) => {
-              if (refreshInProgress) {
-                return false;
-              }
-              return true;
-            }),
-            take(1),
-            tap(() => {
-              this.refreshInProgress.next(true);
-            }),
-          )),
+          switchMap(() => this.lock((oldDatas) => {
+            const datas: IGame = this.cloneDatas(oldDatas);
+            this.updateGame(datas, context);
+            this.datas$.next(datas);
+          })),
         );
       }),
-      withLatestFrom(this.datas$, this.gameContext$),
-    ).subscribe(([_, oldDatas, gameContext]) => {
-      const datas: IGame = this.cloneDatas(oldDatas);
-      this.updateGame(datas, gameContext);
-      this.datas$.next(datas);
-      this.refreshInProgress.next(false);
-    });
+    ).subscribe();
   }
 
   private cloneDatas(oldGame: IGame): IGame {
@@ -82,6 +72,7 @@ export class StoreService {
       allBuildings: createDictionnaryBuilding(context.allBuildings),
       allFeatures: createDictionnaryFeature(context.allFeatures),
       allResources: createDictionnaryResource(context.allResources),
+      allResearchs: createDictionnaryResearch(context.allResearchs),
       gameFromScratch: context.gameFromScratch,
     });
   }
@@ -115,6 +106,11 @@ export class StoreService {
         return false;
       }))
     );
+    datas.showableElements.researchs = createDictionnaryResearch(
+      gameContext.allResearchs.filter((research) => Object.keys(research.blockedBy || {}).every((key) => {
+        return false;
+      }))
+    );
     return datas;
   }
 
@@ -136,18 +132,18 @@ export class StoreService {
     Object.keys(game.calculated.production).forEach((resource) => {
       switch (this.resourcesByKey[resource].growType) {
         case 'EXPONENTIAL':
-          Math.min(
+          game.resources[resource].quantity = Math.min(
             game.resources[resource].max,
-            game.resources[resource].quantity = Math.round(
+            Math.round(
               (game.resources[resource].quantity * Math.pow(game.calculated.production[resource], diff) + Number.EPSILON) * 1_000
             ) / 1000
           );
           break;
         case 'CLASSIC':
         default:
-          Math.min(
+          game.resources[resource].quantity = Math.min(
             game.resources[resource].max,
-            game.resources[resource].quantity = Math.round(
+            Math.round(
               (game.resources[resource].quantity + (game.calculated.production[resource] * diff) + Number.EPSILON) * 1_000
             ) / 1000
           );
@@ -155,8 +151,12 @@ export class StoreService {
       }
     });
     while (game.calculated.unlockFeature && game.calculated.unlockFeature.time < now) {
-      game.showableElements.features.addElement(game.calculated.unlockFeature.feature.name, game.calculated.unlockFeature.feature);
+      game.showableElements.features.addElement(game.calculated.unlockFeature.element.name, game.calculated.unlockFeature.element);
       game.calculated.unlockFeature = game.calculated.unlockFeature.nextUnlock;
+    }
+    while (game.calculated.unlockResearch && game.calculated.unlockResearch.time < now) {
+      game.showableElements.researchs.addElement(game.calculated.unlockResearch.element.name, game.calculated.unlockResearch.element);
+      game.calculated.unlockResearch = game.calculated.unlockResearch.nextUnlock;
     }
     game.time = now;
   }
@@ -168,11 +168,20 @@ export class StoreService {
     return value;
   }
 
+  private minOrDefaultValue(valueRef: number | undefined, otherValue: number): number {
+    if (valueRef === undefined) {
+      return otherValue;
+    }
+    return Math.min(valueRef, otherValue);
+  }
+
   private calculateNextEvent(game: IGame, gameContext: ICalculatedGameContext): void {
     let consumtion: Record<string, number>;
     let production: Record<string, number>;
     const percentConsumtion: Record<string, number> = {};
     const percentProduction: Record<string, number> = {};
+    const bonusConsumtion: Record<string, number> = {};
+    const bonusProduction: Record<string, number> = {};
     let problemProductionDetected = false;
     gameContext.allResources.forEach((resource) => {
       if (!game.resources[resource.name]) {
@@ -184,6 +193,22 @@ export class StoreService {
       } else {
         game.resources[resource.name].max = resource.max;
       }
+    });
+    Object.keys(game.researchs).forEach((researchName) => {
+      const level = game.researchs[researchName];
+      const research = gameContext.allResearchs.find((e) => e.name === researchName);
+      if (!research) {
+        console.log('Error : Reseach ' + researchName + ' is unknown!');
+        return;
+      }
+      Object.keys(research.bonusResources).forEach((bonusResourceName) => {
+        const bonusValue = research.bonusResources[bonusResourceName];
+        if (bonusValue > 0) {
+          bonusProduction[bonusResourceName] = this.defaultValue(bonusProduction[bonusResourceName], 1) * Math.pow(bonusValue, level);
+        } else if (bonusValue < 0) {
+          bonusConsumtion[bonusResourceName] = this.defaultValue(bonusConsumtion[bonusResourceName], 1) * Math.pow(bonusValue, level);
+        }
+      });
     });
     gameContext.allBuildings
       .filter((building) => !!game.buildings[building.name])
@@ -207,17 +232,18 @@ export class StoreService {
       gameContext.allBuildings
         .filter((building) => !!game.buildings[building.name])
         .forEach((building) => {
-          let buildingProduction = 1;
+          let buildingProduction;
           Object.keys(building.consume).forEach((consume) => {
             if (percentConsumtion[consume] !== undefined) {
-              buildingProduction = Math.min(buildingProduction, percentConsumtion[consume]);
+              buildingProduction = this.minOrDefaultValue(buildingProduction, percentConsumtion[consume]);
             }
           });
           Object.keys(building.produce).forEach((produce) => {
             if (percentProduction[produce] !== undefined) {
-              buildingProduction = Math.min(buildingProduction, percentProduction[produce]);
+              buildingProduction = this.minOrDefaultValue(buildingProduction, percentProduction[produce]);
             }
           });
+          buildingProduction = this.defaultValue(buildingProduction, 1);
           Object.keys(building.consume).forEach((consume) => {
             if (consumtion[consume]) {
               consumtion[consume] += building.consume[consume] * buildingProduction * game.buildings[building.name];
@@ -233,6 +259,17 @@ export class StoreService {
             }
           });
         });
+      // Apply bonus production/consumption
+      Object.keys(bonusProduction).forEach((resourceName) => {
+        if (production[resourceName]) {
+          production[resourceName] *= bonusProduction[resourceName];
+        }
+      });
+      Object.keys(bonusConsumtion).forEach((resourceName) => {
+        if (consumtion[resourceName]) {
+          consumtion[resourceName] *= bonusConsumtion[resourceName];
+        }
+      });
       problemProductionDetected = false;
       Object.keys(consumtion).forEach((consume) => {
         let newProduction: number;
@@ -247,7 +284,7 @@ export class StoreService {
           newProduction = 0;
         } else {
           // Some production, so reduce consumption to correspond to production
-          const percent = Math.min(1, production[consume] / consumtion[consume]);
+          const percent = production[consume] / consumtion[consume];
           if (percentConsumtion[consume] === undefined) {
             newProduction = percent;
           } else {
@@ -272,7 +309,7 @@ export class StoreService {
           newProduction = 0;
         } else {
           // Some consumption, so reduce production to correspond to consumption
-          const percent = Math.min(1, consumtion[produce] / production[produce]);
+          const percent = consumtion[produce] / production[produce];
           if (percentProduction[produce] === undefined) {
             newProduction = percent;
           } else {
@@ -332,20 +369,42 @@ export class StoreService {
     });
 
     // Calculate moment of next event for unlock each feature
-    const toUnlock: IChainedFeatureUnlock[] = [];
+    const featureToUnlock: IChainedUnlock<IFeature>[] = [];
     gameContext.allFeatures.forEach((feature) => {
       if (game.showableElements.features.hasElement(feature.name)) {
         // Already unlocked
         return;
       }
       const blockedUntil = this.blockedUntil(game, gameContext, feature.blockedBy || []);
-      toUnlock.push({
-        feature,
+      featureToUnlock.push({
+        element: feature,
         time: game.time + (blockedUntil * 1000),
       });
     });
-    toUnlock.sort((a, b) => a.time - b.time);
-    game.calculated.unlockFeature = toUnlock.reduce((previous, current) => {
+    featureToUnlock.sort((a, b) => a.time - b.time);
+    game.calculated.unlockFeature = featureToUnlock.reduce((previous, current) => {
+      if (!previous) {
+        return current;
+      }
+      previous.nextUnlock = current;
+      return current;
+    }, undefined);
+
+    // Calculate moment of next event for unlock each research
+    const researchToUnlock: IChainedUnlock<IResearch>[] = [];
+    gameContext.allResearchs.forEach((research) => {
+      if (game.showableElements.researchs.hasElement(research.name)) {
+        // Already unlocked
+        return;
+      }
+      const blockedUntil = this.blockedUntil(game, gameContext, research.blockedBy || []);
+      researchToUnlock.push({
+        element: research,
+        time: game.time + (blockedUntil * 1000),
+      });
+    });
+    researchToUnlock.sort((a, b) => a.time - b.time);
+    game.calculated.unlockResearch = researchToUnlock.reduce((previous, current) => {
       if (!previous) {
         return current;
       }
@@ -409,38 +468,85 @@ export class StoreService {
   }
 
   public build(building: IBuilding): Observable<void> {
-    return this.refreshInProgress.pipe(
-      filter((refreshInProgress) => refreshInProgress === false),
-      take(1),
-      tap(() => this.refreshInProgress.next(true)),
-      withLatestFrom(this.datas$),
-      map(([_, oldDatas]) => {
-        const costIsOk = Object.keys(building.cost).every((costKey) => {
-          if (!oldDatas.resources[costKey]) {
-            return false;
-          }
-          if (oldDatas.resources[costKey].quantity < building.cost[costKey]) {
-            return false;
-          }
-          return true;
-        });
-        if (!costIsOk) {
-          return;
+    return this.lock((oldDatas) => {
+      const currentLevel = oldDatas.buildings[building.name] || 0;
+      const costIsOk = Object.keys(building.cost).every((costKey) => {
+        if (!oldDatas.resources[costKey]) {
+          return false;
         }
+        if (oldDatas.resources[costKey].quantity < Math.ceil(building.cost[costKey] * Math.pow(1.2, currentLevel))) {
+          return false;
+        }
+        return true;
+      });
+      if (!costIsOk) {
+        return;
+      }
 
-        const datas: IGame = this.cloneDatas(oldDatas);
-        Object.keys(building.cost).every((costKey) => {
-          datas.resources[costKey].quantity -= building.cost[costKey];
-        });
-        if (!oldDatas.buildings[building.name]) {
-          datas.buildings[building.name] = 1;
-        } else {
-          datas.buildings[building.name]++;
+      const datas: IGame = this.cloneDatas(oldDatas);
+      Object.keys(building.cost).every((costKey) => {
+        datas.resources[costKey].quantity -= Math.ceil(building.cost[costKey] * Math.pow(1.2, currentLevel));
+      });
+      if (!oldDatas.buildings[building.name]) {
+        datas.buildings[building.name] = 1;
+      } else {
+        datas.buildings[building.name]++;
+      }
+      datas.calculated.nextEvent = 0;
+      this.datas$.next(datas);
+    });
+  }
+
+  public research(research: IResearch): Observable<void> {
+    return this.lock((oldDatas) => {
+      const currentLevel = oldDatas.researchs[research.name] || 0;
+      const costIsOk = Object.keys(research.cost).every((costKey) => {
+        if (!oldDatas.resources[costKey]) {
+          return false;
         }
-        datas.calculated.nextEvent = 0;
-        this.datas$.next(datas);
+        if (oldDatas.resources[costKey].quantity < Math.ceil(research.cost[costKey] * Math.pow(1.2, currentLevel))) {
+          return false;
+        }
+        return true;
+      });
+      if (!costIsOk) {
+        return;
+      }
+      const datas: IGame = this.cloneDatas(oldDatas);
+      Object.keys(research.cost).every((costKey) => {
+        datas.resources[costKey].quantity -= Math.ceil(research.cost[costKey] * Math.pow(1.2, currentLevel));
+      });
+      if (!oldDatas.researchs[research.name]) {
+        datas.researchs[research.name] = 1;
+      } else {
+        datas.researchs[research.name]++;
+      }
+      datas.calculated.nextEvent = 0;
+      this.datas$.next(datas);
+    });
+  }
+
+  private lock<T>(callback: (datas: IGame) => Promise<T> | T): Observable<T> {
+    let resolve;
+    const newPromise = new Promise<void>((resolveParam) => {
+      resolve = resolveParam;
+    });
+    let resolveWait;
+    const promiseWait = new Promise<void>((resolveParam) => {
+      resolveWait = resolveParam;
+    });
+    this.nextLock = this.nextLock.then(() => {
+      resolveWait();
+      return newPromise;
+    });
+    return from(promiseWait).pipe(
+      withLatestFrom(this.datas$),
+      switchMap(([_, datas]): Promise<T> => {
+        return Promise.resolve().then(() => callback(datas));
       }),
-      finalize(() => this.refreshInProgress.next(false)),
+      finalize(() => {
+        resolve();
+      }),
     );
   }
 }

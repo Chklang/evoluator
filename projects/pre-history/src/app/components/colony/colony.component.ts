@@ -33,17 +33,24 @@ export class ColonyComponent implements OnInit {
             const selectedResource = params.get('selectedResource');
             return datas.showableElements.buildings
               // TODO optimize it with precalculated datas
-              .filter((building) => building.produce[selectedResource] !== undefined)
+              .filter((building) => building.produce[selectedResource] !== undefined || building.storage[selectedResource] !== undefined)
               .map((building): IBuildingToShow => {
-                const cost: IBuildingToShowCost[] = Object.keys(building.cost).map((costKey): IBuildingToShowCost => ({
-                  resource: resourcesByKey[costKey],
-                  count: building.cost[costKey],
-                }));
-
+                const level = datas.buildings[building.name] || 0;
                 return {
-                  count: datas.buildings[building.name] || 0,
+                  count: level,
                   type: building,
-                  cost,
+                  cost: Object.keys(building.cost).map((costKey): IBuildingToShowCost => ({
+                    resource: resourcesByKey[costKey],
+                    count: Math.ceil(building.cost[costKey] * Math.pow(1.2, level)),
+                  })),
+                  produce: Object.keys(building.produce).map((costKey): IBuildingToShowCost => ({
+                    resource: resourcesByKey[costKey],
+                    count: building.produce[costKey],
+                  })),
+                  storage: Object.keys(building.storage).map((costKey): IBuildingToShowCost => ({
+                    resource: resourcesByKey[costKey],
+                    count: building.storage[costKey],
+                  })),
                 };
               });
           }),
@@ -66,6 +73,8 @@ export class ColonyComponent implements OnInit {
 interface IBuildingToShow {
   type: IBuilding;
   cost: IBuildingToShowCost[];
+  produce: IBuildingToShowCost[];
+  storage: IBuildingToShowCost[];
   count: number;
 }
 interface IBuildingToShowCost {

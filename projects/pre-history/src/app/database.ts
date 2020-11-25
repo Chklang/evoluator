@@ -1,5 +1,5 @@
 import { Dictionnary } from 'arrayplus';
-import { IResourceBlocker } from 'game-engine';
+import { IResearch, IResourceBlocker } from 'game-engine';
 import { IBuilding, IGame, IResource, IFeature } from 'game-engine';
 
 export const resources: IResource[] = [
@@ -43,12 +43,24 @@ export const buildings: IBuilding[] = [
         blockedBy: [],
         consume: {},
         produce: {
-            wood: 34,
+            wood: 5,
         },
+        storage: {},
+        cost: {
+            wood: 30,
+        },
+    },
+    {
+        name: 'EntrepotsBois',
+        blockedBy: [],
+        consume: {},
+        produce: {},
         storage: {
             wood: 300,
         },
-        cost: {},
+        cost: {
+            wood: 80,
+        },
     },
     {
         name: 'Ferme',
@@ -70,19 +82,34 @@ export const features: IFeature[] = [
     },
 ];
 
+export const researchs: IResearch[] = [
+    {
+        name: 'axe',
+        bonusBuildingCosts: {},
+        bonusResources: {
+            wood: 1.1,
+        },
+        cost: {
+            wood: 120,
+        },
+    }
+];
+
 export const gameFromScratch: IGame = {
     time: Date.now(),
     resources: {
-        population: { quantity: 4, max: 1, icon: 'user' },
+        population: { quantity: 1, max: 1, icon: 'user' },
     },
     buildings: {
         Scierie: 2,
         Ferme: 1,
     },
+    researchs: {},
     showableElements: {
         buildings: Dictionnary.create(),
         resources: Dictionnary.create(),
         features: Dictionnary.create(),
+        researchs: Dictionnary.create(),
     },
     calculated: {
         nextEvent: 0,

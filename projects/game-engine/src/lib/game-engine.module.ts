@@ -7,6 +7,7 @@ import { StoreService } from './services/store/store.service';
 import { HttpClientModule } from '@angular/common/http';
 import { TimePipe } from './pipes/time/time.pipe';
 import { ProductionPipe } from './pipes/production/production.pipe';
+import { PercentagePipe } from './pipes/percentage/percentage.pipe';
 
 // Get base-href value
 export function getBaseUrl(): string {
@@ -18,7 +19,7 @@ export function getBaseUrl(): string {
 }
 
 @NgModule({
-  declarations: [GameEngineComponent, ResourcesPipe, TrDirective, TimePipe, ProductionPipe],
+  declarations: [GameEngineComponent, ResourcesPipe, TrDirective, TimePipe, ProductionPipe, PercentagePipe],
   imports: [
     HttpClientModule,
   ],
@@ -33,6 +34,7 @@ export function getBaseUrl(): string {
     TrDirective,
     TimePipe,
     ProductionPipe,
+    PercentagePipe,
   ],
 })
 export class GameEngineModule { }

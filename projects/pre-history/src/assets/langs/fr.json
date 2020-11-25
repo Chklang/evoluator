@@ -10,6 +10,10 @@
             "Research": "Recherches"
         },
         "build": "Construire",
+        "cost": "Coût(s)",
+        "bonus": "Bonus",
+        "produce": "Production",
+        "storage": "Stockage",
         "resources": {
             "wood": {
                 "name": "Bois"
@@ -23,10 +27,22 @@
         },
         "buildings": {
             "Scierie": {
+                "name": "Scierie",
                 "description": "Bâtiment de découpe du bois"
             },
+            "EntrepotsBois": {
+                "name": "Entrepôt de bois",
+                "description": "Augmente la capacité de stockage du bois"
+            },
             "Ferme": {
+                "name": "Ferme",
                 "description": "Champs de production de nourriture"
+            }
+        },
+        "researchs": {
+            "axe": {
+                "name": "Hâche",
+                "description": "L'amélioration des hâches est toujours une bonne idée :)"
             }
         }
     }

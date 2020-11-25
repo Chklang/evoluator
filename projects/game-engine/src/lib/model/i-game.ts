@@ -2,15 +2,18 @@ import { Dictionnary } from 'arrayplus';
 import { IResource } from './i-resource';
 import { IBuilding } from './i-building';
 import { IFeature } from './i-feature';
+import { IResearch } from './i-research';
 
 export interface IGame {
     time: number;
     resources: Record<string, { quantity: number; max: number; icon: string; }>;
     buildings: Record<string, number>;
+    researchs: Record<string, number>;
     showableElements: {
         resources: Dictionnary<string, IResource>;
         buildings: Dictionnary<string, IBuilding>;
         features: Dictionnary<string, IFeature>;
+        researchs: Dictionnary<string, IResearch>;
     };
     calculated: IGameEvolutionStatus;
 }
@@ -18,11 +21,12 @@ export interface IGame {
 export interface IGameEvolutionStatus {
     nextEvent: number;
     production: Record<string, number>;
-    unlockFeature?: IChainedFeatureUnlock;
+    unlockFeature?: IChainedUnlock<IFeature>;
+    unlockResearch?: IChainedUnlock<IResearch>;
 }
 
-export interface IChainedFeatureUnlock {
+export interface IChainedUnlock<T> {
     time: number;
-    feature: IFeature;
-    nextUnlock?: IChainedFeatureUnlock;
+    element: T;
+    nextUnlock?: IChainedUnlock<T>;
 }

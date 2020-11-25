@@ -10,6 +10,10 @@
             "Research": "Researchs"
         },
         "build": "Build",
+        "cost": "Cost(s)",
+        "bonus": "Bonus",
+        "produce": "Production",
+        "storage": "Storage",
         "resources": {
             "wood": {
                 "name": "Wood"
@@ -23,10 +27,22 @@
         },
         "buildings": {
             "Scierie": {
+                "name": "Wood cutter",
                 "description": "Building to cut wood"
             },
+            "EntrepotsBois": {
+                "name": "Wooden warehouse",
+                "description": "Upgrade max wood storage"
+            },
             "Ferme": {
+                "name": "Farm",
                 "description": "Food production field"
+            }
+        },
+        "researchs": {
+            "axe": {
+                "name": "Axe",
+                "description": "Upgrade axe is always a good idea :)"
             }
         }
     }

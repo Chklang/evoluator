@@ -2,7 +2,9 @@
 
     <div class="col-auto">
         <ul class="list-group" style="width: 280px;">
-            <a class="list-group-item list-group-item-action" *ngFor="let resource of datas.showableElements.resources; trackBy: resourceTrackByFn" [routerLink]="['/colony', resource.name]">
+            <a class="list-group-item list-group-item-action"
+                *ngFor="let resource of datas.showableElements.resources; trackBy: resourceTrackByFn"
+                [routerLink]="['/colony', resource.name]">
                 <div class="row">
                     <div class="col d-flex align-items-center">
                         <i *ngIf="datas.resources[resource]" class="h6 fa fa-fw mr-1 icon-resource"
@@ -22,18 +24,41 @@
 
     <div class="col">
         <ul class="list-group">
-            <li class="list-group-item" *ngFor="let building of (buildingsToShow | async); trackBy: buildingTrackByFn" >
+            <li class="list-group-item" *ngFor="let building of (buildingsToShow | async); trackBy: buildingTrackByFn">
                 <fieldset>
-                    <legend>{{building.type.name}} : {{building.count}}</legend>
+                    <legend><span [tr]="'buildings.'+building.type.name+'.name'"></span> : {{building.count}}</legend>
                     <p [tr]="'buildings.'+building.type.name+'.description'"></p>
-                    <ul>
-                        <li *ngFor="let resourceCost of building.cost">
-                            <span [tr]="'resources.' + resourceCost.resource.name + '.name'">{{resource}}</span>
-                            : {{resourceCost.count}}
-                        </li>
-                    </ul>
-                    <button class="btn btn-primary" (click)="backgroundAction.execute(storeService.build(building.type))" tr>build</button>
-                </fieldset></li>
+                    <div *ngIf="building.cost.length > 0">
+                        <span tr>cost</span>
+                        <ul>
+                            <li *ngFor="let resourceCost of building.cost">
+                                <span [tr]="'resources.' + resourceCost.resource.name + '.name'"></span>
+                                : {{resourceCost.count}}
+                            </li>
+                        </ul>
+                    </div>
+                    <div *ngIf="building.produce.length > 0">
+                        <span tr>produce</span>
+                        <ul>
+                            <li *ngFor="let resourceProduce of building.produce">
+                                <span [tr]="'resources.' + resourceProduce.resource.name + '.name'"></span>
+                                : {{resourceProduce.count}}
+                            </li>
+                        </ul>
+                    </div>
+                    <div *ngIf="building.storage.length > 0">
+                        <span tr>storage</span>
+                        <ul>
+                            <li *ngFor="let resourceStorage of building.storage">
+                                <span [tr]="'resources.' + resourceStorage.resource.name + '.name'"></span>
+                                : {{resourceStorage.count}}
+                            </li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-primary"
+                        (click)="backgroundAction.execute(storeService.build(building.type))" tr>build</button>
+                </fieldset>
+            </li>
         </ul>
     </div>
 
