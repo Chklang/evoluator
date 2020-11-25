@@ -1,4 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
+import { IResource } from '../../model';
 import { IGame } from '../../model/i-game';
 
 @Pipe({
@@ -6,12 +7,12 @@ import { IGame } from '../../model/i-game';
 })
 export class ResourcesPipe implements PipeTransform {
 
-  transform(game: IGame | null, resource: string, withMax: boolean): string {
+  transform(game: IGame | null, resource: IResource, withMax: boolean): string {
     let quantity = 0;
     let max = 0;
-    if (game && game.resources[resource]) {
-      quantity = game.resources[resource].quantity;
-      max = game.resources[resource].max;
+    if (game && game.resources[resource.name]) {
+      quantity = game.resources[resource.name].quantity;
+      max = game.resources[resource.name].max;
     }
     quantity = this.formatNumber(quantity);
     max = this.formatNumber(max);

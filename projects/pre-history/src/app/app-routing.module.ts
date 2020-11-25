@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { ColonyComponent } from './components/colony/colony.component';
+import { ResearchsComponent } from './components/researchs/researchs.component';
 
 const routes: Routes = [
   {
@@ -10,6 +11,10 @@ const routes: Routes = [
   {
     path: 'colony/:selectedResource',
     component: ColonyComponent,
+  },
+  {
+    path: 'researchs',
+    component: ResearchsComponent,
   },
 ];
 

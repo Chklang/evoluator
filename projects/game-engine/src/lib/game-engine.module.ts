@@ -5,6 +5,7 @@ import { TrDirective } from './directives/tr/tr.directive';
 import { LangsService } from './services/langs/langs.service';
 import { StoreService } from './services/store/store.service';
 import { HttpClientModule } from '@angular/common/http';
+import { TimePipe } from './pipes/time/time.pipe';
 
 // Get base-href value
 export function getBaseUrl(): string {
@@ -16,7 +17,7 @@ export function getBaseUrl(): string {
 }
 
 @NgModule({
-  declarations: [GameEngineComponent, ResourcesPipe, TrDirective],
+  declarations: [GameEngineComponent, ResourcesPipe, TrDirective, TimePipe],
   imports: [
     HttpClientModule,
   ],
@@ -29,6 +30,7 @@ export function getBaseUrl(): string {
     GameEngineComponent,
     ResourcesPipe,
     TrDirective,
+    TimePipe,
   ],
 })
 export class GameEngineModule { }

@@ -2,12 +2,12 @@
 
     <div class="col-auto">
         <ul class="list-group" style="width: 280px;">
-            <a class="list-group-item list-group-item-action" *ngFor="let resource of datas.showableElements.resources; trackBy: resourceTrackByFn" [routerLink]="['/colony', resource]">
+            <a class="list-group-item list-group-item-action" *ngFor="let resource of datas.showableElements.resources; trackBy: resourceTrackByFn" [routerLink]="['/colony', resource.name]">
                 <div class="row">
                     <div class="col d-flex align-items-center">
                         <i *ngIf="datas.resources[resource]" class="h6 fa fa-fw mr-1 icon-resource"
                             [ngClass]="'fa-' + datas.resources[resource].icon"></i>
-                        <span [tr]="'resources.' + resource + '.name'"></span>
+                        <span [tr]="'resources.' + resource.name + '.name'"></span>
                     </div>
                     <div class="col-auto">
                         <span [innerHTML]="datas | resources:resource:true"></span>

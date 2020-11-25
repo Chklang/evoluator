@@ -1,8 +1,27 @@
 import { Injectable } from '@angular/core';
+import { Dictionnary } from 'arrayplus';
 import { BehaviorSubject, Observable, ReplaySubject, Subject } from 'rxjs';
 import { concatMap, filter, finalize, map, mergeMap, switchMap, take, tap, withLatestFrom } from 'rxjs/operators';
-import { IGame, IResource, IGameContext, IBuilding } from '../../model';
+import {
+  IGame,
+  IBlocker,
+  IResource,
+  IGameContext,
+  IBuilding,
+  createDictionnaryBuilding,
+  createDictionnaryResource,
+  IResourceBlocker,
+  IChainedFeatureUnlock,
+  createDictionnaryFeature,
+  IFeature
+} from '../../model';
 
+interface ICalculatedGameContext {
+  allResources: Dictionnary<string, IResource>;
+  allBuildings: Dictionnary<string, IBuilding>;
+  allFeatures: Dictionnary<string, IFeature>;
+  gameFromScratch: IGame;
+}
 @Injectable({
   providedIn: 'root'
 })
@@ -11,7 +30,7 @@ export class StoreService {
   private readonly refreshDatas: Subject<void> = new ReplaySubject(1);
   private refreshInProgress: Subject<boolean> = new BehaviorSubject(false);
 
-  private gameContext$: Subject<IGameContext> = new ReplaySubject(1);
+  private gameContext$: Subject<ICalculatedGameContext> = new ReplaySubject(1);
   private resourcesByKey: Record<string, IResource> = {};
   private updateEventKey: any | undefined = undefined;
 
@@ -54,11 +73,17 @@ export class StoreService {
   private cloneDatas(oldGame: IGame): IGame {
     const datas: IGame = JSON.parse(JSON.stringify(oldGame));
     datas.calculated.nextEvent = oldGame.calculated.nextEvent;
+    datas.showableElements = oldGame.showableElements;
     return datas;
   }
 
   public init(context: IGameContext): void {
-    this.gameContext$.next(context);
+    this.gameContext$.next({
+      allBuildings: createDictionnaryBuilding(context.allBuildings),
+      allFeatures: createDictionnaryFeature(context.allFeatures),
+      allResources: createDictionnaryResource(context.allResources),
+      gameFromScratch: context.gameFromScratch,
+    });
   }
 
   public start(): void {
@@ -73,24 +98,34 @@ export class StoreService {
     clearInterval(this.updateEventKey);
   }
 
-  private updateShowableElements(gameContext: IGameContext): IGame {
+  private updateShowableElements(gameContext: ICalculatedGameContext): IGame {
     const datas: IGame = JSON.parse(JSON.stringify(gameContext.gameFromScratch));
-    datas.showableElements.buildings = gameContext.allBuildings.filter((building) => Object.keys(building.blockedBy).every((key) => {
-      return false;
-    })).map((b) => b.name);
-    datas.showableElements.resources = gameContext.allResources.filter((resource) => Object.keys(resource.blockedBy).every((key) => {
-      return false;
-    })).map((b) => b.name);
+    datas.showableElements.buildings = createDictionnaryBuilding(
+      gameContext.allBuildings.filter((building) => Object.keys(building.blockedBy).every((key) => {
+        return false;
+      }))
+    );
+    datas.showableElements.resources = createDictionnaryResource(
+      gameContext.allResources.filter((resource) => Object.keys(resource.blockedBy).every((key) => {
+        return false;
+      }))
+    );
+    datas.showableElements.features = createDictionnaryFeature(
+      gameContext.allFeatures.filter((feature) => Object.keys(feature.blockedBy).every((key) => {
+        return false;
+      }))
+    );
     return datas;
   }
 
-  private updateGame(game: IGame, gameContext: IGameContext): void {
+  private updateGame(game: IGame, gameContext: ICalculatedGameContext): void {
     const now = Date.now();
     while (game.calculated.nextEvent < now) {
       this.updateUntilEvent(game, now);
       this.calculateNextEvent(game, gameContext);
     }
     this.updateUntilEvent(game, now);
+    console.log(game);
   }
 
   private updateUntilEvent(game: IGame, now: number): void {
@@ -114,6 +149,10 @@ export class StoreService {
           break;
       }
     });
+    while (game.calculated.unlockFeature && game.calculated.unlockFeature.time < now) {
+      game.showableElements.features.addElement(game.calculated.unlockFeature.feature.name, game.calculated.unlockFeature.feature);
+      game.calculated.unlockFeature = game.calculated.unlockFeature.nextUnlock;
+    }
     game.time = now;
   }
 
@@ -124,7 +163,7 @@ export class StoreService {
     return value;
   }
 
-  private calculateNextEvent(game: IGame, gameContext: IGameContext): void {
+  private calculateNextEvent(game: IGame, gameContext: ICalculatedGameContext): void {
     let consumtion: Record<string, number>;
     let production: Record<string, number>;
     const percentConsumtion: Record<string, number> = {};
@@ -152,11 +191,11 @@ export class StoreService {
       consumtion = {};
       production = {};
       game.showableElements.resources.forEach((resource) => {
-        if (this.resourcesByKey[resource].selfGrow !== undefined) {
-          if (this.resourcesByKey[resource].selfGrow! > 0) {
-            production[resource] = this.resourcesByKey[resource].selfGrow! * this.defaultValue(percentProduction[resource], 1);
-          } else if (this.resourcesByKey[resource].selfGrow! < 0) {
-            consumtion[resource] = this.resourcesByKey[resource].selfGrow! * this.defaultValue(percentConsumtion[resource], 1);
+        if (resource.selfGrow !== undefined) {
+          if (resource.selfGrow! > 0) {
+            production[resource.name] = resource.selfGrow! * this.defaultValue(percentProduction[resource.name], 1);
+          } else if (resource.selfGrow! < 0) {
+            consumtion[resource.name] = resource.selfGrow! * this.defaultValue(percentConsumtion[resource.name], 1);
           }
         }
       });
@@ -246,6 +285,7 @@ export class StoreService {
       production: {},
     };
     let nextEmptyOrFullStorage = +Infinity;
+    // Calculate moment of next event for each resource
     gameContext.allResources.forEach((resource) => {
       if (consumtion[resource.name] || production[resource.name]) {
         const productionBySec = (production[resource.name] || 0) - (consumtion[resource.name] || 0);
@@ -285,7 +325,82 @@ export class StoreService {
         }
       }
     });
+
+    // Calculate moment of next event for unlock each feature
+    const toUnlock: IChainedFeatureUnlock[] = [];
+    gameContext.allFeatures.forEach((feature) => {
+      if (game.showableElements.features.hasElement(feature.name)) {
+        // Already unlocked
+        return;
+      }
+      const blockedUntil = this.blockedUntil(game, gameContext, feature.blockedBy || []);
+      toUnlock.push({
+        feature,
+        time: game.time + (blockedUntil * 1000),
+      });
+    });
+    toUnlock.sort((a, b) => a.time - b.time);
+    game.calculated.unlockFeature = toUnlock.reduce((previous, current) => {
+      if (!previous) {
+        return current;
+      }
+      previous.nextUnlock = current;
+      return current;
+    }, undefined);
+
     game.calculated.nextEvent = game.time + (nextEmptyOrFullStorage * 1000);
+  }
+
+  private blockedUntil(game: IGame, gameContext: ICalculatedGameContext, blockers: IBlocker<any>[]): number {
+    const times = blockers.filter((blocker) => {
+      switch (blocker.type) {
+        case 'building':
+          return true;
+        case 'feature':
+          return true;
+        case 'resource': {
+          const typedBlocker = blocker as IResourceBlocker;
+          if (!game.resources[typedBlocker.params.name]) {
+            // Resource stocks are empty
+            return true;
+          }
+          if (game.resources[typedBlocker.params.name].quantity < typedBlocker.params.quantity) {
+            return true;
+          }
+          return false;
+        }
+      }
+    }).map((blocker) => {
+      switch (blocker.type) {
+        case 'building':
+          return 0;
+        case 'feature':
+          return 0;
+        case 'resource': {
+          const typedBlocker = blocker as IResourceBlocker;
+          if (!game.calculated.production[typedBlocker.params.name] || game.calculated.production[typedBlocker.params.name] < 0) {
+            // Resource stocks not grow up, it will never produce sufficient quantity
+            return +Infinity;
+          }
+          const currentQuantity = game.resources[typedBlocker.params.name]?.quantity || 0;
+          switch (gameContext.allResources.getElement(typedBlocker.params.name).growType) {
+            case 'CLASSIC':
+              const missing = typedBlocker.params.quantity - currentQuantity;
+              return missing / game.calculated.production[typedBlocker.params.name];
+            case 'EXPONENTIAL':
+              if (currentQuantity === 0) {
+                return +Infinity;
+              }
+              return Math.log(typedBlocker.params.quantity / currentQuantity) /
+                Math.log(game.calculated.production[typedBlocker.params.name]);
+          }
+        }
+      }
+    });
+    if (times.length === 0) {
+      return 0;
+    }
+    return times.reduce((previous, current) => Math.min(previous, current), +Infinity);
   }
 
   public build(building: IBuilding): Observable<void> {

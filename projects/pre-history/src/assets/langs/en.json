@@ -6,7 +6,8 @@
         },
         "menu": {
             "Lang": "Lang",
-            "Colony": "Colony"
+            "Colony": "Colony",
+            "Research": "Researchs"
         },
         "build": "Build",
         "resources": {
@@ -23,6 +24,9 @@
         "buildings": {
             "Scierie": {
                 "description": "Building to cut wood"
+            },
+            "Ferme": {
+                "description": "Food production field"
             }
         }
     }

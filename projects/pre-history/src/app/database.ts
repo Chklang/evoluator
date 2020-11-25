@@ -1,10 +1,12 @@
-import { IBuilding, IGame, IResource } from 'game-engine';
+import { Dictionnary } from 'arrayplus';
+import { IResourceBlocker } from 'game-engine';
+import { IBuilding, IGame, IResource, IFeature } from 'game-engine';
 
 export const resources: IResource[] = [
     {
         name: 'population',
         icon: 'user',
-        blockedBy: {},
+        blockedBy: [],
         max: 10,
         min: 1,
         resourceType: 'POPULATION',
@@ -19,7 +21,7 @@ export const resources: IResource[] = [
     {
         name: 'wood',
         icon: 'tree',
-        blockedBy: {},
+        blockedBy: [],
         max: 100,
         resourceType: 'CLASSIC',
         consume: {},
@@ -28,7 +30,7 @@ export const resources: IResource[] = [
     {
         name: 'food',
         icon: 'cutlery',
-        blockedBy: {},
+        blockedBy: [],
         max: 100,
         resourceType: 'CLASSIC',
         consume: {},
@@ -38,7 +40,7 @@ export const resources: IResource[] = [
 export const buildings: IBuilding[] = [
     {
         name: 'Scierie',
-        blockedBy: {},
+        blockedBy: [],
         consume: {},
         produce: {
             wood: 34,
@@ -50,7 +52,7 @@ export const buildings: IBuilding[] = [
     },
     {
         name: 'Ferme',
-        blockedBy: {},
+        blockedBy: [],
         consume: {},
         produce: {
             food: 1,
@@ -58,21 +60,29 @@ export const buildings: IBuilding[] = [
         storage: {},
         cost: {},
     },
+];
 
+export const features: IFeature[] = [
+    {
+        name: 'Research', blockedBy: [
+            { type: 'resource', params: { name: 'population', quantity: 5}} as IResourceBlocker,
+        ],
+    },
 ];
 
 export const gameFromScratch: IGame = {
     time: Date.now(),
     resources: {
-        population: { quantity: 1, max: 1, icon: 'user' },
+        population: { quantity: 4, max: 1, icon: 'user' },
     },
     buildings: {
         Scierie: 2,
         Ferme: 1,
     },
     showableElements: {
-        buildings: [],
-        resources: [],
+        buildings: Dictionnary.create(),
+        resources: Dictionnary.create(),
+        features: Dictionnary.create(),
     },
     calculated: {
         nextEvent: 0,

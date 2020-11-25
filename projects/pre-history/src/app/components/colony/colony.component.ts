@@ -3,8 +3,8 @@ import { ActivatedRoute } from '@angular/router';
 import { IBuilding, StoreService } from 'game-engine';
 import { IResource } from 'projects/game-engine/src/lib/model';
 import { Observable, of } from 'rxjs';
-import { map, switchMap, withLatestFrom } from 'rxjs/operators';
-import { buildings, buildingsByKey, gameFromScratch, resources, resourcesByKey } from '../../database';
+import { map, switchMap } from 'rxjs/operators';
+import { resourcesByKey } from '../../database';
 import { BackgroundActionsService } from '../../services/background-actions/background-actions.service';
 
 @Component({
@@ -33,16 +33,16 @@ export class ColonyComponent implements OnInit {
             const selectedResource = params.get('selectedResource');
             return datas.showableElements.buildings
               // TODO optimize it with precalculated datas
-              .filter((building) => buildingsByKey[building].produce[selectedResource] !== undefined)
+              .filter((building) => building.produce[selectedResource] !== undefined)
               .map((building): IBuildingToShow => {
-                const cost: IBuildingToShowCost[] = Object.keys(buildingsByKey[building].cost).map((costKey): IBuildingToShowCost => ({
+                const cost: IBuildingToShowCost[] = Object.keys(building.cost).map((costKey): IBuildingToShowCost => ({
                   resource: resourcesByKey[costKey],
-                  count: buildingsByKey[building].cost[costKey],
+                  count: building.cost[costKey],
                 }));
 
                 return {
-                  count: datas.buildings[building] || 0,
-                  type: buildingsByKey[building],
+                  count: datas.buildings[building.name] || 0,
+                  type: building,
                   cost,
                 };
               });

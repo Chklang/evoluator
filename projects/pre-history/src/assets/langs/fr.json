@@ -6,7 +6,8 @@
         },
         "menu": {
             "Colony": "Colonie",
-            "Lang": "Langue"
+            "Lang": "Langue",
+            "Research": "Recherches"
         },
         "build": "Construire",
         "resources": {
@@ -23,6 +24,9 @@
         "buildings": {
             "Scierie": {
                 "description": "Bâtiment de découpe du bois"
+            },
+            "Ferme": {
+                "description": "Champs de production de nourriture"
             }
         }
     }
