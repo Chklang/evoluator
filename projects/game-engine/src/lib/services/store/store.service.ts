@@ -136,15 +136,21 @@ export class StoreService {
     Object.keys(game.calculated.production).forEach((resource) => {
       switch (this.resourcesByKey[resource].growType) {
         case 'EXPONENTIAL':
-          game.resources[resource].quantity = Math.round(
-            (game.resources[resource].quantity * Math.pow(game.calculated.production[resource], diff) + Number.EPSILON) * 1_000
-          ) / 1000;
+          Math.min(
+            game.resources[resource].max,
+            game.resources[resource].quantity = Math.round(
+              (game.resources[resource].quantity * Math.pow(game.calculated.production[resource], diff) + Number.EPSILON) * 1_000
+            ) / 1000
+          );
           break;
         case 'CLASSIC':
         default:
-          game.resources[resource].quantity = Math.round(
-            (game.resources[resource].quantity + (game.calculated.production[resource] * diff) + Number.EPSILON) * 1_000
-          ) / 1000;
+          Math.min(
+            game.resources[resource].max,
+            game.resources[resource].quantity = Math.round(
+              (game.resources[resource].quantity + (game.calculated.production[resource] * diff) + Number.EPSILON) * 1_000
+            ) / 1000
+          );
           break;
       }
     });
