@@ -2,8 +2,10 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { ColonyComponent } from './components/colony/colony.component';
 import { ResearchsComponent } from './components/researchs/researchs.component';
+import { ResearchsGuard } from './components/researchs/researchs.guard';
 
 const routes: Routes = [
+  { path: '', redirectTo: '/colony', pathMatch: 'full' },
   {
     path: 'colony',
     component: ColonyComponent,
@@ -15,7 +17,9 @@ const routes: Routes = [
   {
     path: 'researchs',
     component: ResearchsComponent,
+    canActivate: [ResearchsGuard],
   },
+  { path: '**', redirectTo: '/colony' }
 ];
 
 @NgModule({
