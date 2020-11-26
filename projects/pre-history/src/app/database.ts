@@ -70,7 +70,9 @@ export const buildings: IBuilding[] = [
             food: 1,
         },
         storage: {},
-        cost: {},
+        cost: {
+            wood: 10,
+        },
     },
 ];
 
@@ -126,4 +128,14 @@ buildings.forEach((building) => {
 export const resourcesByKey: Record<string, IResource> = {};
 resources.forEach((resource) => {
     resourcesByKey[resource.name] = resource;
+});
+
+export const featuresByKey: Record<string, IFeature> = {};
+features.forEach((feature) => {
+    featuresByKey[feature.name] = feature;
+});
+
+export const researchsByKey: Record<string, IResearch> = {};
+researchs.forEach((research) => {
+    researchsByKey[research.name] = research;
 });

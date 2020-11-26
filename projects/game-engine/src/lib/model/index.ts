@@ -1,5 +1,6 @@
 export * from './error-message';
 export * from './i-blocker';
+export * from './i-blocker-status';
 export * from './i-building';
 export * from './i-game';
 export * from './i-feature';

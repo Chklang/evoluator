@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { LangsService, StoreService } from 'game-engine';
+import { FeaturesService, LangsService, StoreService } from 'game-engine';
 import { AppComponent } from './app.component';
 import { BackgroundActionsService } from './services/background-actions/background-actions.service';
 
@@ -7,10 +7,12 @@ describe('AppComponent', () => {
   let storeService: StoreService;
   let langsService: LangsService;
   let backgroundAction: BackgroundActionsService;
+  let featureService: FeaturesService;
   beforeEach(async () => {
     storeService = {} as any;
     langsService = {} as any;
     backgroundAction = {} as any;
+    featureService = {} as any;
     await TestBed.configureTestingModule({
       declarations: [
         AppComponent
@@ -27,6 +29,10 @@ describe('AppComponent', () => {
         {
           provide: BackgroundActionsService,
           useValue: backgroundAction,
+        },
+        {
+          provide: FeaturesService,
+          useValue: featuresService,
         },
       ],
     }).compileComponents();

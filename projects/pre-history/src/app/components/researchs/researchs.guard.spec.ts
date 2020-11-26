@@ -1,17 +1,17 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { StoreService } from 'game-engine';
+import { FeaturesService } from 'game-engine';
 
 import { ResearchsGuard } from './researchs.guard';
 
 describe('ResearchsGuard', () => {
   let guard: ResearchsGuard;
   let router: Router;
-  let storeService: StoreService;
+  let featuresService: FeaturesService;
 
   beforeEach(() => {
     router = {} as any;
-    storeService = {} as any;
+    featuresService = {} as any;
     TestBed.configureTestingModule({
       providers: [
         {
@@ -19,8 +19,8 @@ describe('ResearchsGuard', () => {
           useValue: router,
         },
         {
-          provide: StoreService,
-          useValue: storeService,
+          provide: FeaturesService,
+          useValue: featuresService,
         },
       ]
     });

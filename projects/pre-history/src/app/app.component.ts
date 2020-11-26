@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
-import { LangsService, StoreService } from 'game-engine';
-import { buildings, resources, gameFromScratch, features, researchs } from './database';
+import { interval, Observable } from 'rxjs';
+import { FeaturesService, LangsService, StoreService } from 'game-engine';
+import { buildings, resources, gameFromScratch, features, researchs, featuresByKey } from './database';
 import { BackgroundActionsService } from './services/background-actions/background-actions.service';
-import { map, tap } from 'rxjs/operators';
+import { combineAll, map, switchMap, takeUntil, takeWhile, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -14,7 +14,8 @@ export class AppComponent implements OnInit {
 
   public canResearch: Observable<number>;
   public constructor(
-    private storeService: StoreService,
+    private readonly storeService: StoreService,
+    private readonly featureService: FeaturesService,
     public readonly langsService: LangsService,
     public readonly backgroundAction: BackgroundActionsService,
   ) { }
@@ -27,23 +28,24 @@ export class AppComponent implements OnInit {
       allResearchs: researchs,
       gameFromScratch,
     });
-    this.canResearch = this.storeService.datas$.pipe(
-      map((datas) => {
-        if (datas.showableElements.features.hasElement('Research')) {
+    let featureIsDeblocked = false;
+    this.canResearch = this.featureService.listenFeature(featuresByKey.Research).pipe(
+      switchMap((feature) => {
+        return interval(1000).pipe(
+          takeWhile(() => !featureIsDeblocked),
+          map(() => feature),
+        );
+      }),
+      map((showable) => {
+        if (showable.blockedUntil === +Infinity) {
+          return 0;
+        }
+        const value = showable.blockedUntil - Date.now();
+        if (value <= 0) {
+          featureIsDeblocked = true;
           return -1;
         }
-        let timeUnlock: number | undefined;
-        let currentUnlockFeature = datas.calculated.unlockFeature;
-        while (timeUnlock === undefined && currentUnlockFeature !== undefined) {
-          if (currentUnlockFeature.element.name === 'Research') {
-            timeUnlock = currentUnlockFeature.time;
-          }
-          currentUnlockFeature = currentUnlockFeature.nextUnlock;
-        }
-        if (timeUnlock !== undefined) {
-          return timeUnlock - Date.now();
-        }
-        return 0;
+        return value;
       }),
     );
     this.storeService.start();

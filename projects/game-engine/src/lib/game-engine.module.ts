@@ -8,6 +8,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { TimePipe } from './pipes/time/time.pipe';
 import { ProductionPipe } from './pipes/production/production.pipe';
 import { PercentagePipe } from './pipes/percentage/percentage.pipe';
+import { ResearchsService } from './services/researchs/researchs.service';
+import { FeaturesService } from './services';
 
 // Get base-href value
 export function getBaseUrl(): string {
@@ -26,6 +28,8 @@ export function getBaseUrl(): string {
   providers: [
     LangsService,
     StoreService,
+    ResearchsService,
+    FeaturesService,
     { provide: 'BASE_URL', useFactory: getBaseUrl, deps: [] }
   ],
   exports: [

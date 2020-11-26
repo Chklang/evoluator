@@ -10,6 +10,7 @@
             "Research": "Recherches"
         },
         "build": "Construire",
+        "research": "Rechercher",
         "cost": "Coût(s)",
         "bonus": "Bonus",
         "produce": "Production",

@@ -1,12 +1,12 @@
 <ul class="list-group">
-    <li class="list-group-item" *ngFor="let research of (researchsToShow$ | async); trackBy: researchTrackByFn">
+    <li class="list-group-item" *ngFor="let research of (researchsService.allShowableResearchs$ | async); trackBy: researchTrackByFn">
         <fieldset>
-            <legend>{{research.type.name}} : {{research.level}}</legend>
-            <p [tr]="'researchs.'+research.type.name+'.description'"></p>
+            <legend><span [tr]="'researchs.'+research.research.name+'.name'"></span> : {{research.level}}</legend>
+            <p [tr]="'researchs.'+research.research.name+'.description'"></p>
             <div>
                 <span tr>cost</span>
                 <ul>
-                    <li *ngFor="let resourceCost of research.cost">
+                    <li *ngFor="let resourceCost of research.costNextLevel">
                         <span [tr]="'resources.' + resourceCost.resource.name + '.name'"></span>
                         : {{resourceCost.count}}
                     </li>
@@ -15,13 +15,13 @@
             <div>
                 <span tr>bonus</span>
                 <ul>
-                    <li *ngFor="let resourceBonus of research.bonusResources">
+                    <li *ngFor="let resourceBonus of research.bonusResourceNextLevel">
                         <span [tr]="'resources.' + resourceBonus.resource.name + '.name'"></span>
                         : {{resourceBonus.count | percentage}}
                     </li>
                 </ul>
             </div>
-            <button class="btn btn-primary" (click)="backgroundAction.execute(storeService.research(research.type))"
+            <button class="btn btn-primary" (click)="backgroundAction.execute(storeService.research(research.research))"
                 tr>research</button>
         </fieldset>
     </li>

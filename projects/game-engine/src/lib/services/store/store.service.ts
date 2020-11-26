@@ -17,8 +17,10 @@ import {
   IResearch,
   createDictionnaryResearch
 } from '../../model';
+import { FeaturesService } from '../features/features.service';
+import { ResearchsService } from '../researchs/researchs.service';
 
-interface ICalculatedGameContext {
+export interface ICalculatedGameContext {
   allResources: Dictionnary<string, IResource>;
   allBuildings: Dictionnary<string, IBuilding>;
   allFeatures: Dictionnary<string, IFeature>;
@@ -37,7 +39,10 @@ export class StoreService {
   private resourcesByKey: Record<string, IResource> = {};
   private updateEventKey: any | undefined = undefined;
 
-  constructor() {
+  constructor(
+    private researchsService: ResearchsService,
+    private featuresService: FeaturesService,
+  ) {
     this.gameContext$.pipe(
       tap((context) => {
         context.allResources.forEach((resource) => {
@@ -48,7 +53,7 @@ export class StoreService {
         });
       }),
       switchMap((context) => {
-        this.datas$.next(this.updateShowableElements(context));
+        this.datas$.next(this.initShowableElements(context));
         return this.refreshDatas.pipe(
           switchMap(() => this.lock((oldDatas) => {
             const datas: IGame = this.cloneDatas(oldDatas);
@@ -89,7 +94,7 @@ export class StoreService {
     clearInterval(this.updateEventKey);
   }
 
-  private updateShowableElements(gameContext: ICalculatedGameContext): IGame {
+  private initShowableElements(gameContext: ICalculatedGameContext): IGame {
     const datas: IGame = JSON.parse(JSON.stringify(gameContext.gameFromScratch));
     datas.showableElements.buildings = createDictionnaryBuilding(
       gameContext.allBuildings.filter((building) => Object.keys(building.blockedBy).every((key) => {
@@ -106,11 +111,17 @@ export class StoreService {
         return false;
       }))
     );
+    datas.showableElements.features.forEach((feature => {
+      this.featuresService.setFeature(gameContext, feature, [], 0);
+    }));
     datas.showableElements.researchs = createDictionnaryResearch(
       gameContext.allResearchs.filter((research) => Object.keys(research.blockedBy || {}).every((key) => {
         return false;
       }))
     );
+    datas.showableElements.researchs.forEach((research => {
+      this.researchsService.setResearchLevel(gameContext, research, 0, [], 0);
+    }));
     return datas;
   }
 
@@ -369,6 +380,14 @@ export class StoreService {
     });
 
     // Calculate moment of next event for unlock each feature
+    this.updateAllFeatures(game, gameContext);
+    // Calculate moment of next event for unlock each research
+    this.updateAllResearchs(game, gameContext);
+
+    game.calculated.nextEvent = game.time + (nextEmptyOrFullStorage * 1000);
+  }
+
+  private updateAllFeatures(game: IGame, gameContext: ICalculatedGameContext): void {
     const featureToUnlock: IChainedUnlock<IFeature>[] = [];
     gameContext.allFeatures.forEach((feature) => {
       if (game.showableElements.features.hasElement(feature.name)) {
@@ -376,9 +395,11 @@ export class StoreService {
         return;
       }
       const blockedUntil = this.blockedUntil(game, gameContext, feature.blockedBy || []);
+      const timeBlocked = game.time + (blockedUntil.time * 1000);
+      this.featuresService.setFeature(gameContext, feature, blockedUntil.blockers, timeBlocked);
       featureToUnlock.push({
         element: feature,
-        time: game.time + (blockedUntil * 1000),
+        time: timeBlocked,
       });
     });
     featureToUnlock.sort((a, b) => a.time - b.time);
@@ -389,8 +410,9 @@ export class StoreService {
       previous.nextUnlock = current;
       return current;
     }, undefined);
+  }
 
-    // Calculate moment of next event for unlock each research
+  private updateAllResearchs(game: IGame, gameContext: ICalculatedGameContext): void {
     const researchToUnlock: IChainedUnlock<IResearch>[] = [];
     gameContext.allResearchs.forEach((research) => {
       if (game.showableElements.researchs.hasElement(research.name)) {
@@ -398,9 +420,11 @@ export class StoreService {
         return;
       }
       const blockedUntil = this.blockedUntil(game, gameContext, research.blockedBy || []);
+      const timeBlocked = game.time + (blockedUntil.time * 1000);
+      this.researchsService.setResearchLevel(gameContext, research, 0, blockedUntil.blockers, timeBlocked);
       researchToUnlock.push({
         element: research,
-        time: game.time + (blockedUntil * 1000),
+        time: timeBlocked,
       });
     });
     researchToUnlock.sort((a, b) => a.time - b.time);
@@ -411,12 +435,14 @@ export class StoreService {
       previous.nextUnlock = current;
       return current;
     }, undefined);
-
-    game.calculated.nextEvent = game.time + (nextEmptyOrFullStorage * 1000);
   }
 
-  private blockedUntil(game: IGame, gameContext: ICalculatedGameContext, blockers: IBlocker<any>[]): number {
-    const times = blockers.filter((blocker) => {
+  private blockedUntil(
+    game: IGame,
+    gameContext: ICalculatedGameContext,
+    blockers: IBlocker<any>[]
+  ): { time: number, blockers: IBlocker<any>[] } {
+    const blockersActual = blockers.filter((blocker) => {
       switch (blocker.type) {
         case 'building':
           return true;
@@ -434,7 +460,8 @@ export class StoreService {
           return false;
         }
       }
-    }).map((blocker) => {
+    });
+    const times = blockersActual.map((blocker) => {
       switch (blocker.type) {
         case 'building':
           return 0;
@@ -462,9 +489,9 @@ export class StoreService {
       }
     });
     if (times.length === 0) {
-      return 0;
+      return { time: 0, blockers: [] };
     }
-    return times.reduce((previous, current) => Math.min(previous, current), +Infinity);
+    return { time: times.reduce((previous, current) => Math.min(previous, current), +Infinity), blockers: blockersActual };
   }
 
   public build(building: IBuilding): Observable<void> {
@@ -498,7 +525,7 @@ export class StoreService {
   }
 
   public research(research: IResearch): Observable<void> {
-    return this.lock((oldDatas) => {
+    return this.lock((oldDatas, gameContext) => {
       const currentLevel = oldDatas.researchs[research.name] || 0;
       const costIsOk = Object.keys(research.cost).every((costKey) => {
         if (!oldDatas.resources[costKey]) {
@@ -521,12 +548,13 @@ export class StoreService {
       } else {
         datas.researchs[research.name]++;
       }
+      this.researchsService.setResearchLevel(gameContext, research, datas.researchs[research.name], [], 0);
       datas.calculated.nextEvent = 0;
       this.datas$.next(datas);
     });
   }
 
-  private lock<T>(callback: (datas: IGame) => Promise<T> | T): Observable<T> {
+  private lock<T>(callback: (datas: IGame, gameContext: ICalculatedGameContext) => Promise<T> | T): Observable<T> {
     let resolve;
     const newPromise = new Promise<void>((resolveParam) => {
       resolve = resolveParam;
@@ -540,9 +568,9 @@ export class StoreService {
       return newPromise;
     });
     return from(promiseWait).pipe(
-      withLatestFrom(this.datas$),
-      switchMap(([_, datas]): Promise<T> => {
-        return Promise.resolve().then(() => callback(datas));
+      withLatestFrom(this.datas$, this.gameContext$),
+      switchMap(([_, datas, context]): Promise<T> => {
+        return Promise.resolve().then(() => callback(datas, context));
       }),
       finalize(() => {
         resolve();
