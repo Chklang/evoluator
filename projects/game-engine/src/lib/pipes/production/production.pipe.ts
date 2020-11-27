@@ -8,7 +8,7 @@ export class ProductionPipe implements PipeTransform {
 
   transform(game: IGame, resource: IResource): string {
     const quantity = this.getQuantity(game, resource);
-    return this.formatNumber(quantity) + '/s';
+    return this.formatNumber(quantity) + ' <small class="c-second">/sec</small>';
   }
 
   private getQuantity(game: IGame, resource: IResource): number {

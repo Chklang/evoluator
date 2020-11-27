@@ -13,11 +13,11 @@ export class TimePipe implements PipeTransform {
     const secs = Math.floor(value / 1000);
     let result: string;
     if (hours) {
-      result = hours + ':' + this.setLength(minutes) + ':' + this.setLength(secs);
+      result =  this.setLength(hours) + ':' + this.setLength(minutes) + ':' + this.setLength(secs);
     } else if (minutes) {
-      result = minutes + ':' + this.setLength(secs);
+      result =  this.setLength(minutes) + ':' + this.setLength(secs);
     } else {
-      result = String(secs);
+      result = '00:' + this.setLength(secs);
     }
     return result;
   }

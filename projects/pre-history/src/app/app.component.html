@@ -9,12 +9,14 @@
         <li class="nav-item" dropdown>
             <a id="ddMenuLang" class="nav-link dropdown-toggle" dropdownToggle href (click)="false"
                 aria-controls="ddmMenuLang">
+                <span class="flag-icon mr-1" [ngClass]="'flag-icon-' + (langsService.currentCodeLang$ | async).id"></span>
                 <span tr>menu.Lang</span>
             </a>
             <div id="ddmMenuLang" class="dropdown-menu dropdown-menu-right" *dropdownMenu aria-labelledby="ddMenuLang">
                 <a *ngFor="let lang of (langsService.allLangs | async)" class="dropdown-item select-lang"
+                    [ngClass]="{active: (langsService.currentCodeLang$ | async).id == lang.id}"
                     (click)="backgroundAction.execute(langsService.changeLang(lang.id))">
-                    <span class="flag-icon flag-icon-squared" [ngClass]="'flag-icon-' + (lang.flag || lang.id)"></span>
+                    <span class="flag-icon mr-1" [ngClass]="'flag-icon-' + (lang.flag || lang.id)"></span>
                     {{lang.name}}
                 </a>
             </div>
@@ -28,16 +30,16 @@
     <ul class="nav nav-tabs">
         <li class="nav-item">
             <a class="nav-link" [routerLink]="['colony']" [routerLinkActive]="['active']">
-                <i class="h6 fa fa-home mr-1 icon-tab"></i>
+                <i class="h6 fa fa-fw fa-home mr-1 icon-tab"></i>
                 <span tr>menu.Colony</span>
             </a>
         </li>
         <li *ngIf="(canResearch | async) as researchTime">
             <span [ngClass]="{linkIsDisabled: researchTime > 0}">
                 <a class="nav-link" [routerLink]="['researchs']" [routerLinkActive]="['active']">
-                    <i class="h6 fa fa-home mr-1 icon-tab"></i>
+                    <i class="h6 fa fa-fw  fa-flask mr-1 icon-tab"></i>
                     <span tr>menu.Research</span>
-                    <span *ngIf="researchTime > 0"> ({{researchTime | time}})</span>
+                    <span *ngIf="researchTime > 0" class="ml-2"> {{researchTime | time}}</span>
                 </a>
             </span>
         </li>

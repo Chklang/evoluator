@@ -4,18 +4,16 @@
         <ul class="list-group" style="width: 280px;">
             <a class="list-group-item list-group-item-action"
                 *ngFor="let resource of datas.showableElements.resources; trackBy: resourceTrackByFn"
-                [routerLink]="['/colony', resource.name]">
+                [routerLink]="['/colony', resource.name]" routerLinkActive="active">
                 <div class="row">
                     <div class="col d-flex align-items-center">
-                        <i *ngIf="datas.resources[resource]" class="h6 fa fa-fw mr-1 icon-resource"
-                            [ngClass]="'fa-' + datas.resources[resource].icon"></i>
+                        <i *ngIf="datas.resources[resource.name]" class="h6 fa fa-fw mr-1 icon-resource"
+                            [ngClass]="'fa-' + datas.resources[resource.name].icon"></i>
                         <span [tr]="'resources.' + resource.name + '.name'"></span>
                     </div>
-                    <div class="col-auto">
-                        ({{datas | production:resource}})
-                    </div>
-                    <div class="col-auto">
+                    <div class="col-auto text-right">
                         <span [innerHTML]="datas | resources:resource:true"></span>
+                        <div [innerHTML]="datas | production:resource"></div>
                     </div>
                 </div>
             </a>
@@ -23,43 +21,55 @@
     </div>
 
     <div class="col">
-        <ul class="list-group">
-            <li class="list-group-item" *ngFor="let building of (buildingsToShow$ | async); trackBy: buildingTrackByFn">
-                <fieldset>
-                    <legend><span [tr]="'buildings.'+building.building.name+'.name'"></span> : {{building.count}}</legend>
-                    <p [tr]="'buildings.'+building.building.name+'.description'"></p>
-                    <div *ngIf="building.costNextLevel.length > 0">
-                        <span tr>cost</span>
-                        <ul>
-                            <li *ngFor="let resourceCost of building.costNextLevel">
-                                <span [tr]="'resources.' + resourceCost.resource.name + '.name'"></span>
-                                : {{resourceCost.count}}
-                            </li>
-                        </ul>
+        <div class="row g-2">
+            <div class="col-auto" *ngFor="let building of (buildingsToShow | async); trackBy: buildingTrackByFn">
+                <div class="card card-unit">
+                    <div class="card-header">
+                        <img [src]="'assets/buildings/' + building.type.name + '.png'" class="card-img-top">
+                        <div class="card-title">
+                            <span [tr]="'buildings.'+building.type.name+'.name'"></span>
+                        </div>
+                        <div class="card-count">
+                            <small class="c-second">x</small>
+                            {{building.count}}
+                        </div>
                     </div>
-                    <div *ngIf="building.produceNextLevel.length > 0">
-                        <span tr>produce</span>
-                        <ul>
-                            <li *ngFor="let resourceProduce of building.produceNextLevel">
-                                <span [tr]="'resources.' + resourceProduce.resource.name + '.name'"></span>
-                                : {{resourceProduce.count}}
-                            </li>
-                        </ul>
+                    <div class="card-body py-0 d-flex align-items-center" style="height: 3rem;">
+                        <span [tr]="'buildings.'+building.type.name+'.description'"></span>
                     </div>
-                    <div *ngIf="building.storageNextLevel.length > 0">
-                        <span tr>storage</span>
-                        <ul>
-                            <li *ngFor="let resourceStorage of building.storageNextLevel">
-                                <span [tr]="'resources.' + resourceStorage.resource.name + '.name'"></span>
-                                : {{resourceStorage.count}}
-                            </li>
-                        </ul>
+                    <div *ngIf="building.cost.length > 0" class="card-body">
+                        <div class="small mb-1"><span class="c-second" tr>cost</span></div>
+                        <div class="row g-2">
+                            <div class="col-auto" *ngFor="let resourceCost of building.cost">
+                                <i class="fa fa-fw mr-1 icon-resource" [ngClass]="'fa-' + resourceCost.resource.icon"></i>
+                                <span class="c-first">{{resourceCost.count}}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div *ngIf="building.produce.length > 0" class="card-body">
+                        <div class="small mb-1"><span class="c-second" tr>produce</span></div>
+                        <div class="row g-2">
+                            <div class="col-auto" *ngFor="let resourceProduce of building.produce">
+                                <i class="fa fa-fw mr-1 icon-resource" [ngClass]="'fa-' + resourceProduce.resource.icon"></i>
+                                <span class="c-success mr-1">+{{resourceProduce.count}}</span>
+                                <small class="c-second">/sec</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div *ngIf="building.storage.length > 0" class="card-body">
+                        <div class="small mb-1"><span class="c-second" tr>storage</span></div>
+                        <div class="row g-2">
+                            <div class="col-auto" *ngFor="let resourceStorage of building.storage">
+                                <i class="fa fa-fw mr-1 icon-resource" [ngClass]="'fa-' + resourceStorage.resource.icon"></i>
+                                <span class="c-success">+{{resourceStorage.count}}</span>
+                            </div>
+                        </div>
                     </div>
                     <button class="btn btn-primary"
-                        (click)="backgroundAction.execute(storeService.build(building.building))" tr>build</button>
-                </fieldset>
-            </li>
-        </ul>
+                        (click)="backgroundAction.execute(storeService.build(building.type))" tr>build</button>
+                </div>
+            </div>
+        </div>
     </div>
 
 </div>

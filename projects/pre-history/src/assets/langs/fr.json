@@ -10,11 +10,10 @@
             "Research": "Recherches"
         },
         "build": "Construire",
-        "research": "Rechercher",
-        "cost": "Coût(s)",
-        "bonus": "Bonus",
-        "produce": "Production",
-        "storage": "Stockage",
+        "cost": "coût",
+        "bonus": "bonus",
+        "produce": "production",
+        "storage": "stockage",
         "resources": {
             "wood": {
                 "name": "Bois"
