@@ -1,25 +1,26 @@
 import { Injectable } from '@angular/core';
 import { Dictionnary } from 'arrayplus';
 import { BehaviorSubject, Observable, ReplaySubject, Subject } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
 import { IBlocker, IResearch, IResource } from '../../model';
 import { IBlockerStatus } from '../../model/i-blocker-status';
+import { IResourceCount } from '../../model/i-resource-count';
 import { ICalculatedGameContext } from '../store/store.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ResearchsService {
-  private showableResearchs$: Record<string, Subject<IShowableResearch>> = {};
   private allShowableResearchs: Dictionnary<string, IShowableResearch> = Dictionnary.create();
   public allShowableResearchs$: Subject<Dictionnary<string, IShowableResearch>> = new BehaviorSubject(this.allShowableResearchs);
 
   constructor() { }
 
   public listenResearch(research: IResearch): Observable<IShowableResearch> {
-    if (!this.showableResearchs$[research.name]) {
-      this.showableResearchs$[research.name] = new ReplaySubject(1);
-    }
-    return this.showableResearchs$[research.name];
+    return this.allShowableResearchs$.pipe(
+      map((allShowable) => allShowable.getElement(research.name)),
+      filter((showable) => showable !== undefined),
+    );
   }
 
   public setResearchLevel(
@@ -72,11 +73,6 @@ export class ResearchsService {
     };
     this.allShowableResearchs.addElement(research.name, showable);
     this.allShowableResearchs$.next(this.allShowableResearchs);
-    if (!this.showableResearchs$[research.name]) {
-      this.showableResearchs$[research.name] = new BehaviorSubject(showable);
-    } else {
-      this.showableResearchs$[research.name].next(showable);
-    }
   }
 
   private dict<T, U extends string>(values: T[], getKey: (e: T) => U): Dictionnary<U, T> {
@@ -98,9 +94,4 @@ export interface IShowableResearch {
   bonusBuildingCostsCurrentLevel: Dictionnary<string, IResourceCount>;
   bonusBuildingCostsNextLevel: Dictionnary<string, IResourceCount>;
   blockersStatus: IBlockerStatus[];
-}
-
-export interface IResourceCount {
-  resource: IResource;
-  count: number;
 }

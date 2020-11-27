@@ -17,6 +17,7 @@ import {
   IResearch,
   createDictionnaryResearch
 } from '../../model';
+import { BuildingsService } from '../buildings/buildings.service';
 import { FeaturesService } from '../features/features.service';
 import { ResearchsService } from '../researchs/researchs.service';
 
@@ -42,6 +43,7 @@ export class StoreService {
   constructor(
     private researchsService: ResearchsService,
     private featuresService: FeaturesService,
+    private buildingsService: BuildingsService,
   ) {
     this.gameContext$.pipe(
       tap((context) => {
@@ -101,6 +103,9 @@ export class StoreService {
         return false;
       }))
     );
+    datas.showableElements.buildings.forEach((building => {
+      this.buildingsService.setBuildingCount(gameContext, building, 0, [], 0);
+    }));
     datas.showableElements.resources = createDictionnaryResource(
       gameContext.allResources.filter((resource) => Object.keys(resource.blockedBy).every((key) => {
         return false;
@@ -168,6 +173,10 @@ export class StoreService {
     while (game.calculated.unlockResearch && game.calculated.unlockResearch.time < now) {
       game.showableElements.researchs.addElement(game.calculated.unlockResearch.element.name, game.calculated.unlockResearch.element);
       game.calculated.unlockResearch = game.calculated.unlockResearch.nextUnlock;
+    }
+    while (game.calculated.unlockBuilding && game.calculated.unlockBuilding.time < now) {
+      game.showableElements.buildings.addElement(game.calculated.unlockBuilding.element.name, game.calculated.unlockBuilding.element);
+      game.calculated.unlockBuilding = game.calculated.unlockBuilding.nextUnlock;
     }
     game.time = now;
   }
@@ -383,6 +392,8 @@ export class StoreService {
     this.updateAllFeatures(game, gameContext);
     // Calculate moment of next event for unlock each research
     this.updateAllResearchs(game, gameContext);
+    // Calculate moment of next event for unlock each building
+    this.updateAllBuildings(game, gameContext);
 
     game.calculated.nextEvent = game.time + (nextEmptyOrFullStorage * 1000);
   }
@@ -429,6 +440,31 @@ export class StoreService {
     });
     researchToUnlock.sort((a, b) => a.time - b.time);
     game.calculated.unlockResearch = researchToUnlock.reduce((previous, current) => {
+      if (!previous) {
+        return current;
+      }
+      previous.nextUnlock = current;
+      return current;
+    }, undefined);
+  }
+
+  private updateAllBuildings(game: IGame, gameContext: ICalculatedGameContext): void {
+    const buildingsToUnlock: IChainedUnlock<IBuilding>[] = [];
+    gameContext.allBuildings.forEach((building) => {
+      if (game.showableElements.buildings.hasElement(building.name)) {
+        // Already unlocked
+        return;
+      }
+      const blockedUntil = this.blockedUntil(game, gameContext, building.blockedBy || []);
+      const timeBlocked = game.time + (blockedUntil.time * 1000);
+      this.buildingsService.setBuildingCount(gameContext, building, 0, blockedUntil.blockers, timeBlocked);
+      buildingsToUnlock.push({
+        element: building,
+        time: timeBlocked,
+      });
+    });
+    buildingsToUnlock.sort((a, b) => a.time - b.time);
+    game.calculated.unlockBuilding = buildingsToUnlock.reduce((previous, current) => {
       if (!previous) {
         return current;
       }
@@ -495,7 +531,7 @@ export class StoreService {
   }
 
   public build(building: IBuilding): Observable<void> {
-    return this.lock((oldDatas) => {
+    return this.lock((oldDatas, gameContext) => {
       const currentLevel = oldDatas.buildings[building.name] || 0;
       const costIsOk = Object.keys(building.cost).every((costKey) => {
         if (!oldDatas.resources[costKey]) {
@@ -519,6 +555,7 @@ export class StoreService {
       } else {
         datas.buildings[building.name]++;
       }
+      this.buildingsService.setBuildingCount(gameContext, building, datas.buildings[building.name], [], 0);
       datas.calculated.nextEvent = 0;
       this.datas$.next(datas);
     });

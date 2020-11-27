@@ -6,4 +6,5 @@ export * from './i-game';
 export * from './i-feature';
 export * from './i-research';
 export * from './i-resource';
+export * from './i-resource-count';
 export * from './i-game-context';

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
-import { StoreService } from 'game-engine';
+import { BuildingsService, StoreService } from 'game-engine';
 import { of } from 'rxjs';
 import { BackgroundActionsService } from '../../services/background-actions/background-actions.service';
 
@@ -11,6 +11,7 @@ describe('ColonyComponent', () => {
   let storeService: StoreService;
   let activatedRoute: ActivatedRoute;
   let backgroundAction: BackgroundActionsService;
+  let buildingsService: BuildingsService;
   let fixture: ComponentFixture<ColonyComponent>;
 
   beforeEach(async () => {
@@ -19,6 +20,7 @@ describe('ColonyComponent', () => {
     } as any;
     storeService = {} as any;
     backgroundAction = {} as any;
+    buildingsService = {} as any;
     await TestBed.configureTestingModule({
       declarations: [ColonyComponent],
       providers: [
@@ -33,6 +35,10 @@ describe('ColonyComponent', () => {
         {
           provide: BackgroundActionsService,
           useValue: backgroundAction,
+        },
+        {
+          provide: BuildingsService,
+          useValue: buildingsService,
         },
       ],
     })

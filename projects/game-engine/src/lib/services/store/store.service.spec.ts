@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { BuildingsService } from '../buildings/buildings.service';
 import { FeaturesService } from '../features/features.service';
 import { ResearchsService } from '../researchs/researchs.service';
 
@@ -8,10 +9,12 @@ describe('StoreService', () => {
   let service: StoreService;
   let researchsService: ResearchsService;
   let featuresService: FeaturesService;
+  let buildingsService: BuildingsService;
 
   beforeEach(() => {
     researchsService = {} as any;
     featuresService = {} as any;
+    buildingsService = {} as any;
     TestBed.configureTestingModule({
       providers: [
         {
@@ -21,6 +24,10 @@ describe('StoreService', () => {
         {
           provide: FeaturesService,
           useValue: featuresService,
+        },
+        {
+          provide: BuildingsService,
+          useValue: buildingsService,
         },
       ]
     });

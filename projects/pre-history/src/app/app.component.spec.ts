@@ -7,12 +7,12 @@ describe('AppComponent', () => {
   let storeService: StoreService;
   let langsService: LangsService;
   let backgroundAction: BackgroundActionsService;
-  let featureService: FeaturesService;
+  let featuresService: FeaturesService;
   beforeEach(async () => {
     storeService = {} as any;
     langsService = {} as any;
     backgroundAction = {} as any;
-    featureService = {} as any;
+    featuresService = {} as any;
     await TestBed.configureTestingModule({
       declarations: [
         AppComponent

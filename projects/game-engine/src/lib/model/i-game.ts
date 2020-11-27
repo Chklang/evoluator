@@ -23,6 +23,7 @@ export interface IGameEvolutionStatus {
     production: Record<string, number>;
     unlockFeature?: IChainedUnlock<IFeature>;
     unlockResearch?: IChainedUnlock<IResearch>;
+    unlockBuilding?: IChainedUnlock<IBuilding>;
 }
 
 export interface IChainedUnlock<T> {
