@@ -10,6 +10,9 @@ a:hover { color: #ff6f00; }
 .h4, h4 { font-size: 1.5rem!important; }
 .h6, h6 { font-size: 1rem!important; }
 
+.row.g-2 { margin-right: -.25rem; margin-left: -.25rem; }
+.row.g-2 > div[class^="col"] { padding-right: .25rem; padding-left: .25rem; }
+
 .dropdown-toggle::after { vertical-align: middle; }
 
 .dropdown-menu {
@@ -23,7 +26,7 @@ a:hover { color: #ff6f00; }
     padding: .5rem 1rem;
     color: #eceff1;
 }
-.dropdown-item:hover {
+.dropdown-item:hover, .dropdown-item.active {
     background: #546e7a;
     color: #eceff1;
 }
@@ -63,12 +66,37 @@ a:hover { color: #ff6f00; }
     color: #eceff1;
 }
 
+.list-group-item.active {
+    color: #eceff1;
+    background: #455a64;
+    border-color: #455a64;
+}
+
+.card { background-color: #37474f; border: 1px solid rgba(0,0,0,.125); }
+.card-body { padding: .5rem 1rem; border-bottom: 1px solid rgba(0,0,0,.125); }
+.card-body:last-child { border-bottom: 0; }
+
+.card-unit { width: 225px; margin-bottom: .5rem; }
+.card-unit .card-header { position: relative; padding: 0; }
+.card-unit .card-img-top { height: 5rem; }
+.card-unit .card-title { position: absolute; bottom: 0; left: 0; background: rgba(0,0,0,.25); margin-bottom: 0; padding: .25em .5em; border-radius: 0 .25rem 0 0; color: #fff; font-size: 1rem; }
+.card-unit .card-count { position: absolute; top: 0; right: 0; background: rgba(0,0,0,.25); padding: .25em .5em; border-radius: 0 .25rem 0 .25rem; color: #fff; }
+.card-unit .btn-primary { border-radius: 0 0 .25rem .25rem; }
+
+.btn { font-size: .75rem; padding: .5rem 1rem; }
+
+.btn-primary { color: #ffc107; background-color: #455a64; border-color: #455a64; }
+.btn-primary:hover { color: #000; background-color: #ffc107; border-color: #ffc107; }
+
+.flag-icon { background-size: cover; border-radius: .125rem; }
+
 .icon-tab { color: #26a69a; background: -webkit-linear-gradient(#26a69a, #009688); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .icon-brand { color: #ffc107; background: -webkit-linear-gradient(#ffc107, #ff6f00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .icon-resource {  color: #ab47bc; background: -webkit-linear-gradient(#ab47bc, #ba68c8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
 .c-first { color: #fff!important; }
 .c-second { color: #90a4ae!important; }
+.c-success { color: #0f0!important; }
 
 .linkIsDisabled {
     cursor: not-allowed;

@@ -24,7 +24,7 @@ interface ILangDictionnary {
 })
 export class LangsService {
 
-  private readonly currentCodeLang$: Subject<ILangRefEntry> = new ReplaySubject(1);
+  public readonly currentCodeLang$: Subject<ILangRefEntry> = new ReplaySubject(1);
   private readonly currentTranslation$: Observable<ILangDictionnary>;
   private readonly cacheLangs: { [key: string]: ILangDictionnary } = {};
   public readonly allLangs: Observable<ILangRefFile>;
