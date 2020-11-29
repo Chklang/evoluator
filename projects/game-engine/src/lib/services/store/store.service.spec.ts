@@ -3,6 +3,7 @@ import { BuildingsService } from '../buildings/buildings.service';
 import { ConfigService } from '../config/config.service';
 import { FeaturesService } from '../features/features.service';
 import { ResearchsService } from '../researchs/researchs.service';
+import { TickService } from '../tick/tick.service';
 
 import { StoreService } from './store.service';
 
@@ -12,12 +13,14 @@ describe('StoreService', () => {
   let featuresService: FeaturesService;
   let buildingsService: BuildingsService;
   let configService: ConfigService;
+  let tickService: TickService;
 
   beforeEach(() => {
     researchsService = {} as any;
     featuresService = {} as any;
     buildingsService = {} as any;
     configService = {} as any;
+    tickService = {} as any;
     TestBed.configureTestingModule({
       providers: [
         {
@@ -36,7 +39,11 @@ describe('StoreService', () => {
           provide: ConfigService,
           useValue: configService,
         },
-      ]
+        {
+          provide: TickService,
+          useValue: tickService,
+        },
+      ],
     });
     service = TestBed.inject(StoreService);
   });

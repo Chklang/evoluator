@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { from, Observable, ReplaySubject, Subject } from 'rxjs';
-import { finalize, switchMap, tap, withLatestFrom } from 'rxjs/operators';
+import { filter, finalize, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 import {
   IGame,
   IBlocker,
@@ -21,6 +21,7 @@ import { BuildingsService } from '../buildings/buildings.service';
 import { ConfigService } from '../config/config.service';
 import { FeaturesService } from '../features/features.service';
 import { ResearchsService } from '../researchs/researchs.service';
+import { TickService } from '../tick/tick.service';
 import { ICalculatedGameContext } from './i-calculated-game-context';
 
 @Injectable({
@@ -28,9 +29,7 @@ import { ICalculatedGameContext } from './i-calculated-game-context';
 })
 export class StoreService {
   public readonly datas$: Subject<IGame> = new ReplaySubject(1);
-  private readonly refreshDatas: Subject<void> = new ReplaySubject(1);
   private started = false;
-  private updateEventKey: any | undefined = undefined;
   private nextLock: Promise<void> = Promise.resolve();
 
   private gameContext$: Subject<ICalculatedGameContext> = new ReplaySubject(1);
@@ -41,6 +40,7 @@ export class StoreService {
     private featuresService: FeaturesService,
     private buildingsService: BuildingsService,
     private configService: ConfigService,
+    private tickService: TickService,
   ) {
     this.gameContext$.pipe(
       tap((context) => {
@@ -53,26 +53,12 @@ export class StoreService {
       }),
       switchMap((context) => {
         this.datas$.next(this.initShowableElements(context));
-        return this.refreshDatas.pipe(
+        return this.tickService.tick$.pipe(
+          filter(() => this.started),
           switchMap(() => this.lock((oldDatas, _, config) => {
-            if (!this.started) {
-              return;
-            }
-            if (this.updateEventKey) {
-              clearTimeout(this.updateEventKey);
-              this.updateEventKey = undefined;
-            }
-            const startedAt = Date.now();
             const datas: IGame = this.cloneDatas(oldDatas);
             this.updateGame(datas, context);
             this.datas$.next(datas);
-            const nextFrameAt = (1000 / config.framerate) + startedAt;
-            const endedAt = Date.now();
-            const nextTick = nextFrameAt - endedAt;
-            this.updateEventKey = setTimeout(() => {
-              this.updateEventKey = undefined;
-              this.refreshDatas.next();
-            }, nextTick);
           })),
         );
       }),
@@ -97,17 +83,10 @@ export class StoreService {
   }
 
   public start(): void {
-    if (this.updateEventKey) {
-      clearTimeout(this.updateEventKey);
-      this.updateEventKey = undefined;
-    }
     this.started = true;
-    this.refreshDatas.next();
   }
   public stop(): void {
     this.started = false;
-    clearTimeout(this.updateEventKey);
-    this.updateEventKey = undefined;
   }
 
   private initShowableElements(gameContext: ICalculatedGameContext): IGame {
