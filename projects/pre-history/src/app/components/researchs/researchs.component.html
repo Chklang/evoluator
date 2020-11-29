@@ -1,5 +1,6 @@
 <ul class="list-group">
-    <li class="list-group-item" *ngFor="let research of (researchsService.allShowableResearchs$ | async); trackBy: researchTrackByFn">
+    <li class="list-group-item"
+        *ngFor="let research of (researchsService.allShowableResearchs$ | async); trackBy: researchTrackByFn">
         <fieldset>
             <legend><span [tr]="'researchs.'+research.research.name+'.name'"></span> : {{research.level}}</legend>
             <p [tr]="'researchs.'+research.research.name+'.description'"></p>
@@ -7,8 +8,9 @@
                 <span tr>cost</span>
                 <ul>
                     <li *ngFor="let resourceCost of research.costNextLevel">
-                        <span [tr]="'resources.' + resourceCost.resource.name + '.name'"></span>
-                        : {{resourceCost.count}}
+                        <span [tr]="'resources.' + resourceCost.resource.name + '.name'"></span> :
+                        <span [ngClass]="{'c-error': (resourceCost.isOk$ | async) >= 0}"
+                            class="c-first">{{resourceCost.count}}</span>
                     </li>
                 </ul>
             </div>

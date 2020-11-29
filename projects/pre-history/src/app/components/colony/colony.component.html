@@ -42,7 +42,7 @@
                         <div class="row g-2">
                             <div class="col-auto" *ngFor="let resourceCost of building.costNextLevel">
                                 <i class="fa fa-fw mr-1 icon-resource" [ngClass]="'fa-' + resourceCost.resource.icon"></i>
-                                <span [ngClass]="{'c-error': datas.resources[resourceCost.resource.name].quantity < resourceCost.count}" class="c-first">{{resourceCost.count}}</span>
+                                <span [ngClass]="{'c-error': (resourceCost.isOk$ | async) >= 0}" class="c-first">{{resourceCost.count}}</span>
                             </div>
                         </div>
                     </div>

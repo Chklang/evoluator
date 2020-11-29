@@ -1,22 +1,27 @@
 import { Injectable } from '@angular/core';
 import { Dictionnary } from 'arrayplus';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import { BehaviorSubject, Observable, of, Subject } from 'rxjs';
+import { filter, map, shareReplay, takeWhile, tap } from 'rxjs/operators';
 import {
   IResource,
   IBuilding,
   IResourceCount,
   IBlocker,
-  IBlockerStatus
+  IBlockerStatus,
+  IResourceNeed,
+  IGame
 } from '../../model';
 import { ICalculatedGameContext } from '../store/i-calculated-game-context';
+import { TickService } from '../tick/tick.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BuildingsService {
 
-  constructor() { }
+  constructor(
+    private readonly tickService: TickService,
+  ) { }
   private allShowableBuildings: Dictionnary<string, IShowableBuilding> = Dictionnary.create();
   public allShowableBuildings$: Subject<Dictionnary<string, IShowableBuilding>> = new BehaviorSubject(this.allShowableBuildings);
 
@@ -42,15 +47,50 @@ export class BuildingsService {
     building: IBuilding,
     count: number,
     blockedBy: IBlocker<any>[],
-    blockedUntil: number
+    blockedUntil: number,
+    game: IGame,
   ): void {
     const showable: IShowableBuilding = {
       building,
       count,
-      costNextLevel: this.dict(Object.keys(building.cost).map((key): IResourceCount => {
+      costNextLevel: this.dict(Object.keys(building.cost).map((key): IResourceNeed => {
+        const countResourceNeeded = Math.ceil(building.cost[key] * Math.pow(1.2, count));
+        let isOk$: Observable<number>;
+        const countResourceActual = game.resources[key]?.quantity || 0;
+        if (countResourceNeeded <= countResourceActual) {
+          isOk$ = of(-1);
+        } else if ((game.calculated.production[key] || 0) <= 0) {
+          isOk$ = of(0);
+        } else {
+          let ressourceBlockedUntil: number;
+          switch (gameContext.allResources.getElement(key).growType) {
+            case 'EXPONENTIAL':
+              ressourceBlockedUntil = Math.log(countResourceNeeded / countResourceActual) /
+                Math.log(game.calculated.production[key]);
+              break;
+            case 'CLASSIC':
+            default:
+              ressourceBlockedUntil = (countResourceNeeded - countResourceActual) / game.calculated.production[key];
+              break;
+          }
+          ressourceBlockedUntil = ressourceBlockedUntil * 1000 + game.time;
+          let featureIsAccessible = false;
+          isOk$ = this.tickService.tick$.pipe(
+            map(() => ressourceBlockedUntil - Date.now()),
+            map((value) => (Math.ceil(value / 1000) * 1000) || -1), // Never 0, 0=not accessible
+            takeWhile(() => !featureIsAccessible),
+            tap((value) => {
+              if (value < 0) {
+                featureIsAccessible = true;
+              }
+            }),
+            shareReplay(1),
+          );
+        }
         return {
           resource: gameContext.allResources.getElement(key),
-          count: Math.ceil(building.cost[key] * Math.pow(1.2, count)),
+          count: countResourceNeeded,
+          isOk$,
         };
       }), (e) => e.resource.name),
       consumeCurrentLevel: this.dict(Object.keys(building.consume).map((key): IResourceCount => {
@@ -114,7 +154,7 @@ export interface IShowableBuilding {
   building: IBuilding;
   count: number;
   blockedUntil: number;
-  costNextLevel: Dictionnary<string, IResourceCount>;
+  costNextLevel: Dictionnary<string, IResourceNeed>;
   consumeCurrentLevel: Dictionnary<string, IResourceCount>;
   consumeNextLevel: Dictionnary<string, IResourceCount>;
   produceCurrentLevel: Dictionnary<string, IResourceCount>;

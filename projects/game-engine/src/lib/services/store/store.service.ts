@@ -97,7 +97,7 @@ export class StoreService {
       }))
     );
     datas.showableElements.buildings.forEach((building => {
-      this.buildingsService.setBuildingCount(gameContext, building, datas.buildings[building.name] || 0, [], 0);
+      this.buildingsService.setBuildingCount(gameContext, building, datas.buildings[building.name] || 0, [], 0, datas);
     }));
     datas.showableElements.resources = createDictionnaryResource(
       gameContext.allResources.filter((resource) => Object.keys(resource.blockedBy).every((key) => {
@@ -118,7 +118,7 @@ export class StoreService {
       }))
     );
     datas.showableElements.researchs.forEach((research => {
-      this.researchsService.setResearchLevel(gameContext, research, datas.researchs[research.name] || 0, [], 0);
+      this.researchsService.setResearchLevel(gameContext, research, datas.researchs[research.name] || 0, [], 0, datas);
     }));
     return datas;
   }
@@ -417,11 +417,13 @@ export class StoreService {
     gameContext.allResearchs.forEach((research) => {
       if (game.showableElements.researchs.hasElement(research.name)) {
         // Already unlocked
+        const count = game.researchs[research.name] || 0;
+        this.researchsService.setResearchLevel(gameContext, research, count, [], 0, game);
         return;
       }
       const blockedUntil = this.blockedUntil(game, gameContext, research.blockedBy || []);
       const timeBlocked = game.time + (blockedUntil.time * 1000);
-      this.researchsService.setResearchLevel(gameContext, research, 0, blockedUntil.blockers, timeBlocked);
+      this.researchsService.setResearchLevel(gameContext, research, 0, blockedUntil.blockers, timeBlocked, game);
       researchToUnlock.push({
         element: research,
         time: timeBlocked,
@@ -442,11 +444,13 @@ export class StoreService {
     gameContext.allBuildings.forEach((building) => {
       if (game.showableElements.buildings.hasElement(building.name)) {
         // Already unlocked
+        const count = game.buildings[building.name] || 0;
+        this.buildingsService.setBuildingCount(gameContext, building, count, [], 0, game);
         return;
       }
       const blockedUntil = this.blockedUntil(game, gameContext, building.blockedBy || []);
       const timeBlocked = game.time + (blockedUntil.time * 1000);
-      this.buildingsService.setBuildingCount(gameContext, building, 0, blockedUntil.blockers, timeBlocked);
+      this.buildingsService.setBuildingCount(gameContext, building, 0, blockedUntil.blockers, timeBlocked, game);
       buildingsToUnlock.push({
         element: building,
         time: timeBlocked,
@@ -544,7 +548,7 @@ export class StoreService {
       } else {
         datas.buildings[building.name]++;
       }
-      this.buildingsService.setBuildingCount(gameContext, building, datas.buildings[building.name], [], 0);
+      this.buildingsService.setBuildingCount(gameContext, building, datas.buildings[building.name], [], 0, datas);
       datas.calculated.nextEvent = 0;
       this.datas$.next(datas);
     });
@@ -574,7 +578,7 @@ export class StoreService {
       } else {
         datas.researchs[research.name]++;
       }
-      this.researchsService.setResearchLevel(gameContext, research, datas.researchs[research.name], [], 0);
+      this.researchsService.setResearchLevel(gameContext, research, datas.researchs[research.name], [], 0, datas);
       datas.calculated.nextEvent = 0;
       this.datas$.next(datas);
     });
