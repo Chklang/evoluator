@@ -8,7 +8,8 @@
         <li class="nav-item" dropdown>
             <a id="ddMenuLang" class="nav-link dropdown-toggle" dropdownToggle href (click)="false"
                 aria-controls="ddmMenuLang">
-                <span *ngIf="(langsService.currentCodeLang$ | async); let codeLang" class="flag-icon mr-1" [ngClass]="'flag-icon-' + codeLang.id"></span>
+                <span *ngIf="(langsService.currentCodeLang$ | async); let codeLang" class="flag-icon mr-1"
+                    [ngClass]="'flag-icon-' + codeLang.id"></span>
                 <span tr>menu.Lang</span>
             </a>
             <div id="ddmMenuLang" class="dropdown-menu dropdown-menu-right" *dropdownMenu aria-labelledby="ddMenuLang">
@@ -50,6 +51,8 @@
         </li>
     </ul>
 
-    <router-outlet></router-outlet>
-
+    <div class="main-game-container">
+        <div class="main-game"><router-outlet></router-outlet></div>
+        <div class="favorites"><app-favorites></app-favorites></div>
+    </div>
 </div>

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { BuildingsService, IShowableBuilding, StoreService } from 'game-engine';
+import { BuildingsService, FavoritesService, IShowableBuilding, StoreService } from 'game-engine';
 import { IResource } from 'projects/game-engine/src/lib/model';
 import { Observable, of } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
@@ -21,6 +21,7 @@ export class ColonyComponent implements OnInit {
     public readonly storeService: StoreService,
     public readonly backgroundAction: BackgroundActionsService,
     private readonly buildingsService: BuildingsService,
+    public readonly favoritesService: FavoritesService,
   ) { }
 
   public ngOnInit(): void {
@@ -35,7 +36,6 @@ export class ColonyComponent implements OnInit {
         }
         return this.buildingsService.listenBuildingByResource(resourcesByKey[selectedResource]);
       }),
-      tap((e) => console.log('Buildings : ', e)),
     );
   }
 

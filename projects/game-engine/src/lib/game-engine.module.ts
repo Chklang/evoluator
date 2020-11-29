@@ -11,6 +11,7 @@ import { PercentagePipe } from './pipes/percentage/percentage.pipe';
 import { ResearchsService } from './services/researchs/researchs.service';
 import { FeaturesService } from './services/features/features.service';
 import { ConfigService } from './services/config/config.service';
+import { FavoritesService } from './services/favorites/favorites.service';
 
 // Get base-href value
 export function getBaseUrl(): string {
@@ -32,6 +33,7 @@ export function getBaseUrl(): string {
     ResearchsService,
     FeaturesService,
     ConfigService,
+    FavoritesService,
     { provide: 'BASE_URL', useFactory: getBaseUrl, deps: [] }
   ],
   exports: [

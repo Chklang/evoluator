@@ -39,6 +39,29 @@ export class ResearchsService {
     blockedUntil: number,
     game: IGame,
   ): void {
+    const blockers = (research.blockedBy || []).map((blocker): IBlockerStatus => {
+      return {
+        blocker,
+        isOk: blockedBy.indexOf(blocker) === -1,
+      };
+    });
+    let timeBeforeUnlock: Observable<number>;
+    if (blockers.every((e) => e.isOk)) {
+      timeBeforeUnlock = new BehaviorSubject(-1);
+    } else {
+      let featureIsAccessible = false;
+      timeBeforeUnlock = this.tickService.tick$.pipe(
+        map(() => blockedUntil - Date.now()),
+        map((value) => (Math.ceil(value / 1000) * 1000) || -1), // Never 0, 0=not accessible
+        takeWhile(() => !featureIsAccessible),
+        tap((value) => {
+          if (value < 0) {
+            featureIsAccessible = true;
+          }
+        }),
+        shareReplay(1),
+      );
+    }
     const showable: IShowableResearch = {
       research,
       level,
@@ -63,14 +86,14 @@ export class ResearchsService {
               break;
           }
           ressourceBlockedUntil = ressourceBlockedUntil * 1000 + game.time;
-          let featureIsAccessible = false;
+          let researchCanBeResearched = false;
           isOk$ = this.tickService.tick$.pipe(
             map(() => ressourceBlockedUntil - Date.now()),
             map((value) => (Math.ceil(value / 1000) * 1000) || -1), // Never 0, 0=not accessible
-            takeWhile(() => !featureIsAccessible),
+            takeWhile(() => !researchCanBeResearched),
             tap((value) => {
               if (value < 0) {
-                featureIsAccessible = true;
+                researchCanBeResearched = true;
               }
             }),
             shareReplay(1),
@@ -106,13 +129,9 @@ export class ResearchsService {
           count: Math.ceil(research.bonusBuildingCosts[key] * Math.pow(1.2, level)),
         };
       }), (e) => e.resource.name),
-      blockersStatus: (research.blockedBy || []).map((blocker): IBlockerStatus => {
-        return {
-          blocker,
-          isOk: blockedBy.indexOf(blocker) === -1,
-        };
-      }),
+      blockersStatus: blockers,
       blockedUntil,
+      timeBeforeUnlock,
     };
     this.allShowableResearchs.addElement(research.name, showable);
     this.allShowableResearchs$.next(this.allShowableResearchs);
@@ -137,4 +156,5 @@ export interface IShowableResearch {
   bonusBuildingCostsCurrentLevel: Dictionnary<string, IResourceCount>;
   bonusBuildingCostsNextLevel: Dictionnary<string, IResourceCount>;
   blockersStatus: IBlockerStatus[];
+  timeBeforeUnlock: Observable<number>;
 }

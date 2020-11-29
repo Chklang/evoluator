@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { IGame, IResearch, IResource, IShowableResearch, ResearchsService, StoreService } from 'game-engine';
+import { FavoritesService, IGame, IResearch, IResource, IShowableResearch, ResearchsService, StoreService } from 'game-engine';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { resourcesByKey } from '../../database';
@@ -18,6 +18,7 @@ export class ResearchsComponent implements OnInit {
     public readonly storeService: StoreService,
     public readonly researchsService: ResearchsService,
     public readonly backgroundAction: BackgroundActionsService,
+    public readonly favoritesService: FavoritesService,
   ) {
     this.datas$ = this.storeService.datas$;
   }

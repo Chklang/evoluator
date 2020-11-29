@@ -18,6 +18,8 @@
             "max": "Valeur maximum attendue : %0",
             "required": "Une valeur est requise!"
         },
+        "remove": "Retirer",
+        "favorites": "Favoris",
         "build": "Construire",
         "research": "Rechercher",
         "cost": "coût",

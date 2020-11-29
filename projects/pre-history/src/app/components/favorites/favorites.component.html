@@ -1,0 +1,15 @@
+<fieldset>
+    <legend tr>favorites</legend>
+<ul>
+    <li *ngFor="let favorite of (favorites$ | async); trackBy: favoriteTrackByFn">
+        <div>
+            <span [tr]="favorite.name"></span>
+            <span *ngIf="(favorite.timeBeforeUnlock | async); let time">
+                <span *ngIf="time > 0">({{time | time}})</span>
+            </span>
+        </div>
+        <button (click)="favorite.action()" [disabled]="(favorite.timeBeforeUnlock | async) > 0" [tr]="favorite.buttonText"></button>
+        <button (click)="favorite.remove()" tr="remove"></button>
+    </li>
+</ul>
+</fieldset>

@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ResearchsService, StoreService } from 'game-engine';
+import { FavoritesService, ResearchsService, StoreService } from 'game-engine';
 import { BackgroundActionsService } from '../../services/background-actions/background-actions.service';
 
 import { ResearchsComponent } from './researchs.component';
@@ -10,11 +10,13 @@ describe('ResearchsComponent', () => {
   let storeService: StoreService;
   let researchsService: ResearchsService;
   let backgroundActionsService: BackgroundActionsService;
+  let favoritesService: FavoritesService;
 
   beforeEach(async () => {
     storeService = {} as any;
     researchsService = {} as any;
     backgroundActionsService = {} as any;
+    favoritesService = {} as any;
     await TestBed.configureTestingModule({
       declarations: [ ResearchsComponent ],
       providers: [
@@ -29,6 +31,10 @@ describe('ResearchsComponent', () => {
         {
           provide: BackgroundActionsService,
           useValue: backgroundActionsService,
+        },
+        {
+          provide: FavoritesService,
+          useValue: favoritesService,
         },
       ],
     })

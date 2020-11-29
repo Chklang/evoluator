@@ -18,6 +18,8 @@
             "max": "Max value : %0",
             "required": "Value is required!"
         },
+        "remove": "Remove",
+        "favorites": "Favorites",
         "build": "Build",
         "research": "Research",
         "cost": "Cost(s)",

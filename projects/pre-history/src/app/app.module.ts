@@ -11,6 +11,7 @@ import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { ResearchsComponent } from './components/researchs/researchs.component';
 import { ConfigComponent } from './components/config/config.component';
 import { ReactiveFormsModule } from '@angular/forms';
+import { FavoritesComponent } from './components/favorites/favorites.component';
 
 @NgModule({
   declarations: [
@@ -18,6 +19,7 @@ import { ReactiveFormsModule } from '@angular/forms';
     ColonyComponent,
     ResearchsComponent,
     ConfigComponent,
+    FavoritesComponent,
   ],
   imports: [
     BrowserModule,

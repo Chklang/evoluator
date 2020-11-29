@@ -1,3 +1,16 @@
 .select-lang {
     cursor: pointer;
 }
+
+.main-game-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.main-game {
+    flex-grow: 1;
+}
+
+.favorites {
+    width: 200px;
+}

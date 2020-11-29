@@ -50,6 +50,29 @@ export class BuildingsService {
     blockedUntil: number,
     game: IGame,
   ): void {
+    const blockers = (building.blockedBy || []).map((blocker): IBlockerStatus => {
+      return {
+        blocker,
+        isOk: blockedBy.indexOf(blocker) === -1,
+      };
+    });
+    let timeBeforeUnlock: Observable<number>;
+    if (blockers.every((e) => e.isOk)) {
+      timeBeforeUnlock = new BehaviorSubject(-1);
+    } else {
+      let featureIsAccessible = false;
+      timeBeforeUnlock = this.tickService.tick$.pipe(
+        map(() => blockedUntil - Date.now()),
+        map((value) => (Math.ceil(value / 1000) * 1000) || -1), // Never 0, 0=not accessible
+        takeWhile(() => !featureIsAccessible),
+        tap((value) => {
+          if (value < 0) {
+            featureIsAccessible = true;
+          }
+        }),
+        shareReplay(1),
+      );
+    }
     const showable: IShowableBuilding = {
       building,
       count,
@@ -74,14 +97,14 @@ export class BuildingsService {
               break;
           }
           ressourceBlockedUntil = ressourceBlockedUntil * 1000 + game.time;
-          let featureIsAccessible = false;
+          let buildingCanBeBuilt = false;
           isOk$ = this.tickService.tick$.pipe(
             map(() => ressourceBlockedUntil - Date.now()),
             map((value) => (Math.ceil(value / 1000) * 1000) || -1), // Never 0, 0=not accessible
-            takeWhile(() => !featureIsAccessible),
+            takeWhile(() => !buildingCanBeBuilt),
             tap((value) => {
               if (value < 0) {
-                featureIsAccessible = true;
+                buildingCanBeBuilt = true;
               }
             }),
             shareReplay(1),
@@ -129,13 +152,9 @@ export class BuildingsService {
           count: building.storage[key] * (count + 1),
         };
       }), (e) => e.resource.name),
-      blockersStatus: (building.blockedBy || []).map((blocker): IBlockerStatus => {
-        return {
-          blocker,
-          isOk: blockedBy.indexOf(blocker) === -1,
-        };
-      }),
+      blockersStatus: blockers,
       blockedUntil,
+      timeBeforeUnlock,
     };
     this.allShowableBuildings.addElement(building.name, showable);
     this.allShowableBuildings$.next(this.allShowableBuildings);
@@ -162,4 +181,5 @@ export interface IShowableBuilding {
   storageCurrentLevel: Dictionnary<string, IResourceCount>;
   storageNextLevel: Dictionnary<string, IResourceCount>;
   blockersStatus: IBlockerStatus[];
+  timeBeforeUnlock: Observable<number>;
 }

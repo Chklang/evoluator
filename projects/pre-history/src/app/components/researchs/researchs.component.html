@@ -2,7 +2,10 @@
     <li class="list-group-item"
         *ngFor="let research of (researchsService.allShowableResearchs$ | async); trackBy: researchTrackByFn">
         <fieldset>
-            <legend><span [tr]="'researchs.'+research.research.name+'.name'"></span> : {{research.level}}</legend>
+            <legend>
+                <span [tr]="'researchs.'+research.research.name+'.name'"></span> : {{research.level}}
+                <button (click)="favoritesService.addResearchInFavorites(research.research)">Favorites</button>
+            </legend>
             <p [tr]="'researchs.'+research.research.name+'.description'"></p>
             <div>
                 <span tr>cost</span>
