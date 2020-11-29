@@ -12,6 +12,8 @@ import { ResearchsComponent } from './components/researchs/researchs.component';
 import { ConfigComponent } from './components/config/config.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { FavoritesComponent } from './components/favorites/favorites.component';
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { environment } from '../environments/environment';
 
 @NgModule({
   declarations: [
@@ -28,6 +30,7 @@ import { FavoritesComponent } from './components/favorites/favorites.component';
     GameEngineModule,
     BrowserAnimationsModule,
     BsDropdownModule.forRoot(),
+    ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
   ],
   providers: [],
   bootstrap: [AppComponent]
