@@ -9,15 +9,19 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { ResearchsComponent } from './components/researchs/researchs.component';
+import { ConfigComponent } from './components/config/config.component';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
     AppComponent,
     ColonyComponent,
     ResearchsComponent,
+    ConfigComponent,
   ],
   imports: [
     BrowserModule,
+    ReactiveFormsModule,
     AppRoutingModule,
     GameEngineModule,
     BrowserAnimationsModule,

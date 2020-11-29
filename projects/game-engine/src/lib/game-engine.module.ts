@@ -9,7 +9,8 @@ import { TimePipe } from './pipes/time/time.pipe';
 import { ProductionPipe } from './pipes/production/production.pipe';
 import { PercentagePipe } from './pipes/percentage/percentage.pipe';
 import { ResearchsService } from './services/researchs/researchs.service';
-import { FeaturesService } from './services';
+import { FeaturesService } from './services/features/features.service';
+import { ConfigService } from './services/config/config.service';
 
 // Get base-href value
 export function getBaseUrl(): string {
@@ -30,6 +31,7 @@ export function getBaseUrl(): string {
     StoreService,
     ResearchsService,
     FeaturesService,
+    ConfigService,
     { provide: 'BASE_URL', useFactory: getBaseUrl, deps: [] }
   ],
   exports: [

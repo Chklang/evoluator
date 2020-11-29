@@ -33,7 +33,6 @@ export class ColonyComponent implements OnInit {
         if (!resourcesByKey[selectedResource]) {
           return of([]);
         }
-        console.log('Selected resource is OK', resourcesByKey[selectedResource]);
         return this.buildingsService.listenBuildingByResource(resourcesByKey[selectedResource]);
       }),
       tap((e) => console.log('Buildings : ', e)),

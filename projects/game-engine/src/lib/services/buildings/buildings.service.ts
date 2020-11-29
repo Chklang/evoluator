@@ -2,9 +2,14 @@ import { Injectable } from '@angular/core';
 import { Dictionnary } from 'arrayplus';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
-import { IBlocker, IBlockerStatus, IBuilding, IResource } from '../../model';
-import { IResourceCount } from '../../model/i-resource-count';
-import { ICalculatedGameContext } from '../store/store.service';
+import {
+  IResource,
+  IBuilding,
+  IResourceCount,
+  IBlocker,
+  IBlockerStatus
+} from '../../model';
+import { ICalculatedGameContext } from '../store/i-calculated-game-context';
 
 @Injectable({
   providedIn: 'root'
@@ -51,37 +56,37 @@ export class BuildingsService {
       consumeCurrentLevel: this.dict(Object.keys(building.consume).map((key): IResourceCount => {
         return {
           resource: gameContext.allResources.getElement(key),
-          count: Math.ceil(building.consume[key] * Math.pow(1.2, count - 1)),
+          count: building.produce[key] * count,
         };
       }), (e) => e.resource.name),
       consumeNextLevel: this.dict(Object.keys(building.consume).map((key): IResourceCount => {
         return {
           resource: gameContext.allResources.getElement(key),
-          count: Math.ceil(building.consume[key] * Math.pow(1.2, count)),
+          count: building.produce[key] * (count + 1),
         };
       }), (e) => e.resource.name),
       produceCurrentLevel: this.dict(Object.keys(building.produce).map((key): IResourceCount => {
         return {
           resource: gameContext.allResources.getElement(key),
-          count: Math.ceil(building.produce[key] * Math.pow(1.2, count - 1)),
+          count: building.produce[key] * count,
         };
       }), (e) => e.resource.name),
       produceNextLevel: this.dict(Object.keys(building.produce).map((key): IResourceCount => {
         return {
           resource: gameContext.allResources.getElement(key),
-          count: Math.ceil(building.produce[key] * Math.pow(1.2, count)),
+          count: building.produce[key] * (count + 1),
         };
       }), (e) => e.resource.name),
       storageCurrentLevel: this.dict(Object.keys(building.storage).map((key): IResourceCount => {
         return {
           resource: gameContext.allResources.getElement(key),
-          count: Math.ceil(building.storage[key] * Math.pow(1.2, count - 1)),
+          count: building.storage[key] * count,
         };
       }), (e) => e.resource.name),
       storageNextLevel: this.dict(Object.keys(building.storage).map((key): IResourceCount => {
         return {
           resource: gameContext.allResources.getElement(key),
-          count: Math.ceil(building.storage[key] * Math.pow(1.2, count)),
+          count: building.storage[key] * (count + 1),
         };
       }), (e) => e.resource.name),
       blockersStatus: (building.blockedBy || []).map((blocker): IBlockerStatus => {

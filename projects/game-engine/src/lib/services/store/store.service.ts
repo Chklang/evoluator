@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { Dictionnary } from 'arrayplus';
 import { from, Observable, ReplaySubject, Subject } from 'rxjs';
 import { finalize, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 import {
@@ -15,35 +14,33 @@ import {
   createDictionnaryFeature,
   IFeature,
   IResearch,
-  createDictionnaryResearch
+  createDictionnaryResearch,
+  IConfig
 } from '../../model';
 import { BuildingsService } from '../buildings/buildings.service';
+import { ConfigService } from '../config/config.service';
 import { FeaturesService } from '../features/features.service';
 import { ResearchsService } from '../researchs/researchs.service';
+import { ICalculatedGameContext } from './i-calculated-game-context';
 
-export interface ICalculatedGameContext {
-  allResources: Dictionnary<string, IResource>;
-  allBuildings: Dictionnary<string, IBuilding>;
-  allFeatures: Dictionnary<string, IFeature>;
-  allResearchs: Dictionnary<string, IResearch>;
-  gameFromScratch: IGame;
-}
 @Injectable({
   providedIn: 'root'
 })
 export class StoreService {
   public readonly datas$: Subject<IGame> = new ReplaySubject(1);
   private readonly refreshDatas: Subject<void> = new ReplaySubject(1);
+  private started = false;
+  private updateEventKey: any | undefined = undefined;
   private nextLock: Promise<void> = Promise.resolve();
 
   private gameContext$: Subject<ICalculatedGameContext> = new ReplaySubject(1);
   private resourcesByKey: Record<string, IResource> = {};
-  private updateEventKey: any | undefined = undefined;
 
   constructor(
     private researchsService: ResearchsService,
     private featuresService: FeaturesService,
     private buildingsService: BuildingsService,
+    private configService: ConfigService,
   ) {
     this.gameContext$.pipe(
       tap((context) => {
@@ -57,10 +54,25 @@ export class StoreService {
       switchMap((context) => {
         this.datas$.next(this.initShowableElements(context));
         return this.refreshDatas.pipe(
-          switchMap(() => this.lock((oldDatas) => {
+          switchMap(() => this.lock((oldDatas, _, config) => {
+            if (!this.started) {
+              return;
+            }
+            if (this.updateEventKey) {
+              clearTimeout(this.updateEventKey);
+              this.updateEventKey = undefined;
+            }
+            const startedAt = Date.now();
             const datas: IGame = this.cloneDatas(oldDatas);
             this.updateGame(datas, context);
             this.datas$.next(datas);
+            const nextFrameAt = (1000 / config.framerate) + startedAt;
+            const endedAt = Date.now();
+            const nextTick = nextFrameAt - endedAt;
+            this.updateEventKey = setTimeout(() => {
+              this.updateEventKey = undefined;
+              this.refreshDatas.next();
+            }, nextTick);
           })),
         );
       }),
@@ -86,14 +98,16 @@ export class StoreService {
 
   public start(): void {
     if (this.updateEventKey) {
-      clearInterval(this.updateEventKey);
+      clearTimeout(this.updateEventKey);
+      this.updateEventKey = undefined;
     }
-    this.updateEventKey = setInterval(() => {
-      this.refreshDatas.next();
-    }, 1000);
+    this.started = true;
+    this.refreshDatas.next();
   }
   public stop(): void {
-    clearInterval(this.updateEventKey);
+    this.started = false;
+    clearTimeout(this.updateEventKey);
+    this.updateEventKey = undefined;
   }
 
   private initShowableElements(gameContext: ICalculatedGameContext): IGame {
@@ -104,7 +118,7 @@ export class StoreService {
       }))
     );
     datas.showableElements.buildings.forEach((building => {
-      this.buildingsService.setBuildingCount(gameContext, building, 0, [], 0);
+      this.buildingsService.setBuildingCount(gameContext, building, datas.buildings[building.name] || 0, [], 0);
     }));
     datas.showableElements.resources = createDictionnaryResource(
       gameContext.allResources.filter((resource) => Object.keys(resource.blockedBy).every((key) => {
@@ -125,7 +139,7 @@ export class StoreService {
       }))
     );
     datas.showableElements.researchs.forEach((research => {
-      this.researchsService.setResearchLevel(gameContext, research, 0, [], 0);
+      this.researchsService.setResearchLevel(gameContext, research, datas.researchs[research.name] || 0, [], 0);
     }));
     return datas;
   }
@@ -150,18 +164,14 @@ export class StoreService {
         case 'EXPONENTIAL':
           game.resources[resource].quantity = Math.min(
             game.resources[resource].max,
-            Math.round(
-              (game.resources[resource].quantity * Math.pow(game.calculated.production[resource], diff) + Number.EPSILON) * 1_000
-            ) / 1000
+            (game.resources[resource].quantity * Math.pow(game.calculated.production[resource], diff) + Number.EPSILON)
           );
           break;
         case 'CLASSIC':
         default:
           game.resources[resource].quantity = Math.min(
             game.resources[resource].max,
-            Math.round(
-              (game.resources[resource].quantity + (game.calculated.production[resource] * diff) + Number.EPSILON) * 1_000
-            ) / 1000
+            (game.resources[resource].quantity + (game.calculated.production[resource] * diff) + Number.EPSILON)
           );
           break;
       }
@@ -395,7 +405,7 @@ export class StoreService {
     // Calculate moment of next event for unlock each building
     this.updateAllBuildings(game, gameContext);
 
-    game.calculated.nextEvent = game.time + (nextEmptyOrFullStorage * 1000);
+    game.calculated.nextEvent = game.time + Math.max(1, nextEmptyOrFullStorage * 1000);
   }
 
   private updateAllFeatures(game: IGame, gameContext: ICalculatedGameContext): void {
@@ -591,7 +601,7 @@ export class StoreService {
     });
   }
 
-  private lock<T>(callback: (datas: IGame, gameContext: ICalculatedGameContext) => Promise<T> | T): Observable<T> {
+  private lock<T>(callback: (datas: IGame, gameContext: ICalculatedGameContext, config: IConfig) => Promise<T> | T): Observable<T> {
     let resolve;
     const newPromise = new Promise<void>((resolveParam) => {
       resolve = resolveParam;
@@ -605,9 +615,9 @@ export class StoreService {
       return newPromise;
     });
     return from(promiseWait).pipe(
-      withLatestFrom(this.datas$, this.gameContext$),
-      switchMap(([_, datas, context]): Promise<T> => {
-        return Promise.resolve().then(() => callback(datas, context));
+      withLatestFrom(this.datas$, this.gameContext$, this.configService.config$),
+      switchMap(([_, datas, context, config]): Promise<T> => {
+        return Promise.resolve().then(() => callback(datas, context, config));
       }),
       finalize(() => {
         resolve();

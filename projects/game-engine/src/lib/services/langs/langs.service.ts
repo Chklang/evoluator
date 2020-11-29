@@ -2,7 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
 import { combineLatest, Observable, of, ReplaySubject, Subject } from 'rxjs';
 import { map, shareReplay, switchMap, tap } from 'rxjs/operators';
-import { ErrorMessage } from '../../model';
+import {
+  ErrorMessage
+} from '../../model';
 import { ILangRefEntry, ILangRefFile, } from '../../model/translation';
 
 interface ILangFile {

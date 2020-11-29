@@ -97,6 +97,7 @@ a:hover { color: #ff6f00; }
 .c-first { color: #fff!important; }
 .c-second { color: #90a4ae!important; }
 .c-success { color: #0f0!important; }
+.c-error { color: #f00!important; }
 
 .linkIsDisabled {
     cursor: not-allowed;
@@ -107,4 +108,8 @@ a:hover { color: #ff6f00; }
     display: inline-block;  /* For IE11/ MS Edge bug */
     pointer-events: none;
     text-decoration: none;
+}
+
+.invalid {
+    color: red;
 }

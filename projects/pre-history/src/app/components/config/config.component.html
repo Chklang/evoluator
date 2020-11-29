@@ -1,0 +1,22 @@
+<form [formGroup]="form" (ngSubmit)="save()">
+    <div>
+        <label [ngClass]="{invalid: !form.get('frameRate').valid}">
+            <span tr="config.chooseFramerate"></span>
+            <input type="number" formControlName="frameRate" />
+            <ul *ngIf="form.get('frameRate').errors; let errors">
+                <li *ngIf="errors.min; let min">
+                    <span tr="validators.min" [trParams]="{values: [min.min]}"></span>
+                </li>
+                <li *ngIf="errors.max; let max">
+                    <span tr="validators.max" [trParams]="{values: [max.max]}"></span>
+                </li>
+                <li *ngIf="errors.required">
+                    <span tr="validators.required"></span>
+                </li>
+            </ul>
+        </label>
+    </div>
+    <div>
+        <button type="submit" class="btn btn-primary" tr [disabled]="!form.valid">Save</button>
+    </div>
+</form>

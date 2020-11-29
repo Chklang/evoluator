@@ -7,7 +7,16 @@
         "menu": {
             "Colony": "Colonie",
             "Lang": "Langue",
-            "Research": "Recherches"
+            "Research": "Recherches",
+            "config": "Configuration"
+        },
+        "config": {
+            "chooseFramerate": "Images par seconde (entre 1 et 60) :"
+        },
+        "validators": {
+            "min": "Valeur minimum attendue : %0",
+            "max": "Valeur maximum attendue : %0",
+            "required": "Une valeur est requise!"
         },
         "build": "Construire",
         "research": "Rechercher",
@@ -15,6 +24,7 @@
         "bonus": "bonus",
         "produce": "production",
         "storage": "stockage",
+        "save": "Sauvegarder",
         "resources": {
             "wood": {
                 "name": "Bois"

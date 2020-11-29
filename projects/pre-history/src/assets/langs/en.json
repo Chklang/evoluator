@@ -7,7 +7,16 @@
         "menu": {
             "Lang": "Lang",
             "Colony": "Colony",
-            "Research": "Researchs"
+            "Research": "Researchs",
+            "config": "Configuration"
+        },
+        "config": {
+            "chooseFramerate": "Frame rate by sec (between 1 and 60):"
+        },
+        "validators": {
+            "min": "Min value : %0",
+            "max": "Max value : %0",
+            "required": "Value is required!"
         },
         "build": "Build",
         "research": "Research",
@@ -15,6 +24,7 @@
         "bonus": "Bonus",
         "produce": "Production",
         "storage": "Storage",
+        "save": "Save",
         "resources": {
             "wood": {
                 "name": "Wood"

@@ -1,11 +1,14 @@
 import { Injectable } from '@angular/core';
 import { Dictionnary } from 'arrayplus';
-import { BehaviorSubject, Observable, ReplaySubject, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
-import { IBlocker, IResearch, IResource } from '../../model';
-import { IBlockerStatus } from '../../model/i-blocker-status';
-import { IResourceCount } from '../../model/i-resource-count';
-import { ICalculatedGameContext } from '../store/store.service';
+import {
+  IBlocker,
+  IResearch,
+  IBlockerStatus,
+  IResourceCount
+} from '../../model';
+import { ICalculatedGameContext } from '../store/i-calculated-game-context';
 
 @Injectable({
   providedIn: 'root'

@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { BuildingsService } from '../buildings/buildings.service';
+import { ConfigService } from '../config/config.service';
 import { FeaturesService } from '../features/features.service';
 import { ResearchsService } from '../researchs/researchs.service';
 
@@ -10,11 +11,13 @@ describe('StoreService', () => {
   let researchsService: ResearchsService;
   let featuresService: FeaturesService;
   let buildingsService: BuildingsService;
+  let configService: ConfigService;
 
   beforeEach(() => {
     researchsService = {} as any;
     featuresService = {} as any;
     buildingsService = {} as any;
+    configService = {} as any;
     TestBed.configureTestingModule({
       providers: [
         {
@@ -28,6 +31,10 @@ describe('StoreService', () => {
         {
           provide: BuildingsService,
           useValue: buildingsService,
+        },
+        {
+          provide: ConfigService,
+          useValue: configService,
         },
       ]
     });

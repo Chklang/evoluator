@@ -1,8 +1,11 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, ReplaySubject, Subject } from 'rxjs';
-import { IBlocker, IFeature } from '../../model';
-import { IBlockerStatus } from '../../model/i-blocker-status';
-import { ICalculatedGameContext } from '../store/store.service';
+import {
+  IBlocker,
+  IFeature,
+  IBlockerStatus
+} from '../../model';
+import { ICalculatedGameContext } from '../store/i-calculated-game-context';
 
 @Injectable({
   providedIn: 'root'

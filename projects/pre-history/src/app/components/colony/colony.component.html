@@ -42,7 +42,7 @@
                         <div class="row g-2">
                             <div class="col-auto" *ngFor="let resourceCost of building.costNextLevel">
                                 <i class="fa fa-fw mr-1 icon-resource" [ngClass]="'fa-' + resourceCost.resource.icon"></i>
-                                <span class="c-first">{{resourceCost.count}}</span>
+                                <span [ngClass]="{'c-error': datas.resources[resourceCost.resource.name].quantity < resourceCost.count}" class="c-first">{{resourceCost.count}}</span>
                             </div>
                         </div>
                     </div>
@@ -51,6 +51,9 @@
                         <div class="row g-2">
                             <div class="col-auto" *ngFor="let resourceProduce of building.produceNextLevel">
                                 <i class="fa fa-fw mr-1 icon-resource" [ngClass]="'fa-' + resourceProduce.resource.icon"></i>
+                                <span *ngIf="building.produceCurrentLevel.getElement(resourceProduce.resource.name); let current">
+                                    <span class="c-error">+{{current.count}}</span> => 
+                                </span>
                                 <span class="c-success mr-1">+{{resourceProduce.count}}</span>
                                 <small class="c-second">/sec</small>
                             </div>
@@ -61,6 +64,9 @@
                         <div class="row g-2">
                             <div class="col-auto" *ngFor="let resourceStorage of building.storageNextLevel">
                                 <i class="fa fa-fw mr-1 icon-resource" [ngClass]="'fa-' + resourceStorage.resource.icon"></i>
+                                <span *ngIf="building.storageCurrentLevel.getElement(resourceStorage.resource.name); let current">
+                                    <span class="c-error">+{{current.count}}</span> => 
+                                </span>
                                 <span class="c-success">+{{resourceStorage.count}}</span>
                             </div>
                         </div>
