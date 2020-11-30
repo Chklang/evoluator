@@ -1,5 +1,5 @@
 import { Dictionnary } from 'arrayplus';
-import { IResearch, IResourceBlocker } from 'game-engine';
+import { IAchievement, IResearch, IResourceBlocker } from 'game-engine';
 import { IBuilding, IGame, IResource, IFeature } from 'game-engine';
 
 export const resources: IResource[] = [
@@ -79,7 +79,7 @@ export const buildings: IBuilding[] = [
 export const features: IFeature[] = [
     {
         name: 'Research', blockedBy: [
-            { type: 'resource', params: { name: 'population', quantity: 5}} as IResourceBlocker,
+            { type: 'resource', params: { name: 'population', quantity: 5 } } as IResourceBlocker,
         ],
     },
 ];
@@ -97,6 +97,29 @@ export const researchs: IResearch[] = [
     }
 ];
 
+export const achievements: IAchievement[] = [
+    {
+        name: 'createWood',
+        levels: [
+            {
+                level: 0, blockers: [
+                    { type: 'resourceTotal', params: { name: 'wood', quantity: 1000 } },
+                ]
+            },
+            {
+                level: 1, blockers: [
+                    { type: 'resourceTotal', params: { name: 'wood', quantity: 50000 } },
+                ]
+            },
+            {
+                level: 2, blockers: [
+                    { type: 'resourceTotal', params: { name: 'wood', quantity: 1_000_000 } },
+                ]
+            },
+        ]
+    }
+];
+
 export const gameFromScratch: IGame = {
     time: Date.now(),
     resources: {
@@ -108,16 +131,22 @@ export const gameFromScratch: IGame = {
     },
     researchs: {},
     favorites: [],
+    achievements: {},
+    resourcesTotal: {},
+    buildingsMax: {},
+    researchsMax: {},
     showableElements: {
         buildings: Dictionnary.create(),
         resources: Dictionnary.create(),
         features: Dictionnary.create(),
         researchs: Dictionnary.create(),
+        achievements: Dictionnary.create(),
     },
     calculated: {
         nextEvent: 0,
         production: {},
     },
+
 };
 
 

@@ -1,0 +1,21 @@
+<ul>
+    <li *ngFor="let achievement of (achievementsService.allShowableAchievements$ | async)">
+        <span [tr]="'achievements.' + achievement.achievement.name + '.name'"></span>
+        ({{achievement.level}})
+        <span *ngIf="achievement.nextLevels.getElement(achievement.level + 1); let nextLevel">
+            <span *ngIf="(nextLevel.timeBeforeUnlock | async); let timeBeforeUnlock">
+                <span *ngIf="timeBeforeUnlock > 0">
+                    ({{timeBeforeUnlock | time }})
+                </span>
+            </span>
+        </span>
+        <fieldset *ngIf="achievement.nextLevels.getElement(achievement.level + 1); let nextLevel">
+            <legend tr>cost</legend>
+            <ul>
+                <li *ngFor="let blocker of nextLevel.blockersStatus">
+                    <app-blocker-status [status]="blocker"></app-blocker-status>
+                </li>
+            </ul>
+        </fieldset>
+    </li>
+</ul>

@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { AchievementsService } from '../achievements/achievements.service';
 import { BuildingsService } from '../buildings/buildings.service';
 import { ConfigService } from '../config/config.service';
 import { FavoritesService } from '../favorites/favorites.service';
@@ -18,6 +19,7 @@ describe('StoreService', () => {
   let tickService: TickService;
   let persistentService: PersistentService;
   let favoritesService: FavoritesService;
+  let achievementsService: AchievementsService;
 
   beforeEach(() => {
     researchsService = {} as any;
@@ -27,6 +29,7 @@ describe('StoreService', () => {
     tickService = {} as any;
     persistentService = {} as any;
     favoritesService = {} as any;
+    achievementsService = {} as any;
     TestBed.configureTestingModule({
       providers: [
         {
@@ -56,6 +59,10 @@ describe('StoreService', () => {
         {
           provide: FavoritesService,
           useValue: favoritesService,
+        },
+        {
+          provide: AchievementsService,
+          useValue: achievementsService,
         },
       ],
     });

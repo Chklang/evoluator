@@ -1,3 +1,4 @@
+export * from './i-achievement';
 export * from './i-blocker';
 export * from './i-blocker-status';
 export * from './i-building';

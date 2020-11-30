@@ -8,7 +8,8 @@
             "Colony": "Colonie",
             "Lang": "Langue",
             "Research": "Recherches",
-            "config": "Configuration"
+            "config": "Configuration",
+            "achievements": "Succès"
         },
         "config": {
             "chooseFramerate": "Images par seconde (entre 1 et 60) :",
@@ -58,6 +59,18 @@
             "axe": {
                 "name": "Hâche",
                 "description": "L'amélioration des hâches est toujours une bonne idée :)"
+            }
+        },
+        "achievements": {
+            "createWood": {
+                "name": "Création de bois"
+            }
+        },
+        "blockers": {
+            "resourceTotal": {
+                "wood": {
+                    "name": "Quantité totale de bois généré depuis le début : %0"
+                }
             }
         }
     }

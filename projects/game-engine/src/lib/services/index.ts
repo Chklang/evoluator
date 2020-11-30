@@ -1,3 +1,4 @@
+export * from './achievements/achievements.service';
 export * from './buildings/buildings.service';
 export * from './config/config.service';
 export * from './favorites/favorites.service';

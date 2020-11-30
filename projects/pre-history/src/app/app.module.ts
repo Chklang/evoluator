@@ -14,6 +14,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { FavoritesComponent } from './components/favorites/favorites.component';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
+import { AchievementsComponent } from './components/achievements/achievements.component';
+import { BlockerStatusComponent } from './components/blocker-status/blocker-status.component';
 
 @NgModule({
   declarations: [
@@ -22,6 +24,8 @@ import { environment } from '../environments/environment';
     ResearchsComponent,
     ConfigComponent,
     FavoritesComponent,
+    AchievementsComponent,
+    BlockerStatusComponent,
   ],
   imports: [
     BrowserModule,

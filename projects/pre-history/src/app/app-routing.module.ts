@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
+import { AchievementsComponent } from './components/achievements/achievements.component';
 import { ColonyComponent } from './components/colony/colony.component';
 import { ConfigComponent } from './components/config/config.component';
 import { ResearchsComponent } from './components/researchs/researchs.component';
@@ -19,6 +20,10 @@ const routes: Routes = [
     path: 'researchs',
     component: ResearchsComponent,
     canActivate: [ResearchsGuard],
+  },
+  {
+    path: 'achievements',
+    component: AchievementsComponent,
   },
   {
     path: 'config',

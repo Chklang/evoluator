@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { FeaturesService, LangsService, StoreService } from 'game-engine';
-import { buildings, resources, gameFromScratch, features, researchs, featuresByKey } from './database';
+import { buildings, resources, gameFromScratch, features, researchs, featuresByKey, achievements } from './database';
 import { BackgroundActionsService } from './services/background-actions/background-actions.service';
 import { switchMap } from 'rxjs/operators';
 
@@ -26,6 +26,7 @@ export class AppComponent implements OnInit {
       allResources: resources,
       allFeatures: features,
       allResearchs: researchs,
+      allAchievements: achievements,
       gameFromScratch,
     });
     this.canResearch = this.featureService.listenFeature(featuresByKey.Research).pipe(

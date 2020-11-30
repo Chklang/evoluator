@@ -15,8 +15,13 @@ import {
   IFeature,
   IResearch,
   createDictionnaryResearch,
-  IConfig
+  IConfig,
+  createDictionnaryAchievements,
+  IAchievement,
+  IBlockerStatus,
+  IChainedUnlockWithLevel
 } from '../../model';
+import { AchievementsService } from '../achievements/achievements.service';
 import { BuildingsService } from '../buildings/buildings.service';
 import { ConfigService } from '../config/config.service';
 import { EFavoriteType, FavoritesService } from '../favorites/favorites.service';
@@ -45,6 +50,7 @@ export class StoreService {
     private tickService: TickService,
     private persistentService: PersistentService,
     private favoritesService: FavoritesService,
+    private achievementsService: AchievementsService,
   ) {
     this.gameContext$.pipe(
       tap((context) => {
@@ -67,6 +73,7 @@ export class StoreService {
               switchMap(() => this.lock((oldDatas) => {
                 const datas: IGame = this.cloneDatas(oldDatas);
                 this.updateGame(datas, context);
+                (window as any).cc = datas;
                 this.datas$.next(datas);
               })),
             );
@@ -78,7 +85,7 @@ export class StoreService {
 
   private cloneDatas(oldGame: IGame): IGame {
     const datas: IGame = JSON.parse(JSON.stringify(oldGame));
-    datas.calculated.nextEvent = oldGame.calculated.nextEvent;
+    datas.calculated = oldGame.calculated;
     datas.showableElements = oldGame.showableElements;
     return datas;
   }
@@ -89,6 +96,7 @@ export class StoreService {
       allFeatures: createDictionnaryFeature(context.allFeatures),
       allResources: createDictionnaryResource(context.allResources),
       allResearchs: createDictionnaryResearch(context.allResearchs),
+      allAchievements: createDictionnaryAchievements(context.allAchievements),
       gameFromScratch: context.gameFromScratch,
     });
   }
@@ -163,19 +171,25 @@ export class StoreService {
     }
     Object.keys(game.calculated.production).forEach((resource) => {
       switch (this.resourcesByKey[resource].growType) {
-        case 'EXPONENTIAL':
-          game.resources[resource].quantity = Math.min(
+        case 'EXPONENTIAL': {
+          const production = Math.min(
             game.resources[resource].max,
-            (game.resources[resource].quantity * Math.pow(game.calculated.production[resource], diff) + Number.EPSILON)
-          );
+            (game.resources[resource].quantity * Math.pow(game.calculated.production[resource], diff))
+          ) - game.resources[resource].quantity;
+          game.resources[resource].quantity += production;
+          game.resourcesTotal[resource] += production;
           break;
+        }
         case 'CLASSIC':
-        default:
-          game.resources[resource].quantity = Math.min(
+        default: {
+          const production = Math.min(
             game.resources[resource].max,
-            (game.resources[resource].quantity + (game.calculated.production[resource] * diff) + Number.EPSILON)
-          );
+            (game.resources[resource].quantity + (game.calculated.production[resource] * diff))
+          ) - game.resources[resource].quantity;
+          game.resources[resource].quantity += production;
+          game.resourcesTotal[resource] += production;
           break;
+        }
       }
     });
     while (game.calculated.unlockFeature && game.calculated.unlockFeature.time < now) {
@@ -189,6 +203,13 @@ export class StoreService {
     while (game.calculated.unlockBuilding && game.calculated.unlockBuilding.time < now) {
       game.showableElements.buildings.addElement(game.calculated.unlockBuilding.element.name, game.calculated.unlockBuilding.element);
       game.calculated.unlockBuilding = game.calculated.unlockBuilding.nextUnlock;
+    }
+    while (game.calculated.unlockAchievement && game.calculated.unlockAchievement.time < now) {
+      const achievement = game.calculated.unlockAchievement.element;
+      const level = game.calculated.unlockAchievement.level;
+      this.achievementsService.changeOnlyLevel(achievement, level);
+      game.achievements[achievement.name] = Math.max(game.achievements[achievement.name] || 0, level);
+      game.calculated.unlockAchievement = game.calculated.unlockAchievement.nextUnlock;
     }
     game.time = now;
   }
@@ -222,6 +243,7 @@ export class StoreService {
           max: resource.max,
           icon: resource.icon,
         };
+        game.resourcesTotal[resource.name] = 0;
       } else {
         game.resources[resource.name].max = resource.max;
       }
@@ -406,6 +428,8 @@ export class StoreService {
     this.updateAllResearchs(game, gameContext);
     // Calculate moment of next event for unlock each building
     this.updateAllBuildings(game, gameContext);
+    // Calculate moment of next event for unlock each achievement
+    this.updateAllAchievements(game, gameContext);
 
     game.calculated.nextEvent = game.time + Math.max(1, nextEmptyOrFullStorage * 1000);
   }
@@ -453,11 +477,11 @@ export class StoreService {
       });
     });
     researchToUnlock.sort((a, b) => a.time - b.time);
-    game.calculated.unlockResearch = researchToUnlock.reduce((previous, current) => {
-      if (!previous) {
-        return current;
+    game.calculated.unlockResearch = researchToUnlock.reduceRight((previous, current) => {
+      if (!current) {
+        return previous;
       }
-      previous.nextUnlock = current;
+      current.nextUnlock = previous;
       return current;
     }, undefined);
   }
@@ -480,11 +504,56 @@ export class StoreService {
       });
     });
     buildingsToUnlock.sort((a, b) => a.time - b.time);
-    game.calculated.unlockBuilding = buildingsToUnlock.reduce((previous, current) => {
-      if (!previous) {
-        return current;
+    game.calculated.unlockBuilding = buildingsToUnlock.reduceRight((previous, current) => {
+      if (!current) {
+        return previous;
       }
-      previous.nextUnlock = current;
+      current.nextUnlock = previous;
+      return current;
+    }, undefined);
+  }
+
+  private updateAllAchievements(game: IGame, gameContext: ICalculatedGameContext): void {
+    const achievementsToUnlock: IChainedUnlockWithLevel<IAchievement>[] = [];
+    gameContext.allAchievements.forEach((achievement) => {
+      let level = game.achievements[achievement.name] || 0;
+      if (level === achievement.levels.length) {
+        // Achievement already completed
+        this.achievementsService.setAchievementLevel(gameContext, achievement, level, [], [], game);
+        return;
+      }
+      const blockedUntilsNextLevels: IBlocker<any>[][] = [];
+      const timeBlockedNextLevels: number[] = [];
+      for (let i = level; i < achievement.levels.length; i++) {
+        const currentLevelOfAchievement = achievement.levels[i];
+        const blockedUntil = this.blockedUntil(game, gameContext, currentLevelOfAchievement.blockers || []);
+        if (blockedUntil.blockers.length === 0) {
+          level = i + 1;
+        } else {
+          const timeBlocked = game.time + (blockedUntil.time * 1000);
+          blockedUntilsNextLevels.push(blockedUntil.blockers);
+          timeBlockedNextLevels.push(timeBlocked);
+          achievementsToUnlock.push({
+            element: achievement,
+            time: timeBlocked,
+            level: i + 1,
+          });
+        }
+      }
+      game.achievements[achievement.name] = level;
+      this.achievementsService.setAchievementLevel(gameContext, achievement, level, blockedUntilsNextLevels, timeBlockedNextLevels, game);
+    });
+    achievementsToUnlock.sort((a, b) => {
+      if (a.time === b.time) {
+        return a.level - b.level;
+      }
+      return a.time - b.time;
+    });
+    game.calculated.unlockAchievement = achievementsToUnlock.reduceRight((previous, current) => {
+      if (!current) {
+        return previous;
+      }
+      current.nextUnlock = previous;
       return current;
     }, undefined);
   }
@@ -511,6 +580,17 @@ export class StoreService {
           }
           return false;
         }
+        case 'resourceTotal': {
+          const typedBlocker = blocker as IResourceBlocker;
+          if (!game.resourcesTotal[typedBlocker.params.name]) {
+            // Resource stocks are empty
+            return true;
+          }
+          if (game.resourcesTotal[typedBlocker.params.name] < typedBlocker.params.quantity) {
+            return true;
+          }
+          return false;
+        }
       }
     });
     const times = blockersActual.map((blocker) => {
@@ -527,15 +607,36 @@ export class StoreService {
           }
           const currentQuantity = game.resources[typedBlocker.params.name]?.quantity || 0;
           switch (gameContext.allResources.getElement(typedBlocker.params.name).growType) {
-            case 'CLASSIC':
-              const missing = typedBlocker.params.quantity - currentQuantity;
-              return missing / game.calculated.production[typedBlocker.params.name];
             case 'EXPONENTIAL':
               if (currentQuantity === 0) {
                 return +Infinity;
               }
               return Math.log(typedBlocker.params.quantity / currentQuantity) /
                 Math.log(game.calculated.production[typedBlocker.params.name]);
+            case 'CLASSIC':
+            default:
+              const missing = typedBlocker.params.quantity - currentQuantity;
+              return missing / game.calculated.production[typedBlocker.params.name];
+          }
+        }
+        case 'resourceTotal': {
+          const typedBlocker = blocker as IResourceBlocker;
+          if (!game.calculated.production[typedBlocker.params.name] || game.calculated.production[typedBlocker.params.name] < 0) {
+            // Resource stocks not grow up, it will never produce sufficient quantity
+            return +Infinity;
+          }
+          const currentQuantity = game.resourcesTotal[typedBlocker.params.name] || 0;
+          switch (gameContext.allResources.getElement(typedBlocker.params.name).growType) {
+            case 'EXPONENTIAL':
+              if (currentQuantity === 0) {
+                return +Infinity;
+              }
+              return Math.log(typedBlocker.params.quantity / currentQuantity) /
+                Math.log(game.calculated.production[typedBlocker.params.name]);
+            case 'CLASSIC':
+            default:
+              const missing = typedBlocker.params.quantity - currentQuantity;
+              return missing / game.calculated.production[typedBlocker.params.name];
           }
         }
       }
@@ -571,6 +672,7 @@ export class StoreService {
       } else {
         datas.buildings[building.name]++;
       }
+      datas.buildingsMax[building.name] = Math.max(datas.buildingsMax[building.name] || 0, datas.buildings[building.name]);
       this.buildingsService.setBuildingCount(gameContext, building, datas.buildings[building.name], [], 0, datas);
       datas.calculated.nextEvent = 0;
       this.datas$.next(datas);
@@ -602,6 +704,7 @@ export class StoreService {
       } else {
         datas.researchs[research.name]++;
       }
+      datas.researchsMax[research.name] = Math.max(datas.researchsMax[research.name] || 0, datas.researchs[research.name]);
       this.researchsService.setResearchLevel(gameContext, research, datas.researchs[research.name], [], 0, datas);
       datas.calculated.nextEvent = 0;
       this.datas$.next(datas);

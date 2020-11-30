@@ -1,5 +1,5 @@
 export interface IBlocker<IBlockerParams> {
-    type: 'resource' | 'building' | 'feature';
+    type: 'resource' | 'resourceTotal' | 'building' | 'feature';
     params: IBlockerParams;
 }
 
@@ -9,4 +9,19 @@ export interface IResourceParamsBlocker {
 }
 export interface IResourceBlocker extends IBlocker<IResourceParamsBlocker> {
     type: 'resource';
+}
+
+export interface IFeatureParamsBlocker {
+    name: string;
+}
+export interface IFeatureBlocker extends IBlocker<IFeatureParamsBlocker> {
+    type: 'feature';
+}
+
+export interface IBuildingParamsBlocker {
+    name: string;
+    quantity: number;
+}
+export interface IBuildingBlocker extends IBlocker<IBuildingParamsBlocker> {
+    type: 'building';
 }

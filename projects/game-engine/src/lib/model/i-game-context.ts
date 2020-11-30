@@ -1,3 +1,4 @@
+import { IAchievement } from './i-achievement';
 import { IBuilding } from './i-building';
 import { IFeature } from './i-feature';
 import { IGame } from './i-game';
@@ -9,5 +10,6 @@ export interface IGameContext {
     allBuildings: IBuilding[];
     allFeatures: IFeature[];
     allResearchs: IResearch[];
+    allAchievements: IAchievement[];
     gameFromScratch: IGame;
 }

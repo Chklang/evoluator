@@ -8,7 +8,8 @@
             "Lang": "Lang",
             "Colony": "Colony",
             "Research": "Researchs",
-            "config": "Configuration"
+            "config": "Configuration",
+            "achievements": "Achievements"
         },
         "config": {
             "chooseFramerate": "Frame rate by sec (between 1 and 60):",
@@ -58,6 +59,18 @@
             "axe": {
                 "name": "Axe",
                 "description": "Upgrade axe is always a good idea :)"
+            }
+        },
+        "achievements": {
+            "createWood": {
+                "name": "Wood cutter"
+            }
+        },
+        "blockers": {
+            "resourceTotal": {
+                "wood": {
+                    "name": "Total wood generated since game start : %0"
+                }
             }
         }
     }

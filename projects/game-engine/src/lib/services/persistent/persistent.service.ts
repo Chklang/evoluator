@@ -13,12 +13,16 @@ export class PersistentService {
 
   public save(game: IGame): Observable<IGame> {
     const result: IGameSerialized = {
-      version: 1,
+      version: 2,
       buildings: {},
       researchs: {},
       resources: {},
       features: [],
       favorites: [],
+      achievements: {},
+      buildingsMax: {},
+      researchsMax: {},
+      resourcesTotal: {},
       time: game.time,
     };
     game.showableElements.buildings.forEach((building) => {
@@ -33,7 +37,19 @@ export class PersistentService {
     game.showableElements.resources.forEach((resource) => {
       result.resources[resource.name] = game.resources[resource.name]?.quantity || 0;
     });
+    game.showableElements.achievements.forEach((achievement) => {
+      result.achievements[achievement.name] = game.achievements[achievement.name] || 0;
+    });
     result.favorites = game.favorites.map((favoriteName) => favoriteName); // Clone array
+    Object.keys(game.buildingsMax).forEach((buildingName) => {
+      result.buildingsMax[buildingName] = game.buildingsMax[buildingName];
+    });
+    Object.keys(game.researchsMax).forEach((researchName) => {
+      result.researchsMax[researchName] = game.researchsMax[researchName];
+    });
+    Object.keys(game.resourcesTotal).forEach((resourceName) => {
+      result.resourcesTotal[resourceName] = game.resourcesTotal[resourceName];
+    });
     localStorage.setItem('evoluator-save', JSON.stringify(result));
     return of(game);
   }
@@ -44,8 +60,19 @@ export class PersistentService {
         return of(gameContext.gameFromScratch);
       }
       const saved: IGameSerialized = JSON.parse(localStorage.getItem('evoluator-save'));
-      if (saved.version !== 1) {
-        return throwError('Game cannot be loaded');
+      switch (saved.version) {
+        case 1:
+          saved.buildingsMax = {};
+          saved.researchsMax = {};
+          saved.resourcesTotal = {};
+          saved.achievements = {};
+          // NO BREAK! execute updates of next versions
+          // tslint:disable-next-line:no-switch-case-fall-through
+        case 2:
+          // Current version, nothing to do
+          break;
+        default:
+          return throwError('Game cannot be loaded');
       }
       const game: IGame = {
         buildings: {},
@@ -56,11 +83,16 @@ export class PersistentService {
         researchs: {},
         resources: {},
         favorites: [],
+        achievements: {},
+        buildingsMax: {},
+        researchsMax: {},
+        resourcesTotal: {},
         showableElements: {
           buildings: Dictionnary.create(),
           features: Dictionnary.create(),
           researchs: Dictionnary.create(),
           resources: Dictionnary.create(),
+          achievements: Dictionnary.create(),
         },
         time: saved.time,
       };
@@ -83,7 +115,20 @@ export class PersistentService {
       saved.features.forEach((featureName) => {
         game.showableElements.features.addElement(featureName, gameContext.allFeatures.getElement(featureName));
       });
+      Object.keys(saved.achievements).forEach((achievementName) => {
+        game.achievements[achievementName] = saved.achievements[achievementName];
+        game.showableElements.achievements.addElement(achievementName, gameContext.allAchievements.getElement(achievementName));
+      });
       game.favorites = saved.favorites.map((favoriteName) => favoriteName); // Clone array
+      Object.keys(saved.buildingsMax).forEach((buildingName) => {
+        game.buildingsMax[buildingName] = saved.buildingsMax[buildingName];
+      });
+      Object.keys(saved.researchsMax).forEach((researchName) => {
+        game.researchsMax[researchName] = saved.researchsMax[researchName];
+      });
+      Object.keys(saved.resourcesTotal).forEach((resourceName) => {
+        game.resourcesTotal[resourceName] = saved.resourcesTotal[resourceName];
+      });
       return of(game);
     });
   }
@@ -99,7 +144,11 @@ interface IGameSerialized {
   resources: Record<string, number>;
   buildings: Record<string, number>;
   researchs: Record<string, number>;
+  resourcesTotal: Record<string, number>;
+  buildingsMax: Record<string, number>;
+  researchsMax: Record<string, number>;
   features: string[];
   favorites: { type: string, name: string }[];
+  achievements: Record<string, number>;
   time: number;
 }
