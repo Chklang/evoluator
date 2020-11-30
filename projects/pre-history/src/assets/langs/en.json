@@ -11,13 +11,15 @@
             "config": "Configuration"
         },
         "config": {
-            "chooseFramerate": "Frame rate by sec (between 1 and 60):"
+            "chooseFramerate": "Frame rate by sec (between 1 and 60):",
+            "reset": "Delete saved game and restart from scratch (CANNOT BE CANCELED!)"
         },
         "validators": {
             "min": "Min value : %0",
             "max": "Max value : %0",
             "required": "Value is required!"
         },
+        "Reset": "Reset game",
         "remove": "Remove",
         "favorites": "Favorites",
         "build": "Build",

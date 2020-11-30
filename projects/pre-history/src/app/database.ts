@@ -107,6 +107,7 @@ export const gameFromScratch: IGame = {
         Ferme: 1,
     },
     researchs: {},
+    favorites: [],
     showableElements: {
         buildings: Dictionnary.create(),
         resources: Dictionnary.create(),

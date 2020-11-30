@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormBuilder } from '@angular/forms';
-import { ConfigService } from 'game-engine';
+import { ConfigService, PersistentService } from 'game-engine';
 import { of } from 'rxjs';
 
 import { ConfigComponent } from './config.component';
@@ -10,6 +10,7 @@ describe('ConfigComponent', () => {
   let fixture: ComponentFixture<ConfigComponent>;
   let formBuilder: FormBuilder;
   let configService: ConfigService;
+  let persistentService: PersistentService;
 
   beforeEach(async () => {
     formBuilder = {
@@ -22,6 +23,7 @@ describe('ConfigComponent', () => {
     configService = {
       config$: of({}),
     } as any;
+    persistentService = {} as any;
     await TestBed.configureTestingModule({
       declarations: [ ConfigComponent ],
       providers: [
@@ -32,6 +34,10 @@ describe('ConfigComponent', () => {
         {
           provide: ConfigService,
           useValue: configService,
+        },
+        {
+          provide: PersistentService,
+          useValue: persistentService,
         },
       ]
     })

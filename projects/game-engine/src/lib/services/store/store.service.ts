@@ -19,7 +19,9 @@ import {
 } from '../../model';
 import { BuildingsService } from '../buildings/buildings.service';
 import { ConfigService } from '../config/config.service';
+import { EFavoriteType, FavoritesService } from '../favorites/favorites.service';
 import { FeaturesService } from '../features/features.service';
+import { PersistentService } from '../persistent/persistent.service';
 import { ResearchsService } from '../researchs/researchs.service';
 import { TickService } from '../tick/tick.service';
 import { ICalculatedGameContext } from './i-calculated-game-context';
@@ -41,6 +43,8 @@ export class StoreService {
     private buildingsService: BuildingsService,
     private configService: ConfigService,
     private tickService: TickService,
+    private persistentService: PersistentService,
+    private favoritesService: FavoritesService,
   ) {
     this.gameContext$.pipe(
       tap((context) => {
@@ -52,14 +56,21 @@ export class StoreService {
         });
       }),
       switchMap((context) => {
-        this.datas$.next(this.initShowableElements(context));
-        return this.tickService.tick$.pipe(
-          filter(() => this.started),
-          switchMap(() => this.lock((oldDatas, _, config) => {
-            const datas: IGame = this.cloneDatas(oldDatas);
-            this.updateGame(datas, context);
-            this.datas$.next(datas);
-          })),
+        return this.persistentService.load(context).pipe(
+          switchMap((gameLoaded) => {
+            this.datas$.next(this.initShowableElements(context, gameLoaded));
+            return this.persistentService.save(gameLoaded);
+          }),
+          switchMap((gameLoaded) => {
+            return this.tickService.tick$.pipe(
+              filter(() => this.started),
+              switchMap(() => this.lock((oldDatas) => {
+                const datas: IGame = this.cloneDatas(oldDatas);
+                this.updateGame(datas, context);
+                this.datas$.next(datas);
+              })),
+            );
+          }),
         );
       }),
     ).subscribe();
@@ -89,44 +100,56 @@ export class StoreService {
     this.started = false;
   }
 
-  private initShowableElements(gameContext: ICalculatedGameContext): IGame {
-    const datas: IGame = JSON.parse(JSON.stringify(gameContext.gameFromScratch));
-    datas.showableElements.buildings = createDictionnaryBuilding(
-      gameContext.allBuildings.filter((building) => Object.keys(building.blockedBy).every((key) => {
-        return false;
-      }))
-    );
+  private initShowableElements(gameContext: ICalculatedGameContext, datas: IGame): IGame {
+    gameContext.allBuildings.filter((building) => Object.keys(building.blockedBy).every((key) => {
+      return false;
+    })).forEach((building) => {
+      datas.showableElements.buildings.addElement(building.name, building);
+    });
     datas.showableElements.buildings.forEach((building => {
       this.buildingsService.setBuildingCount(gameContext, building, datas.buildings[building.name] || 0, [], 0, datas);
     }));
-    datas.showableElements.resources = createDictionnaryResource(
-      gameContext.allResources.filter((resource) => Object.keys(resource.blockedBy).every((key) => {
-        return false;
-      }))
-    );
-    datas.showableElements.features = createDictionnaryFeature(
-      gameContext.allFeatures.filter((feature) => Object.keys(feature.blockedBy).every((key) => {
-        return false;
-      }))
-    );
+
+    gameContext.allResources.filter((resource) => Object.keys(resource.blockedBy).every((key) => {
+      return false;
+    })).forEach((resource) => {
+      datas.showableElements.resources.addElement(resource.name, resource);
+    });
+
+    gameContext.allFeatures.filter((feature) => Object.keys(feature.blockedBy).every((key) => {
+      return false;
+    })).forEach((feature) => {
+      datas.showableElements.features.addElement(feature.name, feature);
+    });
     datas.showableElements.features.forEach((feature => {
       this.featuresService.setFeature(gameContext, feature, [], 0);
     }));
-    datas.showableElements.researchs = createDictionnaryResearch(
-      gameContext.allResearchs.filter((research) => Object.keys(research.blockedBy || {}).every((key) => {
-        return false;
-      }))
-    );
+
+    gameContext.allResearchs.filter((research) => Object.keys(research.blockedBy || {}).every((key) => {
+      return false;
+    })).forEach((research) => {
+      datas.showableElements.researchs.addElement(research.name, research);
+    });
     datas.showableElements.researchs.forEach((research => {
       this.researchsService.setResearchLevel(gameContext, research, datas.researchs[research.name] || 0, [], 0, datas);
     }));
+    datas.favorites.forEach((favorite) => {
+      switch (favorite.type) {
+        case EFavoriteType.BUILDING:
+          this.favoritesService.addBuildingInFavorites(gameContext.allBuildings.getElement(favorite.name));
+          break;
+        case EFavoriteType.RESEARCH:
+          this.favoritesService.addResearchInFavorites(gameContext.allResearchs.getElement(favorite.name));
+          break;
+      }
+    });
     return datas;
   }
 
   private updateGame(game: IGame, gameContext: ICalculatedGameContext): void {
     const now = Date.now();
     while (game.calculated.nextEvent < now) {
-      this.updateUntilEvent(game, now);
+      this.updateUntilEvent(game, game.calculated.nextEvent);
       this.calculateNextEvent(game, gameContext);
     }
     this.updateUntilEvent(game, now);
@@ -551,6 +574,7 @@ export class StoreService {
       this.buildingsService.setBuildingCount(gameContext, building, datas.buildings[building.name], [], 0, datas);
       datas.calculated.nextEvent = 0;
       this.datas$.next(datas);
+      return this.persistentService.save(datas).toPromise().then(() => { });
     });
   }
 
@@ -581,6 +605,7 @@ export class StoreService {
       this.researchsService.setResearchLevel(gameContext, research, datas.researchs[research.name], [], 0, datas);
       datas.calculated.nextEvent = 0;
       this.datas$.next(datas);
+      return this.persistentService.save(datas).toPromise().then(() => { });
     });
   }
 
@@ -606,5 +631,51 @@ export class StoreService {
         resolve();
       }),
     );
+  }
+
+  public addBuildingInFavorites(building: IBuilding): Observable<void> {
+    return this.lock((game) => {
+      this.favoritesService.addBuildingInFavorites(building);
+      if (game.favorites.findIndex((f) => f.type === EFavoriteType.BUILDING && f.name === building.name) < 0) {
+        game.favorites.push({
+          name: building.name,
+          type: EFavoriteType.BUILDING,
+        });
+        this.persistentService.save(game);
+      }
+    });
+  }
+
+  public removeBuildingFromFavorites(building: IBuilding): Observable<void> {
+    return this.lock((game) => {
+      this.favoritesService.removeBuildingFromFavorites(building);
+      if (game.favorites.findIndex((f) => f.type === EFavoriteType.BUILDING && f.name === building.name) >= 0) {
+        game.favorites = game.favorites.filter((f) => f.type !== EFavoriteType.BUILDING || f.name !== building.name);
+        this.persistentService.save(game);
+      }
+    });
+  }
+
+  public addResearchInFavorites(research: IResearch): Observable<void> {
+    return this.lock((game) => {
+      this.favoritesService.addResearchInFavorites(research);
+      if (game.favorites.findIndex((f) => f.type === EFavoriteType.RESEARCH && f.name === research.name) < 0) {
+        game.favorites.push({
+          name: research.name,
+          type: EFavoriteType.RESEARCH,
+        });
+        this.persistentService.save(game);
+      }
+    });
+  }
+
+  public removeResearchFromFavorites(research: IResearch): Observable<void> {
+    return this.lock((game) => {
+      this.favoritesService.removeResearchFromFavorites(research);
+      if (game.favorites.findIndex((f) => f.type === EFavoriteType.RESEARCH && f.name === research.name) >= 0) {
+        game.favorites = game.favorites.filter((f) => f.type !== EFavoriteType.RESEARCH || f.name !== research.name);
+        this.persistentService.save(game);
+      }
+    });
   }
 }

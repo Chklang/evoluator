@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ConfigService } from 'game-engine';
+import { ConfigService, PersistentService } from 'game-engine';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -17,6 +17,7 @@ export class ConfigComponent implements OnInit, OnDestroy {
   constructor(
     private formBuilder: FormBuilder,
     private readonly configService: ConfigService,
+    private readonly persistentService: PersistentService,
   ) { }
 
   public ngOnInit(): void {
@@ -39,6 +40,12 @@ export class ConfigComponent implements OnInit, OnDestroy {
     this.configService.config$.next({
       framerate: this.form.get('frameRate').value,
     });
+  }
+
+  public resetGame(): void {
+    if (confirm('Please confirm reset game') === true) {
+      this.persistentService.reset();
+    }
   }
 
 }

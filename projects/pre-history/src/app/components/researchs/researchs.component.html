@@ -4,7 +4,7 @@
         <fieldset>
             <legend>
                 <span [tr]="'researchs.'+research.research.name+'.name'"></span> : {{research.level}}
-                <button (click)="favoritesService.addResearchInFavorites(research.research)">Favorites</button>
+                <button (click)="backgroundAction.execute(storeService.addResearchInFavorites(research.research))">Favorites</button>
             </legend>
             <p [tr]="'researchs.'+research.research.name+'.description'"></p>
             <div>

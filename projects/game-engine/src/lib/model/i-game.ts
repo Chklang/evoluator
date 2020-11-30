@@ -9,6 +9,7 @@ export interface IGame {
     resources: Record<string, { quantity: number; max: number; icon: string; }>;
     buildings: Record<string, number>;
     researchs: Record<string, number>;
+    favorites: { type: string, name: string }[];
     showableElements: {
         resources: Dictionnary<string, IResource>;
         buildings: Dictionnary<string, IBuilding>;

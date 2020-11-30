@@ -47,7 +47,7 @@ export class FavoritesComponent implements OnInit {
                       this.backgroundActionsService.execute(this.storeService.build(element.building));
                     },
                     remove: () => {
-                      this.favoritesService.removeBuildingFromFavorites(element.building);
+                      this.backgroundActionsService.execute(this.storeService.removeBuildingFromFavorites(element.building));
                     },
                   };
                 }),
@@ -73,7 +73,7 @@ export class FavoritesComponent implements OnInit {
                       this.backgroundActionsService.execute(this.storeService.research(element.research));
                     },
                     remove: () => {
-                      this.favoritesService.removeResearchFromFavorites(element.research);
+                      this.backgroundActionsService.execute(this.storeService.removeResearchFromFavorites(element.research));
                     },
                   };
                 }),

@@ -12,6 +12,7 @@ import { ResearchsService } from './services/researchs/researchs.service';
 import { FeaturesService } from './services/features/features.service';
 import { ConfigService } from './services/config/config.service';
 import { FavoritesService } from './services/favorites/favorites.service';
+import { PersistentService } from './services/persistent/persistent.service';
 
 // Get base-href value
 export function getBaseUrl(): string {
@@ -34,6 +35,7 @@ export function getBaseUrl(): string {
     FeaturesService,
     ConfigService,
     FavoritesService,
+    PersistentService,
     { provide: 'BASE_URL', useFactory: getBaseUrl, deps: [] }
   ],
   exports: [

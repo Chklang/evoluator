@@ -28,7 +28,7 @@
                         <img [src]="'assets/buildings/' + building.building.name + '.png'" class="card-img-top">
                         <div class="card-title">
                             <span [tr]="'buildings.'+building.building.name+'.name'"></span>
-                            <button (click)="favoritesService.addBuildingInFavorites(building.building)">Favorites</button>
+                            <button (click)="backgroundAction.execute(storeService.addBuildingInFavorites(building.building))">Favorites</button>
                         </div>
                         <div class="card-count">
                             <small class="c-second">x</small>

@@ -11,13 +11,15 @@
             "config": "Configuration"
         },
         "config": {
-            "chooseFramerate": "Images par seconde (entre 1 et 60) :"
+            "chooseFramerate": "Images par seconde (entre 1 et 60) :",
+            "reset": "Supprime les données sauvegardées et recommence une partie de zéro (NE PEUT ÊTRE ANNULÉ!)"
         },
         "validators": {
             "min": "Valeur minimum attendue : %0",
             "max": "Valeur maximum attendue : %0",
             "required": "Une valeur est requise!"
         },
+        "Reset": "Supprimer la partie",
         "remove": "Retirer",
         "favorites": "Favoris",
         "build": "Construire",
