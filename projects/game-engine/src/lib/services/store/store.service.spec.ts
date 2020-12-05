@@ -1,4 +1,8 @@
 import { TestBed } from '@angular/core/testing';
+import { Dictionnary } from 'arrayplus';
+import { of, Subject } from 'rxjs';
+import { catchError, filter, first, take, tap } from 'rxjs/operators';
+import { IGame, IGameContext } from '../../model';
 import { AchievementsService } from '../achievements/achievements.service';
 import { BuildingsService } from '../buildings/buildings.service';
 import { ConfigService } from '../config/config.service';
@@ -10,24 +14,71 @@ import { TickService } from '../tick/tick.service';
 
 import { StoreService } from './store.service';
 
+interface TickServiceForTest {
+  tick$: Subject<number>;
+}
+
 describe('StoreService', () => {
   let service: StoreService;
   let researchsService: ResearchsService;
   let featuresService: FeaturesService;
   let buildingsService: BuildingsService;
   let configService: ConfigService;
-  let tickService: TickService;
+  let tickService: TickServiceForTest;
   let persistentService: PersistentService;
   let favoritesService: FavoritesService;
   let achievementsService: AchievementsService;
+  let gameContext: IGameContext;
+
+  function createEmptyGame(): IGame {
+    return {
+      achievements: {},
+      buildings: {},
+      buildingsMax: {},
+      calculated: {
+        nextEvent: 0,
+        production: {},
+      },
+      favorites: [],
+      researchs: {},
+      researchsMax: {},
+      resources: {},
+      resourcesTotal: {},
+      showableElements: {
+        achievements: Dictionnary.create(),
+        buildings: Dictionnary.create(),
+        features: Dictionnary.create(),
+        researchs: Dictionnary.create(),
+        resources: Dictionnary.create(),
+      },
+      time: 0,
+    };
+  }
 
   beforeEach(() => {
+    gameContext = {
+      allAchievements: [],
+      allBuildings: [],
+      allFeatures: [],
+      allResearchs: [],
+      allResources: [],
+      gameFromScratch: createEmptyGame(),
+    };
     researchsService = {} as any;
     featuresService = {} as any;
-    buildingsService = {} as any;
-    configService = {} as any;
-    tickService = {} as any;
-    persistentService = {} as any;
+    buildingsService = {
+      setBuildingCount: () => { },
+    } as any;
+    configService = {
+      config$: of(null),
+    } as any;
+    tickService = {
+      tick$: new Subject(),
+    };
+    persistentService = {
+      load: () => of(gameContext.gameFromScratch),
+      save: (e) => of(e),
+    } as any;
     favoritesService = {} as any;
     achievementsService = {} as any;
     TestBed.configureTestingModule({
@@ -71,5 +122,267 @@ describe('StoreService', () => {
 
   it('should be created', () => {
     expect(service).toBeTruthy();
+  });
+
+  it('Check calculations when no consumption with only one resource (no self-grow but growType CLASSIC)', (done) => {
+    gameContext.allResources.push({
+      name: 'wood',
+      icon: '',
+      max: 100,
+      resourceType: 'CLASSIC',
+      growType: 'CLASSIC',
+    });
+    gameContext.allBuildings.push({
+      name: 'woodProduced',
+      cost: {},
+      produce: {
+        wood: 1,
+      },
+    });
+    gameContext.gameFromScratch.buildings.woodProduced = 2;
+    service.init(gameContext);
+    service.start();
+    // Send 10s
+    service.datas$.pipe(
+      filter((datas) => datas.time > 0),
+      tap((datas) => {
+        expect(datas.time).toBe(10_000);
+        expect(datas.resources.wood).toBeDefined();
+        expect(datas.resources.wood).toEqual({
+          quantity: 20,
+          max: 100,
+          icon: '',
+        });
+        expect(datas.resourcesTotal.wood).toBe(20);
+        expect(datas.calculated.production.wood).toBeDefined();
+        expect(datas.calculated.production.wood).toBe(2);
+        // After 50secs wood must be full
+        expect(datas.calculated.nextEvent).toBe(50_000);
+      }),
+      take(1),
+    ).subscribe({
+      complete: done,
+      error: done.fail,
+    });
+    tickService.tick$.next(10 * 1000);
+  });
+
+  it('Check calculations when no consumption with only one resource (no self-grow but growType EXPONENTIAL)', (done) => {
+    gameContext.allResources.push({
+      name: 'wood',
+      icon: '',
+      max: 100,
+      resourceType: 'CLASSIC',
+      growType: 'EXPONENTIAL',
+      min: 1,
+    });
+    gameContext.allBuildings.push({
+      name: 'woodProduced',
+      cost: {},
+      produce: {
+        wood: 0.01,
+      },
+    });
+    gameContext.gameFromScratch.buildings.woodProduced = 2;
+    service.init(gameContext);
+    service.start();
+    // Send 10s
+    service.datas$.pipe(
+      filter((datas) => datas.time > 0),
+      tap((datas) => {
+        expect(datas.time).toBe(10_000);
+        expect(datas.resources.wood).toBeDefined();
+        expect(datas.resources.wood).toEqual({
+          quantity: 1.2189944199947573,
+          max: 100,
+          icon: '',
+        });
+        expect(datas.resourcesTotal.wood).toBeGreaterThan(0.21899441999475);
+        expect(datas.resourcesTotal.wood).toBeLessThan(0.21899441999476);
+        expect(datas.calculated.production.wood).toBeDefined();
+        expect(datas.calculated.production.wood).toBe(1.02);
+        // After 50secs wood must be full
+        expect(datas.calculated.nextEvent).toBe(232553.4949029975);
+      }),
+      take(1),
+    ).subscribe({
+      complete: done,
+      error: done.fail,
+    });
+    tickService.tick$.next(10 * 1000);
+  });
+
+  it('Check calculations when no consumption with only one resource wich grow auto (classic)', (done) => {
+    gameContext.allResources.push({
+      name: 'wood',
+      icon: '',
+      max: 100,
+      resourceType: 'CLASSIC',
+      growType: 'CLASSIC',
+      selfGrow: 2,
+    });
+    service.init(gameContext);
+    service.start();
+    // Send 10s
+    service.datas$.pipe(
+      filter((datas) => datas.time > 0),
+      tap((datas) => {
+        expect(datas.time).toBe(10_000);
+        expect(datas.resources.wood).toBeDefined();
+        expect(datas.resources.wood).toEqual({
+          quantity: 20,
+          max: 100,
+          icon: '',
+        });
+        expect(datas.resourcesTotal.wood).toBe(20);
+        expect(datas.calculated.production.wood).toBeDefined();
+        expect(datas.calculated.production.wood).toBe(2);
+        // After 50secs wood must be full
+        expect(datas.calculated.nextEvent).toBe(50_000);
+      }),
+      take(1),
+    ).subscribe({
+      complete: done,
+      error: done.fail,
+    });
+    tickService.tick$.next(10 * 1000);
+  });
+
+  it('Check calculations when no consumption with only one resource wich grow auto (exponential)', (done) => {
+    gameContext.allResources.push({
+      name: 'wood',
+      icon: '',
+      max: 100,
+      min: 1,
+      resourceType: 'CLASSIC',
+      growType: 'EXPONENTIAL',
+      selfGrow: 1.01,
+    });
+    service.init(gameContext);
+    service.start();
+    // Send 10s
+    service.datas$.pipe(
+      filter((datas) => datas.time > 0),
+      tap((datas) => {
+        expect(datas.time).toBe(10_000);
+        expect(datas.resources.wood).toBeDefined();
+        expect(datas.resources.wood).toEqual({
+          quantity: 1.1046221254112045,
+          max: 100,
+          icon: '',
+        });
+        expect(datas.resourcesTotal.wood).toBeGreaterThan(0.10462212541120);
+        expect(datas.resourcesTotal.wood).toBeLessThan(0.10462212541121);
+        expect(datas.calculated.production.wood).toBeDefined();
+        expect(datas.calculated.production.wood).toBe(1.01);
+        // After 50secs wood must be full
+        expect(datas.calculated.nextEvent).toBe(462815.7851175219);
+      }),
+      take(1),
+    ).subscribe({
+      complete: done,
+      error: done.fail,
+    });
+    tickService.tick$.next(10 * 1000);
+  });
+
+  it('Check calculations a resource is consumed', (done) => {
+    gameContext.allResources.push({
+      name: 'wood',
+      icon: '',
+      max: 100_000,
+      resourceType: 'CLASSIC',
+      growType: 'CLASSIC',
+    }, {
+      name: 'charcoal',
+      icon: '',
+      max: 100_000,
+      resourceType: 'CLASSIC',
+      growType: 'CLASSIC',
+    });
+    gameContext.allBuildings.push({
+      name: 'furnace',
+      cost: {},
+      consume: {
+        wood: 1,
+      },
+      produce: {
+        charcoal: 3
+      },
+    });
+    gameContext.gameFromScratch.buildings = {
+      furnace: 1,
+    };
+    gameContext.gameFromScratch.resources = {
+      wood: {
+        icon: '', max: 100_000, quantity: 100,
+      },
+    };
+
+    service.init(gameContext);
+    service.start();
+
+    const checkDatas = [
+      (datas: IGame) => {
+        expect(datas.time).toBe(10_000);
+        expect(datas.resources.wood).toBeDefined();
+        expect(datas.resources.wood).toEqual({
+          quantity: 90,
+          max: 100_000,
+          icon: '',
+        });
+        expect(datas.resources.charcoal).toBeDefined();
+        expect(datas.resources.charcoal).toEqual({
+          quantity: 30,
+          max: 100_000,
+          icon: '',
+        });
+        expect(datas.resourcesTotal.wood).toBe(0);
+        expect(datas.resourcesTotal.charcoal).toBe(30);
+        expect(datas.calculated.production.wood).toBeDefined();
+        expect(datas.calculated.production.wood).toBe(-1);
+        expect(datas.calculated.production.charcoal).toBeDefined();
+        expect(datas.calculated.production.charcoal).toBe(3);
+        // After 150secs wood must be empty
+        expect(datas.calculated.nextEvent).toBe(100_000);
+        setTimeout(() => tickService.tick$.next(150 * 1000));
+      },
+      (datas: IGame) => {
+        expect(datas.time).toBe(150_000);
+        expect(datas.resources.wood).toBeDefined();
+        expect(datas.resources.wood).toEqual({
+          quantity: 0,
+          max: 100_000,
+          icon: '',
+        });
+        expect(datas.resources.charcoal).toBeDefined();
+        expect(datas.resources.charcoal).toEqual({
+          quantity: 300,
+          max: 100_000,
+          icon: '',
+        });
+        expect(datas.resourcesTotal.wood).toBe(0);
+        expect(datas.resourcesTotal.charcoal).toBe(300);
+        expect(datas.calculated.production.wood).toBeUndefined();
+        expect(datas.calculated.production.charcoal).toBeUndefined();
+        // No production for eternity
+        expect(datas.calculated.nextEvent).toBe(+Infinity);
+      },
+    ];
+
+    // Send 10s
+    let currentCallIndex = 0;
+    service.datas$.pipe(
+      filter((datas) => datas.time > 0),
+      tap((datas) => {
+        checkDatas[currentCallIndex](datas);
+        currentCallIndex++;
+      }),
+      take(2),
+    ).subscribe({
+      complete: done,
+      error: done.fail,
+    });
+    tickService.tick$.next(10 * 1000);
   });
 });

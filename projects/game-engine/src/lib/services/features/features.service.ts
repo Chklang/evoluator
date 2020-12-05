@@ -39,7 +39,7 @@ export class FeaturesService {
     } else {
       let featureIsAccessible = false;
       timeBeforeUnlock = this.tickService.tick$.pipe(
-        map(() => blockedUntil - Date.now()),
+        map((now) => blockedUntil - now),
         map((value) => (Math.ceil(value / 1000) * 1000) || -1), // Never 0, 0=not accessible
         takeWhile(() => !featureIsAccessible),
         tap((value) => {

@@ -7,7 +7,7 @@ import { ConfigService } from '../config/config.service';
   providedIn: 'root'
 })
 export class TickService {
-  public readonly tick$: Observable<void>;
+  public readonly tick$: Observable<number>;
 
   constructor(
     private readonly configService: ConfigService,
@@ -16,7 +16,7 @@ export class TickService {
       switchMap((config) => {
         return interval(1000 / (config.framerate || 1));
       }),
-      map(() => { }),
+      map(() => Date.now()),
       shareReplay(1),
     );
   }

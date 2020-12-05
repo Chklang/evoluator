@@ -4,9 +4,9 @@ import { IBlocker } from './i-blocker';
 export interface IBuilding {
     name: string;
     blockedBy?: IBlocker<any>[];
-    consume: Record<string, number>;
-    produce: Record<string, number>;
-    storage: Record<string, number>;
+    consume?: Record<string, number>;
+    produce?: Record<string, number>;
+    storage?: Record<string, number>;
     cost: Record<string, number>;
 }
 

@@ -12,8 +12,8 @@ export interface IResource {
     consumeType?: 'FOR_PRODUCTION' | 'FOR_LIVE';
     selfGrow?: number;
     growType?: 'CLASSIC' | 'EXPONENTIAL';
-    consume: Record<string, number>;
-    produce: Record<string, number>;
+    consume?: Record<string, number>;
+    produce?: Record<string, number>;
 }
 
 export function createDictionnaryResource(elements: IResource[]): Dictionnary<string, IResource> {

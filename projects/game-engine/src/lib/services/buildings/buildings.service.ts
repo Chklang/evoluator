@@ -62,7 +62,7 @@ export class BuildingsService {
     } else {
       let featureIsAccessible = false;
       timeBeforeUnlock = this.tickService.tick$.pipe(
-        map(() => blockedUntil - Date.now()),
+        map((now) => blockedUntil - now),
         map((value) => (Math.ceil(value / 1000) * 1000) || -1), // Never 0, 0=not accessible
         takeWhile(() => !featureIsAccessible),
         tap((value) => {
@@ -99,7 +99,7 @@ export class BuildingsService {
           ressourceBlockedUntil = ressourceBlockedUntil * 1000 + game.time;
           let buildingCanBeBuilt = false;
           isOk$ = this.tickService.tick$.pipe(
-            map(() => ressourceBlockedUntil - Date.now()),
+            map((now) => ressourceBlockedUntil - now),
             map((value) => (Math.ceil(value / 1000) * 1000) || -1), // Never 0, 0=not accessible
             takeWhile(() => !buildingCanBeBuilt),
             tap((value) => {

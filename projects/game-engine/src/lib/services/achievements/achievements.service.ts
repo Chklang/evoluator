@@ -53,8 +53,8 @@ export class AchievementsService {
       } else {
         let featureIsAccessible = false;
         timeBeforeUnlock = this.tickService.tick$.pipe(
-          map(() =>
-            blockedUntil[level - currentLevel] - Date.now()
+          map((now) =>
+            blockedUntil[level - currentLevel] - now,
           ),
           map((value) =>
             (Math.ceil(value / 1000) * 1000) || -1

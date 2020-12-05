@@ -19,7 +19,9 @@ import {
   createDictionnaryAchievements,
   IAchievement,
   IBlockerStatus,
-  IChainedUnlockWithLevel
+  IChainedUnlockWithLevel,
+  IFeatureBlocker,
+  IBuildingBlocker
 } from '../../model';
 import { AchievementsService } from '../achievements/achievements.service';
 import { BuildingsService } from '../buildings/buildings.service';
@@ -58,7 +60,15 @@ export class StoreService {
           this.resourcesByKey[resource.name] = resource;
           resource.growType = resource.growType || 'CLASSIC';
           resource.consumeType = resource.consumeType || 'FOR_PRODUCTION';
-          resource.selfGrow = this.defaultValue(resource.selfGrow, 1);
+          resource.min = resource.min || 0;
+          switch (resource.growType) {
+            case 'CLASSIC':
+              resource.selfGrow = this.defaultValue(resource.selfGrow, 0);
+              break;
+            case 'EXPONENTIAL':
+              resource.selfGrow = this.defaultValue(resource.selfGrow, 1);
+              break;
+          }
         });
       }),
       switchMap((context) => {
@@ -70,9 +80,9 @@ export class StoreService {
           switchMap((gameLoaded) => {
             return this.tickService.tick$.pipe(
               filter(() => this.started),
-              switchMap(() => this.lock((oldDatas) => {
+              switchMap((now) => this.lock((oldDatas) => {
                 const datas: IGame = this.cloneDatas(oldDatas);
-                this.updateGame(datas, context);
+                this.updateGame(datas, context, now);
                 (window as any).cc = datas;
                 this.datas$.next(datas);
               })),
@@ -109,7 +119,7 @@ export class StoreService {
   }
 
   private initShowableElements(gameContext: ICalculatedGameContext, datas: IGame): IGame {
-    gameContext.allBuildings.filter((building) => Object.keys(building.blockedBy).every((key) => {
+    gameContext.allBuildings.filter((building) => Object.keys(building.blockedBy || {}).every((key) => {
       return false;
     })).forEach((building) => {
       datas.showableElements.buildings.addElement(building.name, building);
@@ -118,13 +128,23 @@ export class StoreService {
       this.buildingsService.setBuildingCount(gameContext, building, datas.buildings[building.name] || 0, [], 0, datas);
     }));
 
-    gameContext.allResources.filter((resource) => Object.keys(resource.blockedBy).every((key) => {
+    gameContext.allResources.filter((resource) => Object.keys(resource.blockedBy || {}).every((key) => {
       return false;
     })).forEach((resource) => {
       datas.showableElements.resources.addElement(resource.name, resource);
+      if (!datas.resources[resource.name] || datas.resources[resource.name].quantity < (resource.min || 0)) {
+        datas.resources[resource.name] = {
+          icon: resource.icon,
+          max: resource.max,
+          quantity: resource.min,
+        };
+      }
+      if (!datas.resourcesTotal[resource.name] || datas.resourcesTotal[resource.name] < 0) {
+        datas.resourcesTotal[resource.name] = 0;
+      }
     });
 
-    gameContext.allFeatures.filter((feature) => Object.keys(feature.blockedBy).every((key) => {
+    gameContext.allFeatures.filter((feature) => Object.keys(feature.blockedBy || {}).every((key) => {
       return false;
     })).forEach((feature) => {
       datas.showableElements.features.addElement(feature.name, feature);
@@ -154,8 +174,7 @@ export class StoreService {
     return datas;
   }
 
-  private updateGame(game: IGame, gameContext: ICalculatedGameContext): void {
-    const now = Date.now();
+  private updateGame(game: IGame, gameContext: ICalculatedGameContext, now: number): void {
     while (game.calculated.nextEvent < now) {
       this.updateUntilEvent(game, game.calculated.nextEvent);
       this.calculateNextEvent(game, gameContext);
@@ -177,7 +196,7 @@ export class StoreService {
             (game.resources[resource].quantity * Math.pow(game.calculated.production[resource], diff))
           ) - game.resources[resource].quantity;
           game.resources[resource].quantity += production;
-          game.resourcesTotal[resource] += production;
+          game.resourcesTotal[resource] += Math.max(0, production);
           break;
         }
         case 'CLASSIC':
@@ -187,7 +206,7 @@ export class StoreService {
             (game.resources[resource].quantity + (game.calculated.production[resource] * diff))
           ) - game.resources[resource].quantity;
           game.resources[resource].quantity += production;
-          game.resourcesTotal[resource] += production;
+          game.resourcesTotal[resource] += Math.max(0, production);
           break;
         }
       }
@@ -255,7 +274,7 @@ export class StoreService {
         console.log('Error : Reseach ' + researchName + ' is unknown!');
         return;
       }
-      Object.keys(research.bonusResources).forEach((bonusResourceName) => {
+      Object.keys(research.bonusResources || {}).forEach((bonusResourceName) => {
         const bonusValue = research.bonusResources[bonusResourceName];
         if (bonusValue > 0) {
           bonusProduction[bonusResourceName] = this.defaultValue(bonusProduction[bonusResourceName], 1) * Math.pow(bonusValue, level);
@@ -267,7 +286,7 @@ export class StoreService {
     gameContext.allBuildings
       .filter((building) => !!game.buildings[building.name])
       .forEach((building) => {
-        Object.keys(building.storage).forEach((resource) => {
+        Object.keys(building.storage || {}).forEach((resource) => {
           game.resources[resource].max += building.storage[resource] * game.buildings[building.name];
         });
       });
@@ -287,25 +306,25 @@ export class StoreService {
         .filter((building) => !!game.buildings[building.name])
         .forEach((building) => {
           let buildingProduction;
-          Object.keys(building.consume).forEach((consume) => {
+          Object.keys(building.consume || {}).forEach((consume) => {
             if (percentConsumtion[consume] !== undefined) {
               buildingProduction = this.minOrDefaultValue(buildingProduction, percentConsumtion[consume]);
             }
           });
-          Object.keys(building.produce).forEach((produce) => {
+          Object.keys(building.produce || {}).forEach((produce) => {
             if (percentProduction[produce] !== undefined) {
               buildingProduction = this.minOrDefaultValue(buildingProduction, percentProduction[produce]);
             }
           });
           buildingProduction = this.defaultValue(buildingProduction, 1);
-          Object.keys(building.consume).forEach((consume) => {
+          Object.keys(building.consume || {}).forEach((consume) => {
             if (consumtion[consume]) {
               consumtion[consume] += building.consume[consume] * buildingProduction * game.buildings[building.name];
             } else {
               consumtion[consume] = building.consume[consume] * buildingProduction * game.buildings[building.name];
             }
           });
-          Object.keys(building.produce).forEach((produce) => {
+          Object.keys(building.produce || {}).forEach((produce) => {
             if (production[produce]) {
               production[produce] += building.produce[produce] * buildingProduction * game.buildings[building.name];
             } else {
@@ -352,7 +371,7 @@ export class StoreService {
       });
       Object.keys(production).forEach((produce) => {
         let newProduction: number;
-        if (game.resources[produce].quantity < game.resources[produce].max) {
+        if ((game.resources[produce].quantity || 0) < game.resources[produce].max) {
           // Stocks are not full
           // So not decrease production percent
           return;
@@ -414,7 +433,7 @@ export class StoreService {
               if (game.resources[resource.name].quantity <= 0) {
                 nextEmptyOrFullStorage = 0;
               } else {
-                nextEmptyOrFullStorage = Math.min(0, game.resources[resource.name].quantity / productionBySec);
+                nextEmptyOrFullStorage = Math.min(nextEmptyOrFullStorage, game.resources[resource.name].quantity / (productionBySec * -1));
               }
             }
             break;
@@ -595,10 +614,16 @@ export class StoreService {
     });
     const times = blockersActual.map((blocker) => {
       switch (blocker.type) {
-        case 'building':
-          return 0;
-        case 'feature':
-          return 0;
+        case 'building': {
+          const typedBlocker = blocker as IBuildingBlocker;
+          const nbBuilding = game.buildings[typedBlocker.params.name] || 0;
+          return nbBuilding > typedBlocker.params.quantity ? 0 : +Infinity;
+        }
+        case 'feature': {
+          const typedBlocker = blocker as IFeatureBlocker;
+          const hasFeature = game.showableElements.achievements.hasElement(typedBlocker.params.name);
+          return hasFeature ? 0 : +Infinity;
+        }
         case 'resource': {
           const typedBlocker = blocker as IResourceBlocker;
           if (!game.calculated.production[typedBlocker.params.name] || game.calculated.production[typedBlocker.params.name] < 0) {

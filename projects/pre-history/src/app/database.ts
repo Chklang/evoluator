@@ -6,55 +6,37 @@ export const resources: IResource[] = [
     {
         name: 'population',
         icon: 'user',
-        blockedBy: [],
         max: 10,
         min: 1,
         resourceType: 'POPULATION',
-        consumeType: 'FOR_LIVE',
         selfGrow: 1.01,
         growType: 'EXPONENTIAL',
-        consume: {
-            food: 0.1,
-        },
-        produce: {},
     },
     {
         name: 'wood',
         icon: 'tree',
-        blockedBy: [],
         max: 100,
         resourceType: 'CLASSIC',
-        consume: {},
-        produce: {},
     },
     {
         name: 'food',
         icon: 'cutlery',
-        blockedBy: [],
         max: 100,
         resourceType: 'CLASSIC',
-        consume: {},
-        produce: {},
     },
 ];
 export const buildings: IBuilding[] = [
     {
         name: 'Scierie',
-        blockedBy: [],
-        consume: {},
         produce: {
             wood: 5,
         },
-        storage: {},
         cost: {
             wood: 30,
         },
     },
     {
         name: 'EntrepotsBois',
-        blockedBy: [],
-        consume: {},
-        produce: {},
         storage: {
             wood: 300,
         },
@@ -64,12 +46,9 @@ export const buildings: IBuilding[] = [
     },
     {
         name: 'Ferme',
-        blockedBy: [],
-        consume: {},
         produce: {
             food: 1,
         },
-        storage: {},
         cost: {
             wood: 10,
         },
