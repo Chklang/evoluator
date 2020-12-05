@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Dictionnary } from 'arrayplus';
-import { BehaviorSubject, Observable, of, Subject } from 'rxjs';
-import { filter, map, shareReplay, takeWhile, tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { filter, map, shareReplay, takeWhile } from 'rxjs/operators';
 import {
   IBlocker,
   IBlockerStatus,

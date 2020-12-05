@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, ReplaySubject, Subject } from 'rxjs';
-import { map, shareReplay, takeUntil, takeWhile, tap } from 'rxjs/operators';
+import { map, shareReplay, takeWhile, tap } from 'rxjs/operators';
 import {
   IBlocker,
   IFeature,

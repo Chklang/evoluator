@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { BuildingsService, FavoritesService, IShowableBuilding, StoreService } from 'game-engine';
 import { IResource } from 'projects/game-engine/src/lib/model';
 import { Observable, of } from 'rxjs';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { switchMap } from 'rxjs/operators';
 import { resourcesByKey } from '../../database';
 import { BackgroundActionsService } from '../../services/background-actions/background-actions.service';
 

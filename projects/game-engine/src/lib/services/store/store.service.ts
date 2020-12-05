@@ -18,7 +18,6 @@ import {
   IConfig,
   createDictionnaryAchievements,
   IAchievement,
-  IBlockerStatus,
   IChainedUnlockWithLevel,
   IFeatureBlocker,
   IBuildingBlocker
@@ -455,19 +454,28 @@ export class StoreService {
 
   private updateAllFeatures(game: IGame, gameContext: ICalculatedGameContext): void {
     const featureToUnlock: IChainedUnlock<IFeature>[] = [];
-    gameContext.allFeatures.forEach((feature) => {
-      if (game.showableElements.features.hasElement(feature.name)) {
-        // Already unlocked
-        return;
-      }
-      const blockedUntil = this.blockedUntil(game, gameContext, feature.blockedBy || []);
-      const timeBlocked = game.time + (blockedUntil.time * 1000);
-      this.featuresService.setFeature(gameContext, feature, blockedUntil.blockers, timeBlocked);
-      featureToUnlock.push({
-        element: feature,
-        time: timeBlocked,
+    let newFeatureWasAdded = false;
+    do {
+      featureToUnlock.length = 0;
+      newFeatureWasAdded = false;
+      gameContext.allFeatures.forEach((feature) => {
+        if (game.showableElements.features.hasElement(feature.name)) {
+          // Already unlocked
+          return;
+        }
+        const blockedUntil = this.blockedUntil(game, gameContext, feature.blockedBy || []);
+        const timeBlocked = game.time + (blockedUntil.time * 1000);
+        this.featuresService.setFeature(gameContext, feature, blockedUntil.blockers, timeBlocked);
+        if (blockedUntil.time === 0) {
+          game.showableElements.features.addElement(feature.name, feature);
+          newFeatureWasAdded = true;
+        }
+        featureToUnlock.push({
+          element: feature,
+          time: timeBlocked,
+        });
       });
-    });
+    } while (newFeatureWasAdded);
     featureToUnlock.sort((a, b) => a.time - b.time);
     game.calculated.unlockFeature = featureToUnlock.reduce((previous, current) => {
       if (!previous) {
@@ -589,8 +597,10 @@ export class StoreService {
           const nbBuilding = game.buildings[typedBlocker.params.name] || 0;
           return nbBuilding < typedBlocker.params.quantity;
         }
-        case 'feature':
-          return true;
+        case 'feature': {
+          const typedBlocker = blocker as IFeatureBlocker;
+          return !game.showableElements.features.hasElement(typedBlocker.params.name);
+        }
         case 'resource': {
           const typedBlocker = blocker as IResourceBlocker;
           if (!game.resources[typedBlocker.params.name]) {
@@ -624,7 +634,7 @@ export class StoreService {
         }
         case 'feature': {
           const typedBlocker = blocker as IFeatureBlocker;
-          const hasFeature = game.showableElements.achievements.hasElement(typedBlocker.params.name);
+          const hasFeature = game.showableElements.features.hasElement(typedBlocker.params.name);
           return hasFeature ? 0 : +Infinity;
         }
         case 'resource': {
@@ -688,7 +698,7 @@ export class StoreService {
         return true;
       });
       if (!costIsOk) {
-        return;
+        return Promise.resolve();
       }
 
       const datas: IGame = this.cloneDatas(oldDatas);
@@ -721,7 +731,7 @@ export class StoreService {
         return true;
       });
       if (!costIsOk) {
-        return;
+        return Promise.resolve();
       }
       const datas: IGame = this.cloneDatas(oldDatas);
       Object.keys(research.cost).every((costKey) => {

@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FavoritesService, IGame, IResearch, IResource, IShowableResearch, ResearchsService, StoreService } from 'game-engine';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { resourcesByKey } from '../../database';
 import { BackgroundActionsService } from '../../services/background-actions/background-actions.service';
 
 @Component({

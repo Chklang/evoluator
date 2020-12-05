@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { interval, Observable, Subject } from 'rxjs';
+import { interval, Observable } from 'rxjs';
 import { map, shareReplay, switchMap } from 'rxjs/operators';
 import { ConfigService } from '../config/config.service';
 

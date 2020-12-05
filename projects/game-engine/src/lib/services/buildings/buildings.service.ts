@@ -116,37 +116,37 @@ export class BuildingsService {
           isOk$,
         };
       }), (e) => e.resource.name),
-      consumeCurrentLevel: this.dict(Object.keys(building.consume).map((key): IResourceCount => {
+      consumeCurrentLevel: this.dict(Object.keys(building.consume || {}).map((key): IResourceCount => {
         return {
           resource: gameContext.allResources.getElement(key),
           count: building.produce[key] * count,
         };
       }), (e) => e.resource.name),
-      consumeNextLevel: this.dict(Object.keys(building.consume).map((key): IResourceCount => {
+      consumeNextLevel: this.dict(Object.keys(building.consume || {}).map((key): IResourceCount => {
         return {
           resource: gameContext.allResources.getElement(key),
           count: building.produce[key] * (count + 1),
         };
       }), (e) => e.resource.name),
-      produceCurrentLevel: this.dict(Object.keys(building.produce).map((key): IResourceCount => {
+      produceCurrentLevel: this.dict(Object.keys(building.produce || {}).map((key): IResourceCount => {
         return {
           resource: gameContext.allResources.getElement(key),
           count: building.produce[key] * count,
         };
       }), (e) => e.resource.name),
-      produceNextLevel: this.dict(Object.keys(building.produce).map((key): IResourceCount => {
+      produceNextLevel: this.dict(Object.keys(building.produce || {}).map((key): IResourceCount => {
         return {
           resource: gameContext.allResources.getElement(key),
           count: building.produce[key] * (count + 1),
         };
       }), (e) => e.resource.name),
-      storageCurrentLevel: this.dict(Object.keys(building.storage).map((key): IResourceCount => {
+      storageCurrentLevel: this.dict(Object.keys(building.storage || {}).map((key): IResourceCount => {
         return {
           resource: gameContext.allResources.getElement(key),
           count: building.storage[key] * count,
         };
       }), (e) => e.resource.name),
-      storageNextLevel: this.dict(Object.keys(building.storage).map((key): IResourceCount => {
+      storageNextLevel: this.dict(Object.keys(building.storage || {}).map((key): IResourceCount => {
         return {
           resource: gameContext.allResources.getElement(key),
           count: building.storage[key] * (count + 1),

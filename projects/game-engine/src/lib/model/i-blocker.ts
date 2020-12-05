@@ -8,7 +8,7 @@ export interface IResourceParamsBlocker {
     quantity: number;
 }
 export interface IResourceBlocker extends IBlocker<IResourceParamsBlocker> {
-    type: 'resource';
+    type: 'resource' | 'resourceTotal';
 }
 
 export interface IFeatureParamsBlocker {

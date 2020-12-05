@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { BuildingsService, FavoritesService, IFavorite, IFavoriteBuilding, IFavoriteResearch, ResearchsService, StoreService } from 'game-engine';
+import { FavoritesService, IFavorite, IFavoriteBuilding, IFavoriteResearch, StoreService } from 'game-engine';
 import { IResourceNeed, EFavoriteType } from 'game-engine';
-import { combineLatest, forkJoin, Observable, of, zip } from 'rxjs';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { combineLatest, Observable, of } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { BackgroundActionsService } from '../../services/background-actions/background-actions.service';
 
 @Component({

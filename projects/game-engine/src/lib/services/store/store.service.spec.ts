@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { Dictionnary } from 'arrayplus';
-import { IBuildingBlocker, IResourceBlocker } from '../../model/i-blocker';
+import { IBuildingBlocker, IFeatureBlocker, IResourceBlocker } from '../../model/i-blocker';
 import { of, Subject } from 'rxjs';
-import { catchError, filter, first, take, tap } from 'rxjs/operators';
+import { filter, take, tap } from 'rxjs/operators';
 import { IBuilding, IGame, IGameContext } from '../../model';
 import { AchievementsService } from '../achievements/achievements.service';
 import { BuildingsService } from '../buildings/buildings.service';
@@ -421,6 +421,104 @@ describe('StoreService', () => {
         name: 'MyFeature',
         blockedBy: [
           {
+            type: 'resourceTotal',
+            params: {
+              name: 'wood',
+              quantity: 150,
+            }
+          } as IResourceBlocker
+        ]
+      });
+      gameContext.allResources.push({
+        name: 'wood',
+        icon: '',
+        max: 100,
+        resourceType: 'CLASSIC',
+        selfGrow: 1,
+        growType: 'CLASSIC',
+      });
+      const building: IBuilding = {
+        name: 'MyBuilding',
+        cost: {
+          wood: 80
+        },
+      };
+      gameContext.allBuildings.push(building);
+
+      const checkDatas = [
+        (datas: IGame) => {
+          expect(datas.time).toBe(10_000);
+          expect(datas.showableElements.features.hasElement('MyFeature')).toBe(false);
+          expect(datas.resources.wood).toEqual({
+            icon: '',
+            max: 100,
+            quantity: 10,
+          });
+          expect(datas.resourcesTotal.wood).toBe(10);
+          expect(datas.calculated.nextEvent).toBe(100_000);
+          setTimeout(() => tickService.tick$.next(150 * 1000));
+        },
+        (datas: IGame) => {
+          expect(datas.time).toBe(150_000);
+          expect(datas.showableElements.features.hasElement('MyFeature')).toBe(false);
+          expect(datas.resources.wood).toEqual({
+            icon: '',
+            max: 100,
+            quantity: 100,
+          });
+          expect(datas.resourcesTotal.wood).toBe(100);
+          expect(datas.calculated.nextEvent).toBe(+Infinity);
+          service.build(building).toPromise();
+        },
+        (datas: IGame) => {
+          expect(datas.time).toBe(150_000);
+          expect(datas.showableElements.features.hasElement('MyFeature')).toBe(false);
+          expect(datas.resources.wood).toEqual({
+            icon: '',
+            max: 100,
+            quantity: 20,
+          });
+          expect(datas.resourcesTotal.wood).toBe(100);
+          expect(datas.buildings.MyBuilding).toBe(1);
+          expect(datas.calculated.nextEvent).toBe(0);
+          setTimeout(() => tickService.tick$.next(210 * 1000));
+        },
+        (datas: IGame) => {
+          expect(datas.time).toBe(210_000);
+          expect(datas.showableElements.features.hasElement('MyFeature')).toBe(true);
+          expect(datas.resources.wood).toEqual({
+            icon: '',
+            max: 100,
+            quantity: 80,
+          });
+          expect(datas.resourcesTotal.wood).toBe(160);
+          expect(datas.buildings.MyBuilding).toBe(1);
+          expect(datas.calculated.nextEvent).toBe(230_000);
+        },
+      ];
+
+      service.init(gameContext);
+      service.start();
+      // Send 10s
+      let currentCallIndex = 0;
+      service.datas$.pipe(
+        filter((datas) => datas.time > 0),
+        tap((datas) => {
+          checkDatas[currentCallIndex](datas);
+          currentCallIndex++;
+        }),
+        take(4),
+      ).subscribe({
+        complete: done,
+        error: done.fail,
+      });
+      tickService.tick$.next(10 * 1000);
+    });
+    it('Try a feature blocked by resources', (done) => {
+      gameContext.allFeatures.push({
+        name: 'MyFeature',
+        blockedBy: [
+          {
             type: 'resource',
             params: {
               name: 'wood',
@@ -469,7 +567,7 @@ describe('StoreService', () => {
       });
       tickService.tick$.next(10 * 1000);
     });
-    fit('Try a feature blocked by building', (done) => {
+    it('Try a feature blocked by building', (done) => {
       gameContext.allFeatures.push({
         name: 'MyFeature',
         blockedBy: [
@@ -548,5 +646,78 @@ describe('StoreService', () => {
       });
       tickService.tick$.next(10 * 1000);
     });
+  });
+  it('Try a feature blocked by feature', (done) => {
+    featuresService.setFeature = () => {};
+    gameContext.allFeatures.push({
+      name: 'MyFeature',
+      blockedBy: [
+        {
+          type: 'feature',
+          params: {
+            name: 'MyFeature2',
+          }
+        } as IFeatureBlocker,
+      ]
+    }, {
+      name: 'MyFeature2',
+      blockedBy: [
+        {
+          type: 'building',
+          params: {
+            name: 'MyBuilding',
+            quantity: 1,
+          }
+        } as IBuildingBlocker,
+      ]
+    });
+    const building: IBuilding = {
+      name: 'MyBuilding',
+      cost: {}
+    };
+    gameContext.allBuildings.push(building);
+
+    const checkDatas = [
+      (datas: IGame) => {
+        expect(datas.time).toBe(10_000);
+        expect(datas.showableElements.features.hasElement('MyFeature')).toBe(false);
+        expect(datas.showableElements.features.hasElement('MyFeature2')).toBe(false);
+        expect(datas.buildings.MyBuilding).toBeUndefined();
+        expect(datas.calculated.nextEvent).toBe(+Infinity);
+        return service.build(building).toPromise();
+      },
+      (datas: IGame) => {
+        expect(datas.time).toBe(10_000);
+        expect(datas.showableElements.features.hasElement('MyFeature')).toBe(false);
+        expect(datas.showableElements.features.hasElement('MyFeature2')).toBe(false);
+        expect(datas.buildings.MyBuilding).toBe(1);
+        expect(datas.calculated.nextEvent).toBe(0);
+        setTimeout(() => tickService.tick$.next(20 * 1000));
+      },
+      (datas: IGame) => {
+        expect(datas.time).toBe(20_000);
+        expect(datas.showableElements.features.hasElement('MyFeature')).toBe(true);
+        expect(datas.showableElements.features.hasElement('MyFeature2')).toBe(true);
+        expect(datas.buildings.MyBuilding).toBe(1);
+        expect(datas.calculated.nextEvent).toBe(+Infinity);
+      },
+    ];
+
+    service.init(gameContext);
+    service.start();
+    // Send 10s
+    let currentCallIndex = 0;
+    service.datas$.pipe(
+      filter((datas) => datas.time > 0),
+      tap((datas) => {
+        checkDatas[currentCallIndex](datas);
+        currentCallIndex++;
+      }),
+      take(3),
+    ).subscribe({
+      complete: done,
+      error: done.fail,
+    });
+    tickService.tick$.next(10 * 1000);
   });
 });
