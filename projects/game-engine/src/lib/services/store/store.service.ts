@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { from, Observable, ReplaySubject, Subject } from 'rxjs';
+import { defer, from, Observable, ReplaySubject, Subject } from 'rxjs';
 import { filter, finalize, switchMap, tap, withLatestFrom } from 'rxjs/operators';
 import {
   IGame,
@@ -584,8 +584,11 @@ export class StoreService {
   ): { time: number, blockers: IBlocker<any>[] } {
     const blockersActual = blockers.filter((blocker) => {
       switch (blocker.type) {
-        case 'building':
-          return true;
+        case 'building': {
+          const typedBlocker = blocker as IBuildingBlocker;
+          const nbBuilding = game.buildings[typedBlocker.params.name] || 0;
+          return nbBuilding < typedBlocker.params.quantity;
+        }
         case 'feature':
           return true;
         case 'resource': {
@@ -738,27 +741,29 @@ export class StoreService {
   }
 
   private lock<T>(callback: (datas: IGame, gameContext: ICalculatedGameContext, config: IConfig) => Promise<T> | T): Observable<T> {
-    let resolve;
-    const newPromise = new Promise<void>((resolveParam) => {
-      resolve = resolveParam;
+    return defer(() => {
+      let resolve;
+      const newPromise = new Promise<void>((resolveParam) => {
+        resolve = resolveParam;
+      });
+      let resolveWait;
+      const promiseWait = new Promise<void>((resolveParam) => {
+        resolveWait = resolveParam;
+      });
+      this.nextLock = this.nextLock.then(() => {
+        resolveWait();
+        return newPromise;
+      });
+      return from(promiseWait).pipe(
+        withLatestFrom(this.datas$, this.gameContext$, this.configService.config$),
+        switchMap(([_, datas, context, config]): Promise<T> => {
+          return Promise.resolve().then(() => callback(datas, context, config));
+        }),
+        finalize(() => {
+          resolve();
+        }),
+      );
     });
-    let resolveWait;
-    const promiseWait = new Promise<void>((resolveParam) => {
-      resolveWait = resolveParam;
-    });
-    this.nextLock = this.nextLock.then(() => {
-      resolveWait();
-      return newPromise;
-    });
-    return from(promiseWait).pipe(
-      withLatestFrom(this.datas$, this.gameContext$, this.configService.config$),
-      switchMap(([_, datas, context, config]): Promise<T> => {
-        return Promise.resolve().then(() => callback(datas, context, config));
-      }),
-      finalize(() => {
-        resolve();
-      }),
-    );
   }
 
   public addBuildingInFavorites(building: IBuilding): Observable<void> {
