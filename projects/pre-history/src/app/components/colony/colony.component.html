@@ -7,8 +7,7 @@
                 [routerLink]="['/colony', resource.name]" routerLinkActive="active">
                 <div class="row">
                     <div class="col d-flex align-items-center">
-                        <i class="h6 fa fa-fw mr-1 icon-resource"
-                            [ngClass]="'fa-' + resource.icon"></i>
+                        <i class="h6 fa fa-fw mr-1 icon-resource" [ngClass]="'fa-' + resource.icon"></i>
                         <span [tr]="'resources.' + resource.name + '.name'"></span>
                     </div>
                     <div class="col-auto text-right">
@@ -29,7 +28,8 @@
                         <img [src]="'assets/buildings/' + building.building.name + '.png'" class="card-img-top">
                         <div class="card-title">
                             <span [tr]="'buildings.'+building.building.name+'.name'"></span>
-                            <button (click)="backgroundAction.execute(storeService.addBuildingInFavorites(building.building))">Favorites</button>
+                            <button
+                                (click)="backgroundAction.execute(storeService.addBuildingInFavorites(building.building))">Favorites</button>
                         </div>
                         <div class="card-count">
                             <small class="c-second">x</small>
@@ -43,8 +43,10 @@
                         <div class="small mb-1"><span class="c-second" tr>cost</span></div>
                         <div class="row g-2">
                             <div class="col-auto" *ngFor="let resourceCost of building.costNextLevel">
-                                <i class="fa fa-fw mr-1 icon-resource" [ngClass]="'fa-' + resourceCost.resource.icon"></i>
-                                <span [ngClass]="{'c-error': (resourceCost.isOk$ | async) >= 0}" class="c-first">{{resourceCost.count}}</span>
+                                <i class="fa fa-fw mr-1 icon-resource"
+                                    [ngClass]="'fa-' + resourceCost.resource.icon"></i>
+                                <span [ngClass]="{'c-error': (resourceCost.isOk$ | async) >= 0}"
+                                    class="c-first">{{resourceCost.count}}</span>
                             </div>
                         </div>
                     </div>
@@ -52,9 +54,11 @@
                         <div class="small mb-1"><span class="c-second" tr>produce</span></div>
                         <div class="row g-2">
                             <div class="col-auto" *ngFor="let resourceProduce of building.produceNextLevel">
-                                <i class="fa fa-fw mr-1 icon-resource" [ngClass]="'fa-' + resourceProduce.resource.icon"></i>
-                                <span *ngIf="building.produceCurrentLevel.getElement(resourceProduce.resource.name); let current">
-                                    <span class="c-error">+{{current.count}}</span> => 
+                                <i class="fa fa-fw mr-1 icon-resource"
+                                    [ngClass]="'fa-' + resourceProduce.resource.icon"></i>
+                                <span
+                                    *ngIf="building.produceCurrentLevel.getElement(resourceProduce.resource.name); let current">
+                                    <span class="c-error">+{{current.count}}</span> =>
                                 </span>
                                 <span class="c-success mr-1">+{{resourceProduce.count}}</span>
                                 <small class="c-second">/sec</small>
@@ -65,9 +69,11 @@
                         <div class="small mb-1"><span class="c-second" tr>storage</span></div>
                         <div class="row g-2">
                             <div class="col-auto" *ngFor="let resourceStorage of building.storageNextLevel">
-                                <i class="fa fa-fw mr-1 icon-resource" [ngClass]="'fa-' + resourceStorage.resource.icon"></i>
-                                <span *ngIf="building.storageCurrentLevel.getElement(resourceStorage.resource.name); let current">
-                                    <span class="c-error">+{{current.count}}</span> => 
+                                <i class="fa fa-fw mr-1 icon-resource"
+                                    [ngClass]="'fa-' + resourceStorage.resource.icon"></i>
+                                <span
+                                    *ngIf="building.storageCurrentLevel.getElement(resourceStorage.resource.name); let current">
+                                    <span class="c-error">+{{current.count}}</span> =>
                                 </span>
                                 <span class="c-success">+{{resourceStorage.count}}</span>
                             </div>
@@ -77,16 +83,26 @@
                         <div class="small mb-1"><span class="c-second" tr>maintenance</span></div>
                         <div class="row g-2">
                             <div class="col-auto" *ngFor="let resourceStorage of building.maintenanceNextLevel">
-                                <i class="fa fa-fw mr-1 icon-resource" [ngClass]="'fa-' + resourceStorage.resource.icon"></i>
-                                <span *ngIf="building.maintenanceCurrentLevel.getElement(resourceStorage.resource.name); let current">
-                                    <span class="c-error">+{{current.count}}</span> => 
+                                <i class="fa fa-fw mr-1 icon-resource"
+                                    [ngClass]="'fa-' + resourceStorage.resource.icon"></i>
+                                <span
+                                    *ngIf="building.maintenanceCurrentLevel.getElement(resourceStorage.resource.name); let current">
+                                    <span class="c-error">+{{current.count}}</span> =>
                                 </span>
                                 <span class="c-success">+{{resourceStorage.count}}</span>
                             </div>
                         </div>
                     </div>
-                    <button class="btn btn-primary"
-                        (click)="backgroundAction.execute(storeService.build(building.building))" tr>build</button>
+                    <div class="container">
+                        <div class="row">
+                            <button class="btn btn-primary col-6"
+                                (click)="backgroundAction.execute(storeService.build(building.building))"
+                                tr>build</button>
+                            <button class="btn btn-primary col-6" [disabled]="building.count <= 0"
+                                (click)="backgroundAction.execute(storeService.destroy(building.building))"
+                                tr>destroy</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

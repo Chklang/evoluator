@@ -732,6 +732,43 @@ export class StoreService {
     });
   }
 
+  public destroy(building: IBuilding): Observable<void> {
+    return this.lock((oldDatas, gameContext) => {
+      if (!oldDatas.buildings[building.name]) {
+        return Promise.reject();
+      }
+      // Check if storage after destruction is correct (max storage greater than min storage)
+      const newStorageIsOk = Object.keys(building.storage || {}).every((key) => {
+        if (!oldDatas.resources[key]) {
+          return true;
+        }
+        const min = oldDatas.resources[key].min || 0;
+        const max = oldDatas.resources[key].max || 0;
+        if (max - building.storage[key] < min) {
+          return false;
+        }
+        return true;
+      });
+      if (!newStorageIsOk) {
+        return Promise.reject();
+      }
+      const datas: IGame = this.cloneDatas(oldDatas);
+      datas.buildings[building.name]--;
+      Object.keys(building.storage || {}).forEach((key) => {
+        if (!datas.resources[key]) {
+          return;
+        }
+        const stock = datas.resources[key].quantity || 0;
+        datas.resources[key].max -= building.storage[key];
+        datas.resources[key].quantity = Math.min(stock, datas.resources[key].max);
+      });
+      this.buildingsService.setBuildingCount(gameContext, building, datas.buildings[building.name], [], 0, datas);
+      datas.calculated.nextEvent = 0;
+      this.datas$.next(datas);
+      return this.persistentService.save(datas).toPromise().then(() => { });
+    });
+  }
+
   public research(research: IResearch): Observable<void> {
     return this.lock((oldDatas, gameContext) => {
       const currentLevel = oldDatas.researchs[research.name] || 0;

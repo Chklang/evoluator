@@ -31,6 +31,7 @@
         "storage": "Storage",
         "save": "Save",
         "maintenance": "Maintenance",
+        "destroy": "Destroy",
         "resources": {
             "wood": {
                 "name": "Wood"
@@ -43,6 +44,10 @@
             }
         },
         "buildings": {
+            "Cave": {
+                "name": "Cave",
+                "description": "Primitive place of dwelling"
+            },
             "Scierie": {
                 "name": "Wood cutter",
                 "description": "Building to cut wood"
@@ -54,12 +59,20 @@
             "Ferme": {
                 "name": "Farm",
                 "description": "Food production field"
+            },
+            "Attic": {
+                "name": "Attic",
+                "description": "Place to store food"
             }
         },
         "researchs": {
             "axe": {
                 "name": "Axe",
                 "description": "Upgrade axe is always a good idea :)"
+            },
+            "Seduction": {
+                "name": "Seduction",
+                "description": "Increases the reproduction probability"
             }
         },
         "achievements": {

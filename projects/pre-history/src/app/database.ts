@@ -26,6 +26,15 @@ export const resources: IResource[] = [
 ];
 export const buildings: IBuilding[] = [
     {
+        name: 'Cave',
+        cost: {
+            wood: 10,
+        },
+        storage: {
+            population: 10,
+        },
+    },
+    {
         name: 'Scierie',
         produce: {
             wood: 5,
@@ -58,6 +67,15 @@ export const buildings: IBuilding[] = [
             population: 1,
         },
     },
+    {
+        name: 'Attic',
+        cost: {
+            wood: 100,
+        },
+        storage: {
+            food: 200,
+        },
+    },
 ];
 
 export const features: IFeature[] = [
@@ -78,7 +96,17 @@ export const researchs: IResearch[] = [
         cost: {
             wood: 120,
         },
-    }
+    },
+    {
+        name: 'Seduction',
+        bonusBuildingCosts: {},
+        bonusResources: {
+            population: 1.02,
+        },
+        cost: {
+            food: 100,
+        },
+    },
 ];
 
 export const achievements: IAchievement[] = [

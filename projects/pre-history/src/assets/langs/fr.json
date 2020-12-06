@@ -31,6 +31,7 @@
         "storage": "stockage",
         "save": "Sauvegarder",
         "maintenance": "Maintenance",
+        "destroy": "Détruire",
         "resources": {
             "wood": {
                 "name": "Bois"
@@ -43,6 +44,10 @@
             }
         },
         "buildings": {
+            "Cave": {
+                "name": "Grotte",
+                "description": "Lieu primitif d'habitation"
+            },
             "Scierie": {
                 "name": "Scierie",
                 "description": "Bâtiment de découpe du bois"
@@ -54,12 +59,20 @@
             "Ferme": {
                 "name": "Ferme",
                 "description": "Champs de production de nourriture"
+            },
+            "Attic": {
+                "name": "Grenier",
+                "description": "Lieu pour stocker la nourriture"
             }
         },
         "researchs": {
             "axe": {
                 "name": "Hâche",
                 "description": "L'amélioration des hâches est toujours une bonne idée :)"
+            },
+            "Seduction": {
+                "name": "Séduction",
+                "description": "Augmente la probabilité de séduction"
             }
         },
         "achievements": {
