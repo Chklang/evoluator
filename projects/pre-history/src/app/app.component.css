@@ -14,3 +14,7 @@
 .favorites {
     width: 200px;
 }
+.alerts {
+    position: absolute;
+    right: 0px;
+}

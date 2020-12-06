@@ -1,0 +1,18 @@
+.message {
+    background-color: red;
+    padding: 5px;
+    border-radius: 10px;
+}
+.message .text {
+    padding: 3px;
+}
+li {
+    list-style: none;
+    padding: 5px;
+}
+
+.message .btn {
+    background-color: transparent;
+    border: none;
+    color: white;
+}

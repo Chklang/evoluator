@@ -86,6 +86,15 @@
                     "name": "Quantité totale de bois généré depuis le début : %0"
                 }
             }
+        },
+        "messages": {
+            "buildings": {
+                "build": "Impossible de construire le bâtiment {buildings.%0.name}",
+                "destroy": "Impossible de détruire le bâtiment {buildings.%0.name}"
+            },
+            "researchs": {
+                "search": "Impossible de rechercher {researchs.%0.name}"
+            }
         }
     }
 }

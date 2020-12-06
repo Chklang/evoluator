@@ -1,0 +1,8 @@
+<ul>
+    <li *ngFor="let message of (messagesService.messages$ | async)">
+        <div class="message" [ngClass]="{info: message.type === 'INFO', error: message.type === 'ERROR'}">
+            <span class="text" [tr]="message.code" [trParams]="{values: message.values}"></span>
+            <button class="btn" (click)="message.remove()">X</button>
+        </div>
+    </li>
+</ul>

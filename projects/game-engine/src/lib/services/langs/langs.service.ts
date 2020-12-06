@@ -21,6 +21,8 @@ interface ILangDictionnary {
   [key: string]: string;
 }
 
+const PLACEHOLDERS = /\{([^\}]+)\}/g;
+
 @Injectable({
   providedIn: 'root'
 })
@@ -119,9 +121,22 @@ export class LangsService {
     );
   }
 
-  public translate(text: string): Observable<string> {
+  public translate(text: string, values: (string | number)[]): Observable<string> {
     return this.currentTranslation$.pipe(
-      map((dictionnary) => dictionnary[text] || text),
+      map((dictionnary) => {
+        let result = dictionnary[text] || text;
+        result = values.reduce<string>((prev: string, current, index) => {
+          return prev.replace('%' + index, String(current));
+        }, result);
+        let resultModified = result;
+        do {
+          result = resultModified;
+          resultModified = result.replace(PLACEHOLDERS, (_, token) => {
+            return dictionnary[token] || token;
+          });
+        } while (resultModified !== result);
+        return resultModified;
+      }),
     );
   }
 }

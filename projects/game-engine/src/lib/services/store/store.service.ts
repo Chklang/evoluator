@@ -27,6 +27,7 @@ import { BuildingsService } from '../buildings/buildings.service';
 import { ConfigService } from '../config/config.service';
 import { EFavoriteType, FavoritesService } from '../favorites/favorites.service';
 import { FeaturesService } from '../features/features.service';
+import { MessagesService } from '../messages/messages.service';
 import { PersistentService } from '../persistent/persistent.service';
 import { ResearchsService } from '../researchs/researchs.service';
 import { TickService } from '../tick/tick.service';
@@ -712,7 +713,12 @@ export class StoreService {
         return true;
       });
       if (!costIsOk) {
-        return Promise.resolve();
+        return Promise.reject(MessagesService.create({
+          code: 'messages.buildings.build',
+          type: 'ERROR',
+          values: [building.name],
+          persistent: false,
+        }));
       }
 
       const datas: IGame = this.cloneDatas(oldDatas);
@@ -735,7 +741,12 @@ export class StoreService {
   public destroy(building: IBuilding): Observable<void> {
     return this.lock((oldDatas, gameContext) => {
       if (!oldDatas.buildings[building.name]) {
-        return Promise.reject();
+        return Promise.reject(MessagesService.create({
+          code: 'messages.buildings.destroy',
+          type: 'ERROR',
+          values: [building.name],
+          persistent: false,
+        }));
       }
       // Check if storage after destruction is correct (max storage greater than min storage)
       const newStorageIsOk = Object.keys(building.storage || {}).every((key) => {
@@ -750,7 +761,12 @@ export class StoreService {
         return true;
       });
       if (!newStorageIsOk) {
-        return Promise.reject();
+        return Promise.reject(MessagesService.create({
+          code: 'messages.buildings.destroy',
+          type: 'ERROR',
+          values: [building.name],
+          persistent: false,
+        }));
       }
       const datas: IGame = this.cloneDatas(oldDatas);
       datas.buildings[building.name]--;
@@ -782,7 +798,12 @@ export class StoreService {
         return true;
       });
       if (!costIsOk) {
-        return Promise.resolve();
+        return Promise.reject(MessagesService.create({
+          code: 'messages.researchs.search',
+          type: 'ERROR',
+          values: [research.name],
+          persistent: false,
+        }));
       }
       const datas: IGame = this.cloneDatas(oldDatas);
       Object.keys(research.cost).every((costKey) => {

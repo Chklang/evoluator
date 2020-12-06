@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { MessagesService } from 'game-engine';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -6,13 +7,16 @@ import { Observable } from 'rxjs';
 })
 export class BackgroundActionsService {
 
-  constructor() { }
+  constructor(
+    private messagesService: MessagesService,
+  ) { }
 
   public execute(action: Observable<any>): void {
     action.subscribe({
       complete: () => {
       },
       error: (e) => {
+        this.messagesService.addMessage(e);
         console.error(e);
       },
     });

@@ -12,7 +12,7 @@ export interface ITrParams {
 export class TrDirective implements OnDestroy, OnInit {
   private unsubscribe: Subscription | undefined;
   private trKey = '';
-  private trParamsInternal?: ITrParams = {};
+  private trParamsInternal?: ITrParams = { values: [] };
   @Input()
   public get tr(): string {
     return this.trKey;
@@ -26,7 +26,12 @@ export class TrDirective implements OnDestroy, OnInit {
     return this.trParamsInternal;
   }
   public set trParams(value: ITrParams | undefined) {
-    this.trParamsInternal = value;
+    this.trParamsInternal = value || {
+      values: [],
+    };
+    if (!this.trParamsInternal.values) {
+      this.trParamsInternal.values = [];
+    }
     this.updateKey();
   }
 
@@ -45,12 +50,7 @@ export class TrDirective implements OnDestroy, OnInit {
     if (this.unsubscribe) {
       this.unsubscribe.unsubscribe();
     }
-    this.unsubscribe = this.langsService.translate(this.trKey).subscribe(value => {
-      if (this.trParams && this.trParams.values) {
-        value = this.trParams.values.reduce((prev, current, index) => {
-          return prev.replace('%' + index, current);
-        }, value);
-      }
+    this.unsubscribe = this.langsService.translate(this.trKey, this.trParams.values).subscribe(value => {
       this.el.nativeElement.innerText = value;
     });
   }

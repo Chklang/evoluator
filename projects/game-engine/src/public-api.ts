@@ -3,9 +3,9 @@
  */
 
 export * from './lib/game-engine.service';
-export * from './lib/game-engine.component';
 export * from './lib/game-engine.module';
 
+export * from './lib/components';
 export * from './lib/model';
 export * from './lib/services';
 export * from './lib/directives';

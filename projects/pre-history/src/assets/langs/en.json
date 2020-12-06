@@ -86,6 +86,15 @@
                     "name": "Total wood generated since game start : %0"
                 }
             }
+        },
+        "messages": {
+            "buildings": {
+                "build": "Cannot build building {buildings.%0.name}",
+                "destroy": "Cannot destroy building {buildings.%0.name}"
+            },
+            "researchs": {
+                "search": "Cannot research {researchs.%0.name}"
+            }
         }
     }
 }
