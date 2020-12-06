@@ -1,13 +1,14 @@
 import { NgModule } from '@angular/core';
 import { GameEngineComponent } from './game-engine.component';
-import { ResourcesPipe } from './pipes/resources/resources.pipe';
 import { TrDirective } from './directives/tr/tr.directive';
 import { LangsService } from './services/langs/langs.service';
 import { StoreService } from './services/store/store.service';
 import { HttpClientModule } from '@angular/common/http';
-import { TimePipe } from './pipes/time/time.pipe';
-import { ProductionPipe } from './pipes/production/production.pipe';
+import { MaintenancePipe } from './pipes/maintenance/maintenance.pipe';
 import { PercentagePipe } from './pipes/percentage/percentage.pipe';
+import { ProductionPipe } from './pipes/production/production.pipe';
+import { ResourcesPipe } from './pipes/resources/resources.pipe';
+import { TimePipe } from './pipes/time/time.pipe';
 import { ResearchsService } from './services/researchs/researchs.service';
 import { FeaturesService } from './services/features/features.service';
 import { ConfigService } from './services/config/config.service';
@@ -25,7 +26,7 @@ export function getBaseUrl(): string {
 }
 
 @NgModule({
-  declarations: [GameEngineComponent, ResourcesPipe, TrDirective, TimePipe, ProductionPipe, PercentagePipe],
+  declarations: [GameEngineComponent, ResourcesPipe, TrDirective, TimePipe, ProductionPipe, PercentagePipe, MaintenancePipe],
   imports: [
     HttpClientModule,
   ],
@@ -47,6 +48,7 @@ export function getBaseUrl(): string {
     TimePipe,
     ProductionPipe,
     PercentagePipe,
+    MaintenancePipe,
   ],
 })
 export class GameEngineModule { }

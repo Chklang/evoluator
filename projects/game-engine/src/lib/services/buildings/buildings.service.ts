@@ -152,6 +152,52 @@ export class BuildingsService {
           count: building.storage[key] * (count + 1),
         };
       }), (e) => e.resource.name),
+      maintenanceCurrentLevel: this.dict(Object.keys(building.maintenance || {}).map((key): IResourceCount => {
+        return {
+          resource: gameContext.allResources.getElement(key),
+          count: building.maintenance[key] * count,
+        };
+      }), (e) => e.resource.name),
+      maintenanceNextLevel: this.dict(Object.keys(building.maintenance || {}).map((key): IResourceNeed => {
+        const countResourceNeeded = (game.resources[key]?.min || 0) + building.maintenance[key];
+        let isOk$: Observable<number>;
+        const countResourceActual = game.resources[key]?.quantity || 0;
+        if (countResourceNeeded <= countResourceActual) {
+          isOk$ = of(-1);
+        } else if ((game.calculated.production[key] || 0) <= 0) {
+          isOk$ = of(0);
+        } else {
+          let ressourceBlockedUntil: number;
+          switch (gameContext.allResources.getElement(key).growType) {
+            case 'EXPONENTIAL':
+              ressourceBlockedUntil = Math.log(countResourceNeeded / countResourceActual) /
+                Math.log(game.calculated.production[key]);
+              break;
+            case 'CLASSIC':
+            default:
+              ressourceBlockedUntil = (countResourceNeeded - countResourceActual) / game.calculated.production[key];
+              break;
+          }
+          ressourceBlockedUntil = ressourceBlockedUntil * 1000 + game.time;
+          let buildingCanBeBuilt = false;
+          isOk$ = this.tickService.tick$.pipe(
+            map((now) => ressourceBlockedUntil - now),
+            map((value) => (Math.ceil(value / 1000) * 1000) || -1), // Never 0, 0=not accessible
+            takeWhile(() => !buildingCanBeBuilt),
+            tap((value) => {
+              if (value < 0) {
+                buildingCanBeBuilt = true;
+              }
+            }),
+            shareReplay(1),
+          );
+        }
+        return {
+          resource: gameContext.allResources.getElement(key),
+          count: building.maintenance[key] * (count + 1),
+          isOk$,
+        };
+      }), (e) => e.resource.name),
       blockersStatus: blockers,
       blockedUntil,
       timeBeforeUnlock,
@@ -180,6 +226,8 @@ export interface IShowableBuilding {
   produceNextLevel: Dictionnary<string, IResourceCount>;
   storageCurrentLevel: Dictionnary<string, IResourceCount>;
   storageNextLevel: Dictionnary<string, IResourceCount>;
+  maintenanceCurrentLevel: Dictionnary<string, IResourceCount>;
+  maintenanceNextLevel: Dictionnary<string, IResourceNeed>;
   blockersStatus: IBlockerStatus[];
   timeBeforeUnlock: Observable<number>;
 }

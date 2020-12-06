@@ -30,6 +30,7 @@
         "produce": "production",
         "storage": "stockage",
         "save": "Sauvegarder",
+        "maintenance": "Maintenance",
         "resources": {
             "wood": {
                 "name": "Bois"

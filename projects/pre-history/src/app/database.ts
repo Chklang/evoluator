@@ -7,7 +7,6 @@ export const resources: IResource[] = [
         name: 'population',
         icon: 'user',
         max: 10,
-        min: 1,
         resourceType: 'POPULATION',
         selfGrow: 1.01,
         growType: 'EXPONENTIAL',
@@ -34,6 +33,9 @@ export const buildings: IBuilding[] = [
         cost: {
             wood: 30,
         },
+        maintenance: {
+            population: 1,
+        },
     },
     {
         name: 'EntrepotsBois',
@@ -51,6 +53,9 @@ export const buildings: IBuilding[] = [
         },
         cost: {
             wood: 10,
+        },
+        maintenance: {
+            population: 1,
         },
     },
 ];
@@ -102,7 +107,7 @@ export const achievements: IAchievement[] = [
 export const gameFromScratch: IGame = {
     time: Date.now(),
     resources: {
-        population: { quantity: 1, max: 1, icon: 'user' },
+        population: { quantity: 1, max: 1, icon: 'user', min: 10 },
     },
     buildings: {
         Scierie: 2,

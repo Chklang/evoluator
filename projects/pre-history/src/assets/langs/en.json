@@ -30,6 +30,7 @@
         "produce": "Production",
         "storage": "Storage",
         "save": "Save",
+        "maintenance": "Maintenance",
         "resources": {
             "wood": {
                 "name": "Wood"

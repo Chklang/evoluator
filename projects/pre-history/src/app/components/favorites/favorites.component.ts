@@ -38,7 +38,9 @@ export class FavoritesComponent implements OnInit {
                     buttonText: 'build',
                     timeBeforeUnlock: combineLatest(element.costNextLevel.map((cost) => {
                       return cost.isOk$;
-                    })).pipe(
+                    }).concat(element.maintenanceNextLevel.map((maintenance) => {
+                      return maintenance.isOk$;
+                    }))).pipe(
                       map((costs) => costs.reduce((prev, curr) =>
                         (prev === 0 || curr === 0) ? 0 : Math.max(prev, curr), -1)
                       ),

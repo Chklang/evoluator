@@ -7,7 +7,7 @@ import { IAchievement } from './i-achievement';
 
 export interface IGame {
     time: number;
-    resources: Record<string, { quantity: number; max: number; icon: string; }>;
+    resources: Record<string, { quantity: number; min: number; max: number; icon: string; }>;
     buildings: Record<string, number>;
     researchs: Record<string, number>;
     favorites: { type: string, name: string }[];

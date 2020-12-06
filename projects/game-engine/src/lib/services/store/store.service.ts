@@ -58,7 +58,6 @@ export class StoreService {
         context.allResources.forEach((resource) => {
           this.resourcesByKey[resource.name] = resource;
           resource.growType = resource.growType || 'CLASSIC';
-          resource.consumeType = resource.consumeType || 'FOR_PRODUCTION';
           resource.min = resource.min || 0;
           switch (resource.growType) {
             case 'CLASSIC':
@@ -118,14 +117,6 @@ export class StoreService {
   }
 
   private initShowableElements(gameContext: ICalculatedGameContext, datas: IGame): IGame {
-    gameContext.allBuildings.filter((building) => Object.keys(building.blockedBy || {}).every((key) => {
-      return false;
-    })).forEach((building) => {
-      datas.showableElements.buildings.addElement(building.name, building);
-    });
-    datas.showableElements.buildings.forEach((building => {
-      this.buildingsService.setBuildingCount(gameContext, building, datas.buildings[building.name] || 0, [], 0, datas);
-    }));
 
     gameContext.allResources.filter((resource) => Object.keys(resource.blockedBy || {}).every((key) => {
       return false;
@@ -135,6 +126,7 @@ export class StoreService {
         datas.resources[resource.name] = {
           icon: resource.icon,
           max: resource.max,
+          min: resource.min,
           quantity: resource.min,
         };
       }
@@ -142,6 +134,18 @@ export class StoreService {
         datas.resourcesTotal[resource.name] = 0;
       }
     });
+    gameContext.allBuildings.filter((building) => Object.keys(building.blockedBy || {}).every((key) => {
+      return false;
+    })).forEach((building) => {
+      datas.showableElements.buildings.addElement(building.name, building);
+    });
+    datas.showableElements.buildings.forEach((building => {
+      const nbBuildings = datas.buildings[building.name] || 0;
+      this.buildingsService.setBuildingCount(gameContext, building, nbBuildings, [], 0, datas);
+      Object.keys(building.maintenance || {}).forEach((resourceName) => {
+        datas.resources[resourceName].min += building.maintenance[resourceName] * nbBuildings;
+      });
+    }));
 
     gameContext.allFeatures.filter((feature) => Object.keys(feature.blockedBy || {}).every((key) => {
       return false;
@@ -259,11 +263,13 @@ export class StoreService {
         game.resources[resource.name] = {
           quantity: 0,
           max: resource.max,
+          min: resource.min,
           icon: resource.icon,
         };
         game.resourcesTotal[resource.name] = 0;
       } else {
         game.resources[resource.name].max = resource.max;
+        game.resources[resource.name].min = resource.min;
       }
     });
     Object.keys(game.researchs).forEach((researchName) => {
@@ -287,6 +293,9 @@ export class StoreService {
       .forEach((building) => {
         Object.keys(building.storage || {}).forEach((resource) => {
           game.resources[resource].max += building.storage[resource] * game.buildings[building.name];
+        });
+        Object.keys(building.maintenance || {}).forEach((resourceName) => {
+          game.resources[resourceName].min += building.maintenance[resourceName] * game.buildings[building.name];
         });
       });
     do {
@@ -588,7 +597,7 @@ export class StoreService {
   private blockedUntil(
     game: IGame,
     gameContext: ICalculatedGameContext,
-    blockers: IBlocker<any>[]
+    blockers: IBlocker<any>[],
   ): { time: number, blockers: IBlocker<any>[] } {
     const blockersActual = blockers.filter((blocker) => {
       switch (blocker.type) {
@@ -682,7 +691,7 @@ export class StoreService {
     if (times.length === 0) {
       return { time: 0, blockers: [] };
     }
-    return { time: times.reduce((previous, current) => Math.min(previous, current), +Infinity), blockers: blockersActual };
+    return { time: times.reduce((previous, current) => Math.max(previous, current), 0), blockers: blockersActual };
   }
 
   public build(building: IBuilding): Observable<void> {
@@ -693,6 +702,11 @@ export class StoreService {
           return false;
         }
         if (oldDatas.resources[costKey].quantity < Math.ceil(building.cost[costKey] * Math.pow(1.2, currentLevel))) {
+          return false;
+        }
+        return true;
+      }) && Object.keys(building.maintenance || {}).every((costKey) => {
+        if ((oldDatas.resources[costKey].min + building.maintenance[costKey]) > oldDatas.resources[costKey].quantity) {
           return false;
         }
         return true;

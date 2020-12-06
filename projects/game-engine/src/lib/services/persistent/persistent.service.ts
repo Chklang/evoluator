@@ -109,6 +109,7 @@ export class PersistentService {
           quantity: saved.resources[resourceName],
           icon: gameContext.allResources.getElement(resourceName).icon,
           max: gameContext.allResources.getElement(resourceName).max,
+          min: gameContext.allResources.getElement(resourceName).min,
         };
         game.showableElements.resources.addElement(resourceName, gameContext.allResources.getElement(resourceName));
       });

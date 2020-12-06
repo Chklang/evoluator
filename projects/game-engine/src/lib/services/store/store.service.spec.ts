@@ -153,6 +153,7 @@ describe('StoreService', () => {
           expect(datas.resources.wood).toEqual({
             quantity: 20,
             max: 100,
+            min: 0,
             icon: '',
           });
           expect(datas.resourcesTotal.wood).toBe(20);
@@ -197,6 +198,7 @@ describe('StoreService', () => {
           expect(datas.resources.wood).toEqual({
             quantity: 1.2189944199947573,
             max: 100,
+            min: 1,
             icon: '',
           });
           expect(datas.resourcesTotal.wood).toBeGreaterThan(0.21899441999475);
@@ -234,6 +236,7 @@ describe('StoreService', () => {
           expect(datas.resources.wood).toEqual({
             quantity: 20,
             max: 100,
+            min: 0,
             icon: '',
           });
           expect(datas.resourcesTotal.wood).toBe(20);
@@ -271,6 +274,7 @@ describe('StoreService', () => {
           expect(datas.resources.wood).toEqual({
             quantity: 1.1046221254112045,
             max: 100,
+            min: 1,
             icon: '',
           });
           expect(datas.resourcesTotal.wood).toBeGreaterThan(0.10462212541120);
@@ -317,7 +321,7 @@ describe('StoreService', () => {
       };
       gameContext.gameFromScratch.resources = {
         wood: {
-          icon: '', max: 100_000, quantity: 100,
+          icon: '', max: 100_000, min: 0, quantity: 100,
         },
       };
 
@@ -331,12 +335,14 @@ describe('StoreService', () => {
           expect(datas.resources.wood).toEqual({
             quantity: 90,
             max: 100_000,
+            min: 0,
             icon: '',
           });
           expect(datas.resources.charcoal).toBeDefined();
           expect(datas.resources.charcoal).toEqual({
             quantity: 30,
             max: 100_000,
+            min: 0,
             icon: '',
           });
           expect(datas.resourcesTotal.wood).toBe(0);
@@ -355,12 +361,14 @@ describe('StoreService', () => {
           expect(datas.resources.wood).toEqual({
             quantity: 0,
             max: 100_000,
+            min: 0,
             icon: '',
           });
           expect(datas.resources.charcoal).toBeDefined();
           expect(datas.resources.charcoal).toEqual({
             quantity: 300,
             max: 100_000,
+            min: 0,
             icon: '',
           });
           expect(datas.resourcesTotal.wood).toBe(0);
@@ -452,6 +460,7 @@ describe('StoreService', () => {
           expect(datas.resources.wood).toEqual({
             icon: '',
             max: 100,
+            min: 0,
             quantity: 10,
           });
           expect(datas.resourcesTotal.wood).toBe(10);
@@ -464,6 +473,7 @@ describe('StoreService', () => {
           expect(datas.resources.wood).toEqual({
             icon: '',
             max: 100,
+            min: 0,
             quantity: 100,
           });
           expect(datas.resourcesTotal.wood).toBe(100);
@@ -476,6 +486,7 @@ describe('StoreService', () => {
           expect(datas.resources.wood).toEqual({
             icon: '',
             max: 100,
+            min: 0,
             quantity: 20,
           });
           expect(datas.resourcesTotal.wood).toBe(100);
@@ -489,6 +500,7 @@ describe('StoreService', () => {
           expect(datas.resources.wood).toEqual({
             icon: '',
             max: 100,
+            min: 0,
             quantity: 80,
           });
           expect(datas.resourcesTotal.wood).toBe(160);
