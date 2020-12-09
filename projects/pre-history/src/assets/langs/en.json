@@ -32,6 +32,10 @@
         "save": "Save",
         "maintenance": "Maintenance",
         "destroy": "Destroy",
+        "generateResource": {
+            "text": "Click here to self generate this resource",
+            "button": "Generate"
+        },
         "resources": {
             "wood": {
                 "name": "Wood"
@@ -94,6 +98,9 @@
             },
             "researchs": {
                 "search": "Cannot research {researchs.%0.name}"
+            },
+            "cheat": {
+                "generateResource": "Alert! Cheat detected!! It's bad :("
             }
         }
     }

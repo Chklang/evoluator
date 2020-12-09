@@ -32,6 +32,10 @@
         "save": "Sauvegarder",
         "maintenance": "Maintenance",
         "destroy": "Détruire",
+        "generateResource": {
+            "text": "Cliquez ici pour génerer vous-même de cette ressource",
+            "button": "Génerer"
+        },
         "resources": {
             "wood": {
                 "name": "Bois"
@@ -94,6 +98,9 @@
             },
             "researchs": {
                 "search": "Impossible de rechercher {researchs.%0.name}"
+            },
+            "cheat": {
+                "generateResource": "Alerte! Triche détectée! Ce n'est pas bien :("
             }
         }
     }

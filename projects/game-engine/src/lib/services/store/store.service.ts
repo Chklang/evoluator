@@ -893,4 +893,27 @@ export class StoreService {
       }
     });
   }
+
+  public generateResource(resource: IResource): Observable<void> {
+    return this.lock((game) => {
+      if (!game.showableElements.resources.hasElement(resource.name)) {
+        // TODO detect CHEAT!! Resource not visible!
+        return Promise.reject(MessagesService.create({
+          code: 'messages.cheat.generateResource',
+          type: 'ERROR',
+          persistent: false,
+          values: [resource.name],
+        }));
+      }
+      if (game.resources[resource.name].quantity >= game.resources[resource.name].max) {
+        // Already max, ignore!
+        return Promise.resolve();
+      }
+      const remainingPlace = Math.min(1, game.resources[resource.name].max - game.resources[resource.name].quantity);
+      game.resources[resource.name].quantity += remainingPlace;
+      game.resourcesTotal[resource.name] += remainingPlace;
+      game.calculated.nextEvent = 0;
+      return Promise.resolve();
+    });
+  }
 }

@@ -15,6 +15,12 @@ import { BackgroundActionsService } from '../../services/background-actions/back
 export class ColonyComponent implements OnInit {
   public buildingsToShow$: Observable<IShowableBuilding[]>;
   public JSON = JSON;
+  public resourceSelectedName: string | undefined;
+  public resourceSelected: IResource | undefined;
+  public readonly CAN_BE_GENERATED: Record<string, boolean> = {
+    wood: true,
+    food: true,
+  };
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
@@ -27,6 +33,8 @@ export class ColonyComponent implements OnInit {
   public ngOnInit(): void {
     this.buildingsToShow$ = this.activatedRoute.paramMap.pipe(
       switchMap((params) => {
+        this.resourceSelected = undefined;
+        this.resourceSelectedName = undefined;
         if (!params.has('selectedResource')) {
           return of([]);
         }
@@ -34,7 +42,9 @@ export class ColonyComponent implements OnInit {
         if (!resourcesByKey[selectedResource]) {
           return of([]);
         }
-        return this.buildingsService.listenBuildingByResource(resourcesByKey[selectedResource]);
+        this.resourceSelected = resourcesByKey[selectedResource];
+        this.resourceSelectedName = this.resourceSelected.name;
+        return this.buildingsService.listenBuildingByResource(this.resourceSelected);
       }),
     );
   }

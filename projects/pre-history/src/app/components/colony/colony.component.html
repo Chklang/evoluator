@@ -21,6 +21,12 @@
     </div>
 
     <div class="col">
+        <div class="row g-2" *ngIf="CAN_BE_GENERATED[resourceSelectedName]">
+            <div class="col-auto">
+                <span tr>generateResource.text</span>
+                <button (click)="backgroundAction.execute(storeService.generateResource(resourceSelected))" tr>generateResource.button</button>
+            </div>
+        </div>
         <div class="row g-2">
             <div class="col-auto" *ngFor="let building of (buildingsToShow$ | async); trackBy: buildingTrackByFn">
                 <div class="card card-unit">

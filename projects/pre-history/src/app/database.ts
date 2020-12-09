@@ -137,10 +137,7 @@ export const gameFromScratch: IGame = {
     resources: {
         population: { quantity: 1, max: 1, icon: 'user', min: 10 },
     },
-    buildings: {
-        Scierie: 2,
-        Ferme: 1,
-    },
+    buildings: {},
     researchs: {},
     favorites: [],
     achievements: {},
