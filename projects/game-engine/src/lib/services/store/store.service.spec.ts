@@ -14,6 +14,7 @@ import { ResearchsService } from '../researchs/researchs.service';
 import { TickService } from '../tick/tick.service';
 
 import { StoreService } from './store.service';
+import { ModalService } from '../modal/modal.service';
 
 interface TickServiceForTest {
   tick$: Subject<number>;
@@ -30,6 +31,7 @@ describe('StoreService', () => {
   let favoritesService: FavoritesService;
   let achievementsService: AchievementsService;
   let gameContext: IGameContext;
+  let modalService: ModalService;
 
   function createEmptyGame(): IGame {
     return {
@@ -82,6 +84,9 @@ describe('StoreService', () => {
     } as any;
     favoritesService = {} as any;
     achievementsService = {} as any;
+    modalService = {
+      openModal: () => {},
+    } as any;
     TestBed.configureTestingModule({
       providers: [
         {
@@ -115,6 +120,10 @@ describe('StoreService', () => {
         {
           provide: AchievementsService,
           useValue: achievementsService,
+        },
+        {
+          provide: ModalService,
+          useValue: modalService,
         },
       ],
     });

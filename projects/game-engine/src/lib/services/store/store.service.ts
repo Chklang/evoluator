@@ -22,6 +22,7 @@ import {
   IFeatureBlocker,
   IBuildingBlocker
 } from '../../model';
+import { ModalService } from '../modal/modal.service';
 import { AchievementsService } from '../achievements/achievements.service';
 import { BuildingsService } from '../buildings/buildings.service';
 import { ConfigService } from '../config/config.service';
@@ -53,6 +54,7 @@ export class StoreService {
     private persistentService: PersistentService,
     private favoritesService: FavoritesService,
     private achievementsService: AchievementsService,
+    private readonly modalService: ModalService,
   ) {
     this.gameContext$.pipe(
       tap((context) => {
@@ -215,26 +217,36 @@ export class StoreService {
         }
       }
     });
+    let newUnlockedElement = false;
     while (game.calculated.unlockFeature && game.calculated.unlockFeature.time < now) {
       game.showableElements.features.addElement(game.calculated.unlockFeature.element.name, game.calculated.unlockFeature.element);
+      this.modalService.openModal('features.' + game.calculated.unlockFeature.element.name);
       game.calculated.unlockFeature = game.calculated.unlockFeature.nextUnlock;
+      newUnlockedElement = true;
     }
     while (game.calculated.unlockResearch && game.calculated.unlockResearch.time < now) {
       game.showableElements.researchs.addElement(game.calculated.unlockResearch.element.name, game.calculated.unlockResearch.element);
       game.calculated.unlockResearch = game.calculated.unlockResearch.nextUnlock;
+      newUnlockedElement = true;
     }
     while (game.calculated.unlockBuilding && game.calculated.unlockBuilding.time < now) {
       game.showableElements.buildings.addElement(game.calculated.unlockBuilding.element.name, game.calculated.unlockBuilding.element);
       game.calculated.unlockBuilding = game.calculated.unlockBuilding.nextUnlock;
+      newUnlockedElement = true;
     }
     while (game.calculated.unlockAchievement && game.calculated.unlockAchievement.time < now) {
       const achievement = game.calculated.unlockAchievement.element;
       const level = game.calculated.unlockAchievement.level;
       this.achievementsService.changeOnlyLevel(achievement, level);
+      this.modalService.openModal('achievements.' + achievement.name, { level });
       game.achievements[achievement.name] = Math.max(game.achievements[achievement.name] || 0, level);
       game.calculated.unlockAchievement = game.calculated.unlockAchievement.nextUnlock;
+      newUnlockedElement = true;
     }
     game.time = now;
+    if (newUnlockedElement) {
+      this.persistentService.save(game).toPromise();
+    }
   }
 
   private defaultValue<T>(value: T | undefined, defaultValue: T): T {
@@ -478,6 +490,7 @@ export class StoreService {
         this.featuresService.setFeature(gameContext, feature, blockedUntil.blockers, timeBlocked);
         if (blockedUntil.time === 0) {
           game.showableElements.features.addElement(feature.name, feature);
+          this.modalService.openModal('features.' + feature.name);
           newFeatureWasAdded = true;
         }
         featureToUnlock.push({
@@ -565,6 +578,7 @@ export class StoreService {
         const currentLevelOfAchievement = achievement.levels[i];
         const blockedUntil = this.blockedUntil(game, gameContext, currentLevelOfAchievement.blockers || []);
         if (blockedUntil.blockers.length === 0) {
+          this.modalService.openModal('achievements.' + achievement.name, { level });
           level = i + 1;
         } else {
           const timeBlocked = game.time + (blockedUntil.time * 1000);

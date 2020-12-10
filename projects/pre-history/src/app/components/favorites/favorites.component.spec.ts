@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BuildingsService, FavoritesService } from 'game-engine';
+import { StoreService, FavoritesService } from 'game-engine';
 import { of } from 'rxjs';
 import { BackgroundActionsService } from '../../services/background-actions/background-actions.service';
 
@@ -8,13 +8,13 @@ import { FavoritesComponent } from './favorites.component';
 describe('FavoritesComponent', () => {
   let component: FavoritesComponent;
   let backgroundAction: BackgroundActionsService;
-  let buildingsService: BuildingsService;
+  let storeService: StoreService;
   let favoritesService: FavoritesService;
   let fixture: ComponentFixture<FavoritesComponent>;
 
   beforeEach(async () => {
     backgroundAction = {} as any;
-    buildingsService = {} as any;
+    storeService = {} as any;
     favoritesService = {
       favorites$: of(),
     } as any;
@@ -26,8 +26,8 @@ describe('FavoritesComponent', () => {
           useValue: backgroundAction,
         },
         {
-          provide: BuildingsService,
-          useValue: buildingsService,
+          provide: StoreService,
+          useValue: storeService,
         },
         {
           provide: FavoritesService,

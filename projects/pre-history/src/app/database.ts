@@ -78,12 +78,15 @@ export const buildings: IBuilding[] = [
     },
 ];
 
+export const researchFeature: IFeature = {
+    name: 'Research',
+    blockedBy: [
+        { type: 'resource', params: { name: 'population', quantity: 5 } } as IResourceBlocker,
+    ],
+};
+
 export const features: IFeature[] = [
-    {
-        name: 'Research', blockedBy: [
-            { type: 'resource', params: { name: 'population', quantity: 5 } } as IResourceBlocker,
-        ],
-    },
+    researchFeature,
 ];
 
 export const researchs: IResearch[] = [
@@ -135,7 +138,7 @@ export const achievements: IAchievement[] = [
 export const gameFromScratch: IGame = {
     time: Date.now(),
     resources: {
-        population: { quantity: 1, max: 1, icon: 'user', min: 10 },
+        population: { quantity: 1, max: 1, icon: 'user', min: 1 },
     },
     buildings: {},
     researchs: {},

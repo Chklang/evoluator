@@ -17,6 +17,7 @@ import { PersistentService } from './services/persistent/persistent.service';
 import { ResearchsService } from './services/researchs/researchs.service';
 import { StoreService } from './services/store/store.service';
 import { CommonModule } from '@angular/common';
+import { ModalComponent, ModalContentDirective } from './components/modal/modal.component';
 
 // Get base-href value
 export function getBaseUrl(): string {
@@ -36,6 +37,8 @@ export function getBaseUrl(): string {
     ProductionPipe,
     PercentagePipe,
     MaintenancePipe,
+    ModalContentDirective,
+    ModalComponent,
   ],
   imports: [
     CommonModule,
