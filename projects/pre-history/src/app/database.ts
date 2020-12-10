@@ -157,6 +157,8 @@ export const gameFromScratch: IGame = {
     calculated: {
         nextEvent: 0,
         production: {},
+        consumptionReal: {},
+        productionReal: {},
     },
 
 };

@@ -79,6 +79,8 @@ export class PersistentService {
         calculated: {
           nextEvent: 0,
           production: {},
+          consumptionReal: {},
+          productionReal: {},
         },
         researchs: {},
         resources: {},

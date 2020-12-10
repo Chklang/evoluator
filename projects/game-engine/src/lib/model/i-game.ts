@@ -28,6 +28,8 @@ export interface IGame {
 export interface IGameEvolutionStatus {
     nextEvent: number;
     production: Record<string, number>;
+    productionReal: Record<string, number>;
+    consumptionReal: Record<string, number>;
     unlockFeature?: IChainedUnlock<IFeature>;
     unlockResearch?: IChainedUnlock<IResearch>;
     unlockBuilding?: IChainedUnlock<IBuilding>;

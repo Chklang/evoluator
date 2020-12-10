@@ -197,22 +197,23 @@ export class StoreService {
     Object.keys(game.calculated.production).forEach((resource) => {
       switch (this.resourcesByKey[resource].growType) {
         case 'EXPONENTIAL': {
-          const production = Math.min(
+          game.resourcesTotal[resource] += Math.min(
+            game.resources[resource].max,
+            (game.resources[resource].quantity * Math.pow(game.calculated.productionReal[resource], diff))
+          ) - game.resources[resource].quantity;
+          game.resources[resource].quantity = Math.min(
             game.resources[resource].max,
             (game.resources[resource].quantity * Math.pow(game.calculated.production[resource], diff))
-          ) - game.resources[resource].quantity;
-          game.resources[resource].quantity += production;
-          game.resourcesTotal[resource] += Math.max(0, production);
+          );
           break;
         }
         case 'CLASSIC':
         default: {
-          const production = Math.min(
+          game.resourcesTotal[resource] += Math.max(0, game.calculated.productionReal[resource] * diff);
+          game.resources[resource].quantity = Math.min(
             game.resources[resource].max,
             (game.resources[resource].quantity + (game.calculated.production[resource] * diff))
-          ) - game.resources[resource].quantity;
-          game.resources[resource].quantity += production;
-          game.resourcesTotal[resource] += Math.max(0, production);
+          );
           break;
         }
       }
@@ -419,6 +420,8 @@ export class StoreService {
     game.calculated = {
       nextEvent: 0,
       production: {},
+      consumptionReal: {},
+      productionReal: {},
     };
     let nextEmptyOrFullStorage = +Infinity;
     // Calculate moment of next event for each resource
@@ -426,6 +429,8 @@ export class StoreService {
       if (consumtion[resource.name] || production[resource.name]) {
         const productionBySec = (production[resource.name] || 0) - (consumtion[resource.name] || 0);
         game.calculated.production[resource.name] = productionBySec;
+        game.calculated.consumptionReal[resource.name] = consumtion[resource.name] || 0;
+        game.calculated.productionReal[resource.name] = production[resource.name] || 0;
         switch (resource.growType) {
           case 'EXPONENTIAL':
             if (productionBySec > 0) {
@@ -683,7 +688,7 @@ export class StoreService {
         }
         case 'resourceTotal': {
           const typedBlocker = blocker as IResourceBlocker;
-          if (!game.calculated.production[typedBlocker.params.name] || game.calculated.production[typedBlocker.params.name] < 0) {
+          if (!game.calculated.productionReal[typedBlocker.params.name] || game.calculated.productionReal[typedBlocker.params.name] < 0) {
             // Resource stocks not grow up, it will never produce sufficient quantity
             return +Infinity;
           }
@@ -694,11 +699,11 @@ export class StoreService {
                 return +Infinity;
               }
               return Math.log(typedBlocker.params.quantity / currentQuantity) /
-                Math.log(game.calculated.production[typedBlocker.params.name]);
+                Math.log(game.calculated.productionReal[typedBlocker.params.name]);
             case 'CLASSIC':
             default:
               const missing = typedBlocker.params.quantity - currentQuantity;
-              return missing / game.calculated.production[typedBlocker.params.name];
+              return missing / game.calculated.productionReal[typedBlocker.params.name];
           }
         }
       }
