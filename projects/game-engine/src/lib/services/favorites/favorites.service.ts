@@ -17,8 +17,16 @@ export class FavoritesService {
     private readonly researchsService: ResearchsService,
   ) { }
 
+  public static generateBuildingId(building: IBuilding): string {
+    return EFavoriteType.BUILDING + '_' + building.name;
+  }
+
+  public static generateResearchId(research: IResearch): string {
+    return EFavoriteType.RESEARCH + '_' + research.name;
+  }
+
   public addBuildingInFavorites(building: IBuilding): void {
-    const id = EFavoriteType.BUILDING + '_' + building.name;
+    const id = FavoritesService.generateBuildingId(building);
     if (this.favorites.hasElement(id)) {
       // Already in favorites
       return;
@@ -33,11 +41,22 @@ export class FavoritesService {
   }
 
   public removeBuildingFromFavorites(building: IBuilding): void {
-    this.removeFromFavorites(EFavoriteType.BUILDING + '_' + building.name);
+    this.removeFromFavorites(FavoritesService.generateBuildingId(building));
+  }
+
+  public toggleBuildingFromFavorites(building: IBuilding): TOGGLE_ACTION {
+    const id = FavoritesService.generateBuildingId(building);
+    if (this.favorites.hasElement(id)) {
+      this.removeBuildingFromFavorites(building);
+      return TOGGLE_ACTION.REMOVED;
+    } else {
+      this.addBuildingInFavorites(building);
+      return TOGGLE_ACTION.ADDED;
+    }
   }
 
   public addResearchInFavorites(research: IResearch): void {
-    const id = EFavoriteType.RESEARCH + '_' + research.name;
+    const id = FavoritesService.generateResearchId(research);
     if (this.favorites.hasElement(id)) {
       // Already in favorites
       return;
@@ -52,7 +71,18 @@ export class FavoritesService {
   }
 
   public removeResearchFromFavorites(research: IResearch): void {
-    this.removeFromFavorites(EFavoriteType.RESEARCH + '_' + research.name);
+    this.removeFromFavorites(FavoritesService.generateResearchId(research));
+  }
+
+  public toggleResearchFromFavorites(research: IResearch): TOGGLE_ACTION {
+    const id = FavoritesService.generateResearchId(research);
+    if (this.favorites.hasElement(id)) {
+      this.removeResearchFromFavorites(research);
+      return TOGGLE_ACTION.REMOVED;
+    } else {
+      this.addResearchInFavorites(research);
+      return TOGGLE_ACTION.ADDED;
+    }
   }
 
   private removeFromFavorites(id: string): void {
@@ -81,4 +111,8 @@ export interface IFavoriteBuilding extends IFavorite<IShowableBuilding> {
 
 export interface IFavoriteResearch extends IFavorite<IShowableResearch> {
   type: EFavoriteType.RESEARCH;
+}
+
+export enum TOGGLE_ACTION {
+  REMOVED, ADDED,
 }

@@ -45,8 +45,12 @@ export class FavoritesComponent implements OnInit {
                         (prev === 0 || curr === 0) ? 0 : Math.max(prev, curr), -1)
                       ),
                     ),
-                    action: () => {
+                    actionPlus: () => {
                       this.backgroundActionsService.execute(this.storeService.build(element.building));
+                    },
+                    canActionMoins: element.count > 0,
+                    actionMoins: () => {
+                      this.backgroundActionsService.execute(this.storeService.destroy(element.building));
                     },
                     remove: () => {
                       this.backgroundActionsService.execute(this.storeService.removeBuildingFromFavorites(element.building));
@@ -71,9 +75,10 @@ export class FavoritesComponent implements OnInit {
                         (prev === 0 || curr === 0) ? 0 : Math.max(prev, curr), -1)
                       ),
                     ),
-                    action: () => {
+                    actionPlus: () => {
                       this.backgroundActionsService.execute(this.storeService.research(element.research));
                     },
+                    canActionMoins: false,
                     remove: () => {
                       this.backgroundActionsService.execute(this.storeService.removeResearchFromFavorites(element.research));
                     },
@@ -98,6 +103,8 @@ export interface IFavoriteToShow {
   buttonText: string;
   timeBeforeUnlock: Observable<number>;
   cost: IResourceNeed[];
-  action: () => void;
+  actionPlus: () => void;
+  actionMoins?: () => void;
+  canActionMoins: boolean;
   remove: () => void;
 }

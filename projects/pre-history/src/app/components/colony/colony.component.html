@@ -24,31 +24,33 @@
         <div class="row g-2" *ngIf="CAN_BE_GENERATED[resourceSelectedName]">
             <div class="col-auto">
                 <span tr>generateResource.text</span>
-                <button (click)="backgroundAction.execute(storeService.generateResource(resourceSelected))" tr>generateResource.button</button>
+                <button class="btn btn-primary" (click)="backgroundAction.execute(storeService.generateResource(resourceSelected))"
+                    tr>generateResource.button</button>
             </div>
         </div>
         <div class="row g-2">
             <div class="col-auto" *ngFor="let building of (buildingsToShow$ | async); trackBy: buildingTrackByFn">
                 <div class="card card-unit">
                     <div class="card-header">
-                        <img [src]="'assets/buildings/' + building.building.name + '.png'" class="card-img-top">
+                        <img [src]="'assets/buildings/' + building.infos.building.name + '.png'" class="card-img-top">
                         <div class="card-title">
-                            <span [tr]="'buildings.'+building.building.name+'.name'"></span>
-                            <button
-                                (click)="backgroundAction.execute(storeService.addBuildingInFavorites(building.building))">Favorites</button>
+                            <span [tr]="'buildings.'+building.infos.building.name+'.name'"></span>
                         </div>
                         <div class="card-count">
                             <small class="c-second">x</small>
-                            {{building.count}}
+                            {{building.infos.count}}
+                            <i class="fa fa-star btn favorite-btn"
+                                [ngClass]="{'is-favorite': building.isFavorite, 'is-not-favorite': building.isFavorite === false}"
+                                (click)="backgroundAction.execute(storeService.toggleBuildingFromFavorites(building.infos.building))"></i>
                         </div>
                     </div>
                     <div class="card-body py-0 d-flex align-items-center" style="height: 3rem;">
-                        <span [tr]="'buildings.'+building.building.name+'.description'"></span>
+                        <span [tr]="'buildings.'+building.infos.building.name+'.description'"></span>
                     </div>
-                    <div *ngIf="building.costNextLevel.length > 0" class="card-body">
+                    <div *ngIf="building.infos.costNextLevel.length > 0" class="card-body">
                         <div class="small mb-1"><span class="c-second" tr>cost</span></div>
                         <div class="row g-2">
-                            <div class="col-auto" *ngFor="let resourceCost of building.costNextLevel">
+                            <div class="col-auto" *ngFor="let resourceCost of building.infos.costNextLevel">
                                 <i class="fa fa-fw mr-1 icon-resource"
                                     [ngClass]="'fa-' + resourceCost.resource.icon"></i>
                                 <span [ngClass]="{'c-error': (resourceCost.isOk$ | async) >= 0}"
@@ -56,14 +58,14 @@
                             </div>
                         </div>
                     </div>
-                    <div *ngIf="building.produceNextLevel.length > 0" class="card-body">
+                    <div *ngIf="building.infos.produceNextLevel.length > 0" class="card-body">
                         <div class="small mb-1"><span class="c-second" tr>produce</span></div>
                         <div class="row g-2">
-                            <div class="col-auto" *ngFor="let resourceProduce of building.produceNextLevel">
+                            <div class="col-auto" *ngFor="let resourceProduce of building.infos.produceNextLevel">
                                 <i class="fa fa-fw mr-1 icon-resource"
                                     [ngClass]="'fa-' + resourceProduce.resource.icon"></i>
                                 <span
-                                    *ngIf="building.produceCurrentLevel.getElement(resourceProduce.resource.name); let current">
+                                    *ngIf="building.infos.produceCurrentLevel.getElement(resourceProduce.resource.name); let current">
                                     <span class="c-error">+{{current.count}}</span> =>
                                 </span>
                                 <span class="c-success mr-1">+{{resourceProduce.count}}</span>
@@ -71,28 +73,28 @@
                             </div>
                         </div>
                     </div>
-                    <div *ngIf="building.storageNextLevel.length > 0" class="card-body">
+                    <div *ngIf="building.infos.storageNextLevel.length > 0" class="card-body">
                         <div class="small mb-1"><span class="c-second" tr>storage</span></div>
                         <div class="row g-2">
-                            <div class="col-auto" *ngFor="let resourceStorage of building.storageNextLevel">
+                            <div class="col-auto" *ngFor="let resourceStorage of building.infos.storageNextLevel">
                                 <i class="fa fa-fw mr-1 icon-resource"
                                     [ngClass]="'fa-' + resourceStorage.resource.icon"></i>
                                 <span
-                                    *ngIf="building.storageCurrentLevel.getElement(resourceStorage.resource.name); let current">
+                                    *ngIf="building.infos.storageCurrentLevel.getElement(resourceStorage.resource.name); let current">
                                     <span class="c-error">+{{current.count}}</span> =>
                                 </span>
                                 <span class="c-success">+{{resourceStorage.count}}</span>
                             </div>
                         </div>
                     </div>
-                    <div *ngIf="building.maintenanceNextLevel.length > 0" class="card-body">
+                    <div *ngIf="building.infos.maintenanceNextLevel.length > 0" class="card-body">
                         <div class="small mb-1"><span class="c-second" tr>maintenance</span></div>
                         <div class="row g-2">
-                            <div class="col-auto" *ngFor="let resourceStorage of building.maintenanceNextLevel">
+                            <div class="col-auto" *ngFor="let resourceStorage of building.infos.maintenanceNextLevel">
                                 <i class="fa fa-fw mr-1 icon-resource"
                                     [ngClass]="'fa-' + resourceStorage.resource.icon"></i>
                                 <span
-                                    *ngIf="building.maintenanceCurrentLevel.getElement(resourceStorage.resource.name); let current">
+                                    *ngIf="building.infos.maintenanceCurrentLevel.getElement(resourceStorage.resource.name); let current">
                                     <span class="c-error">+{{current.count}}</span> =>
                                 </span>
                                 <span class="c-success">+{{resourceStorage.count}}</span>
@@ -102,10 +104,10 @@
                     <div class="container">
                         <div class="row">
                             <button class="btn btn-primary col-6"
-                                (click)="backgroundAction.execute(storeService.build(building.building))"
+                                (click)="backgroundAction.execute(storeService.build(building.infos.building))"
                                 tr>build</button>
-                            <button class="btn btn-primary col-6" [disabled]="building.count <= 0"
-                                (click)="backgroundAction.execute(storeService.destroy(building.building))"
+                            <button class="btn btn-primary col-6" [disabled]="building.infos.count <= 0"
+                                (click)="backgroundAction.execute(storeService.destroy(building.infos.building))"
                                 tr>destroy</button>
                         </div>
                     </div>

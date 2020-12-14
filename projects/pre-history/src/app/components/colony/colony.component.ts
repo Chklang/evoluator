@@ -1,9 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { BuildingsService, FavoritesService, IShowableBuilding, StoreService } from 'game-engine';
-import { IResource } from 'projects/game-engine/src/lib/model';
-import { Observable, of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import {
+  BuildingsService,
+  EFavoriteType,
+  FavoritesService,
+  IFavorite,
+  IShowableBuilding,
+  StoreService,
+  IFavoriteBuilding,
+  IResource,
+} from 'game-engine';
+import { combineLatest, Observable, of } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { resourcesByKey } from '../../database';
 import { BackgroundActionsService } from '../../services/background-actions/background-actions.service';
 
@@ -13,7 +21,7 @@ import { BackgroundActionsService } from '../../services/background-actions/back
   styleUrls: ['./colony.component.css']
 })
 export class ColonyComponent implements OnInit {
-  public buildingsToShow$: Observable<IShowableBuilding[]>;
+  public buildingsToShow$: Observable<IBuildingDetails[]>;
   public JSON = JSON;
   public resourceSelectedName: string | undefined;
   public resourceSelected: IResource | undefined;
@@ -32,25 +40,35 @@ export class ColonyComponent implements OnInit {
 
   public ngOnInit(): void {
     this.buildingsToShow$ = this.activatedRoute.paramMap.pipe(
-      switchMap((params) => {
+      switchMap((params): Observable<[IShowableBuilding[], IFavorite<any>[]]> => {
         this.resourceSelected = undefined;
         this.resourceSelectedName = undefined;
         if (!params.has('selectedResource')) {
-          return of([]);
+          return of([[], []]);
         }
         const selectedResource = params.get('selectedResource');
         if (!resourcesByKey[selectedResource]) {
-          return of([]);
+          return of([[], []]);
         }
         this.resourceSelected = resourcesByKey[selectedResource];
         this.resourceSelectedName = this.resourceSelected.name;
-        return this.buildingsService.listenBuildingByResource(this.resourceSelected);
+        return combineLatest([
+          this.buildingsService.listenBuildingByResource(this.resourceSelected),
+          this.favoritesService.favorites$,
+        ]);
+      }),
+      map(([buildings, favorites]): IBuildingDetails[] => {
+        const onlyBuildings: IFavoriteBuilding[] = favorites.filter(e => e.type === EFavoriteType.BUILDING) as IFavoriteBuilding[];
+        return buildings.map((currentBuilding) => ({
+            infos: currentBuilding,
+            isFavorite: onlyBuildings.find(e => e.id === FavoritesService.generateBuildingId(currentBuilding.building)) !== undefined,
+        }));
       }),
     );
   }
 
-  public buildingTrackByFn(index: number, building: IShowableBuilding): string {
-    return building.building.name;
+  public buildingTrackByFn(index: number, building: IBuildingDetails): string {
+    return building.infos.building.name;
   }
 
   public resourceTrackByFn(index: number, resource: IResource): string {
@@ -58,4 +76,9 @@ export class ColonyComponent implements OnInit {
   }
 
 
+}
+
+export interface IBuildingDetails {
+  infos: IShowableBuilding;
+  isFavorite: boolean;
 }

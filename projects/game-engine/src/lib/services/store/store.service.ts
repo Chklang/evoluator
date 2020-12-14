@@ -26,7 +26,7 @@ import { ModalService } from '../modal/modal.service';
 import { AchievementsService } from '../achievements/achievements.service';
 import { BuildingsService } from '../buildings/buildings.service';
 import { ConfigService } from '../config/config.service';
-import { EFavoriteType, FavoritesService } from '../favorites/favorites.service';
+import { EFavoriteType, FavoritesService, TOGGLE_ACTION } from '../favorites/favorites.service';
 import { FeaturesService } from '../features/features.service';
 import { MessagesService } from '../messages/messages.service';
 import { PersistentService } from '../persistent/persistent.service';
@@ -890,6 +890,28 @@ export class StoreService {
     });
   }
 
+  public toggleBuildingFromFavorites(building: IBuilding): Observable<void> {
+    return this.lock((game) => {
+      switch (this.favoritesService.toggleBuildingFromFavorites(building)) {
+        case TOGGLE_ACTION.ADDED:
+          if (game.favorites.findIndex((f) => f.type === EFavoriteType.BUILDING && f.name === building.name) < 0) {
+            game.favorites.push({
+              name: building.name,
+              type: EFavoriteType.BUILDING,
+            });
+            this.persistentService.save(game);
+          }
+          break;
+        case TOGGLE_ACTION.REMOVED:
+          if (game.favorites.findIndex((f) => f.type === EFavoriteType.BUILDING && f.name === building.name) >= 0) {
+            game.favorites = game.favorites.filter((f) => f.type !== EFavoriteType.BUILDING || f.name !== building.name);
+            this.persistentService.save(game);
+          }
+          break;
+      }
+    });
+  }
+
   public addResearchInFavorites(research: IResearch): Observable<void> {
     return this.lock((game) => {
       this.favoritesService.addResearchInFavorites(research);
@@ -909,6 +931,28 @@ export class StoreService {
       if (game.favorites.findIndex((f) => f.type === EFavoriteType.RESEARCH && f.name === research.name) >= 0) {
         game.favorites = game.favorites.filter((f) => f.type !== EFavoriteType.RESEARCH || f.name !== research.name);
         this.persistentService.save(game);
+      }
+    });
+  }
+
+  public toggleResearchFromFavorites(research: IResearch): Observable<void> {
+    return this.lock((game) => {
+      switch (this.favoritesService.toggleResearchFromFavorites(research)) {
+        case TOGGLE_ACTION.ADDED:
+          if (game.favorites.findIndex((f) => f.type === EFavoriteType.RESEARCH && f.name === research.name) < 0) {
+            game.favorites.push({
+              name: research.name,
+              type: EFavoriteType.RESEARCH,
+            });
+            this.persistentService.save(game);
+          }
+          break;
+        case TOGGLE_ACTION.REMOVED:
+          if (game.favorites.findIndex((f) => f.type === EFavoriteType.RESEARCH && f.name === research.name) >= 0) {
+            game.favorites = game.favorites.filter((f) => f.type !== EFavoriteType.RESEARCH || f.name !== research.name);
+            this.persistentService.save(game);
+          }
+          break;
       }
     });
   }
