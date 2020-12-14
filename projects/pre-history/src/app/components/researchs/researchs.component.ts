@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { FavoritesService, IGame, IResearch, IResource, IShowableResearch, ResearchsService, StoreService } from 'game-engine';
-import { Observable } from 'rxjs';
+import { EFavoriteType, FavoritesService, IFavoriteResearch, IGame, IShowableResearch, ResearchsService, StoreService } from 'game-engine';
+import { combineLatest, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { BackgroundActionsService } from '../../services/background-actions/background-actions.service';
 
 @Component({
@@ -10,7 +11,7 @@ import { BackgroundActionsService } from '../../services/background-actions/back
 })
 export class ResearchsComponent implements OnInit {
   public readonly datas$: Observable<IGame>;
-  public researchsToShow$: Observable<IResearchToShow[]>;
+  public researchsToShow$: Observable<IResearchetails[]>;
 
   constructor(
     public readonly storeService: StoreService,
@@ -22,20 +23,26 @@ export class ResearchsComponent implements OnInit {
   }
 
   public ngOnInit(): void {
+    this.researchsToShow$ = combineLatest([
+      this.researchsService.allShowableResearchs$,
+      this.favoritesService.favorites$,
+    ]).pipe(
+      map(([researchs, favorites]): IResearchetails[] => {
+        const onlyResearchs: IFavoriteResearch[] = favorites.filter(e => e.type === EFavoriteType.RESEARCH) as IFavoriteResearch[];
+        return researchs.map((currentResearchs) => ({
+          infos: currentResearchs,
+          isFavorite: onlyResearchs.find(e => e.id === FavoritesService.generateResearchId(currentResearchs.research)) !== undefined,
+        }));
+      }),
+    );
   }
 
-  public researchTrackByFn(index: number, research: IShowableResearch): string {
-    return research.research.name;
+  public researchTrackByFn(index: number, research: IResearchetails): string {
+    return research.infos.research.name;
   }
 }
 
-interface IResearchToShow {
-  type: IResearch;
-  cost: IResearchToShowCost[];
-  bonusResources: IResearchToShowCost[];
-  level: number;
-}
-interface IResearchToShowCost {
-  resource: IResource;
-  count: number;
+export interface IResearchetails {
+  infos: IShowableResearch;
+  isFavorite: boolean;
 }

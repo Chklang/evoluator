@@ -1,0 +1,11 @@
+.is-favorite {
+  color: yellow;
+}
+
+.is-not-favorite {
+  color: grey;
+}
+.favorite-btn {
+  padding: 2px;
+  padding-top: 0;
+}

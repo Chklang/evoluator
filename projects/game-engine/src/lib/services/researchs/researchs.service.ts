@@ -108,25 +108,25 @@ export class ResearchsService {
       bonusResourceCurrentLevel: this.dict(Object.keys(research.bonusResources).map((key): IResourceCount => {
         return {
           resource: gameContext.allResources.getElement(key),
-          count: Math.ceil(research.bonusResources[key] * Math.pow(1.2, level - 1)),
+          count: research.bonusResources[key] * Math.pow(1.2, level - 1),
         };
       }), (e) => e.resource.name),
       bonusResourceNextLevel: this.dict(Object.keys(research.bonusResources).map((key): IResourceCount => {
         return {
           resource: gameContext.allResources.getElement(key),
-          count: Math.ceil(research.bonusResources[key] * Math.pow(1.2, level)),
+          count: research.bonusResources[key] * Math.pow(1.2, level),
         };
       }), (e) => e.resource.name),
       bonusBuildingCostsCurrentLevel: this.dict(Object.keys(research.bonusBuildingCosts).map((key): IResourceCount => {
         return {
           resource: gameContext.allResources.getElement(key),
-          count: Math.ceil(research.bonusBuildingCosts[key] * Math.pow(1.2, level - 1)),
+          count: research.bonusBuildingCosts[key] * Math.pow(1.2, level - 1),
         };
       }), (e) => e.resource.name),
       bonusBuildingCostsNextLevel: this.dict(Object.keys(research.bonusBuildingCosts).map((key): IResourceCount => {
         return {
           resource: gameContext.allResources.getElement(key),
-          count: Math.ceil(research.bonusBuildingCosts[key] * Math.pow(1.2, level)),
+          count: research.bonusBuildingCosts[key] * Math.pow(1.2, level),
         };
       }), (e) => e.resource.name),
       blockersStatus: blockers,

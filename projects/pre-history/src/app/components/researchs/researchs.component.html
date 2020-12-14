@@ -1,16 +1,17 @@
 <ul class="list-group">
-    <li class="list-group-item"
-        *ngFor="let research of (researchsService.allShowableResearchs$ | async); trackBy: researchTrackByFn">
+    <li class="list-group-item" *ngFor="let research of (researchsToShow$ | async); trackBy: researchTrackByFn">
         <fieldset>
             <legend>
-                <span [tr]="'researchs.'+research.research.name+'.name'"></span> : {{research.level}}
-                <button (click)="backgroundAction.execute(storeService.addResearchInFavorites(research.research))">Favorites</button>
+                <i class="fa fa-star btn favorite-btn"
+                    [ngClass]="{'is-favorite': research.isFavorite, 'is-not-favorite': research.isFavorite === false}"
+                    (click)="backgroundAction.execute(storeService.toggleResearchFromFavorites(research.infos.research))"></i>
+                <span [tr]="'researchs.'+research.infos.research.name+'.name'"></span> : {{research.level || 0}}
             </legend>
-            <p [tr]="'researchs.'+research.research.name+'.description'"></p>
+            <p [tr]="'researchs.'+research.infos.research.name+'.description'"></p>
             <div>
                 <span tr>cost</span>
                 <ul>
-                    <li *ngFor="let resourceCost of research.costNextLevel">
+                    <li *ngFor="let resourceCost of research.infos.costNextLevel">
                         <span [tr]="'resources.' + resourceCost.resource.name + '.name'"></span> :
                         <span [ngClass]="{'c-error': (resourceCost.isOk$ | async) >= 0}"
                             class="c-first">{{resourceCost.count}}</span>
@@ -20,14 +21,19 @@
             <div>
                 <span tr>bonus</span>
                 <ul>
-                    <li *ngFor="let resourceBonus of research.bonusResourceNextLevel">
+                    <li *ngFor="let resourceBonus of research.infos.bonusResourceNextLevel">
                         <span [tr]="'resources.' + resourceBonus.resource.name + '.name'"></span>
-                        : {{resourceBonus.count | percentage}}
+                        :
+                        <span
+                            *ngIf="research.infos.bonusResourceCurrentLevel.getElement(resourceBonus.resource.name); let current">
+                            <span class="c-error">{{current.count | percentage}}</span> =>
+                        </span>
+                        {{resourceBonus.count | percentage}}
                     </li>
                 </ul>
             </div>
-            <button class="btn btn-primary" (click)="backgroundAction.execute(storeService.research(research.research))"
-                tr>research</button>
+            <button class="btn btn-primary"
+                (click)="backgroundAction.execute(storeService.research(research.infos.research))" tr>research</button>
         </fieldset>
     </li>
 </ul>
