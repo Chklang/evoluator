@@ -4,6 +4,7 @@ import { IBlocker } from './i-blocker';
 export interface IAchievement {
     name: string;
     levels: IAchievementLevel[];
+    metadatas?: any;
 }
 
 export interface IAchievementLevel {

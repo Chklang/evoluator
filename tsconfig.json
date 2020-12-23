@@ -19,8 +19,7 @@
     ],
     "paths": {
       "game-engine": [
-        "dist/game-engine/game-engine",
-        "dist/game-engine"
+        "projects/game-engine"
       ]
     }
   }

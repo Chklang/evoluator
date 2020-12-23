@@ -1,0 +1,21 @@
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  padding: 0;
+}
+.container-app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.app {
+  flex-grow: 1;
+}
+app-schema {
+  display: block;
+  height: 100%;
+}
