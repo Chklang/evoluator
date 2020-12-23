@@ -9,6 +9,7 @@ export interface IBuilding {
     storage?: Record<string, number>;
     cost: Record<string, number>;
     maintenance?: Record<string, number>;
+    metadatas?: any;
 }
 
 export function createDictionnaryBuilding(elements: IBuilding[]): Dictionnary<string, IBuilding> {

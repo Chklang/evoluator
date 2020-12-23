@@ -10,6 +10,7 @@ export interface IResource {
     resourceType: 'CLASSIC' | 'POPULATION' | 'RESEARCH';
     selfGrow?: number;
     growType?: 'CLASSIC' | 'EXPONENTIAL';
+    metadatas?: any;
 }
 
 export function createDictionnaryResource(elements: IResource[]): Dictionnary<string, IResource> {

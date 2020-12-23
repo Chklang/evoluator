@@ -8,6 +8,7 @@ export interface IResearch {
     blockedBy?: IBlocker<any>[];
     bonusResources: Record<string, number>;
     bonusBuildingCosts: Record<string, number>;
+    metadatas?: any;
 }
 
 export function createDictionnaryResearch(elements: IResearch[]): Dictionnary<string, IResearch> {

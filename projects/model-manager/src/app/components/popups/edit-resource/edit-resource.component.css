@@ -1,0 +1,10 @@
+.dropdown-menu > li {
+    cursor: pointer;
+    padding: 10px;
+}
+.dropdown-menu > li:hover {
+    background-color: beige;
+}
+.dropdown-toggle {
+    width: 100%;
+}

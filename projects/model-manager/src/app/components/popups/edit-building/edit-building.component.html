@@ -1,0 +1,41 @@
+<div class="modal-header" *ngIf="element">
+    <h4 class="modal-title pull-left">Modification de {{element.name}}</h4>
+    <button type="button" class="close pull-right" aria-label="Close" (click)="bsModalRef.hide()">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<div class="modal-body" *ngIf="context">
+    <form [formGroup]="formGroup" (ngSubmit)="save()">
+        <div class="form-group">
+            <label for="researchName">Name</label>
+            <input type="text" formControlName="name" name="researchName" class="form-control"
+                placeholder="Research name" [ngClass]="{'is-invalid': formGroup.controls.name.errors}">
+            <small class="form-text text-muted">Name of the Building</small>
+        </div>
+        <div class="form-group">
+            <label for="cost">Cost</label>
+            <app-select-value-form [formSrc]="formGroup.controls.cost" [allValues]="context.allResources | resourcesName"></app-select-value-form>
+        </div>
+        <div class="form-group">
+            <label for="produce">Produce</label>
+            <app-select-value-form [formSrc]="formGroup.controls.produce" [allValues]="context.allResources | resourcesName"></app-select-value-form>
+        </div>
+        <div class="form-group">
+            <label for="consume">Consume</label>
+            <app-select-value-form [formSrc]="formGroup.controls.consume" [allValues]="context.allResources | resourcesName"></app-select-value-form>
+        </div>
+        <div class="form-group">
+            <label for="storage">Storage</label>
+            <app-select-value-form [formSrc]="formGroup.controls.storage" [allValues]="context.allResources | resourcesName"></app-select-value-form>
+        </div>
+        <div class="form-group">
+            <label for="maintenance">Maintenance</label>
+            <app-select-value-form [formSrc]="formGroup.controls.maintenance" [allValues]="context.allResources | resourcesName"></app-select-value-form>
+        </div>
+        <div class="form-group">
+            <label for="maintenance">Blockers</label>
+            <app-edit-blockers [formSrc]="formGroup.controls.blockers" [context]="context"></app-edit-blockers>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Save</button>
+    </form>
+</div>

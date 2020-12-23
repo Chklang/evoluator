@@ -4,6 +4,7 @@ import { IBlocker } from './i-blocker';
 export interface IFeature {
     name: string;
     blockedBy?: IBlocker<any>[];
+    metadatas?: any;
 }
 
 export function createDictionnaryFeature(elements: IFeature[]): Dictionnary<string, IFeature> {

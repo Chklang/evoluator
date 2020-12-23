@@ -5,6 +5,7 @@
     "@angular/common": "^11.0.0",
     "@angular/core": "^11.0.0"
   },
+  "typings": "src/public-api.ts",
   "dependencies": {
     "tslib": "^2.0.0"
   }

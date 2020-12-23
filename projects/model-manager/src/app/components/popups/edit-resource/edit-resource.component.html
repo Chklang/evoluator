@@ -1,0 +1,72 @@
+<div class="modal-header" *ngIf="element">
+    <h4 class="modal-title pull-left">Modification de {{element.name}}</h4>
+    <button type="button" class="close pull-right" aria-label="Close" (click)="bsModalRef.hide()">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<div class="modal-body" *ngIf="context">
+    <form [formGroup]="formGroup" (ngSubmit)="save()">
+        <div class="form-group">
+            <label for="resourceName">Name</label>
+            <input type="text" formControlName="name" name="resourceName" class="form-control"
+                placeholder="Resource name" [ngClass]="{'is-invalid': formGroup.controls.name.errors}">
+            <small class="form-text text-muted">Name of the resource</small>
+        </div>
+        <div class="form-group">
+            <label for="resourceType">Type</label>
+            <div class="btn-group form-control" dropdown>
+                <button id="button-basic" dropdownToggle type="button" class="btn btn-primary dropdown-toggle"
+                    aria-controls="dropdown-basic">
+                    {{formGroup.controls.resourceType.value}} <span class="caret"></span>
+                </button>
+                <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu" role="menu" aria-labelledby="button-basic">
+                    <li role="menuitem" (click)="formGroup.controls.resourceType.setValue('CLASSIC')">Classic</li>
+                    <li role="menuitem" (click)="formGroup.controls.resourceType.setValue('POPULATION')">Population</li>
+                    <li role="menuitem" (click)="formGroup.controls.resourceType.setValue('RESEARCH')">Research</li>
+                </ul>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="resourceName">Icon</label>
+            <input type="text" formControlName="icon" name="resourceName" class="form-control"
+                placeholder="Resource icon">
+            <small class="form-text text-muted">Icon of the resource</small>
+        </div>
+        <div class="form-group">
+            <label for="resourceName">Min quantity</label>
+            <input type="number" formControlName="min" name="resourceName" class="form-control"
+                placeholder="Min quantity">
+            <small class="form-text text-muted">Min quantity of the resource</small>
+        </div>
+        <div class="form-group">
+            <label for="resourceName">Max quantity</label>
+            <input type="number" formControlName="max" name="resourceName" class="form-control"
+                placeholder="Max quantity">
+            <small class="form-text text-muted">Max quantity of the resource</small>
+        </div>
+        <div class="form-group">
+            <label for="resourceType">Grow type</label>
+            <div class="btn-group form-control" dropdown>
+                <button id="button-basic" dropdownToggle type="button" class="btn btn-primary dropdown-toggle"
+                    aria-controls="dropdown-basic">
+                    {{formGroup.controls.growType.value || 'CLASSIC'}} <span class="caret"></span>
+                </button>
+                <ul id="dropdown-basic" *dropdownMenu class="dropdown-menu" role="menu" aria-labelledby="button-basic">
+                    <li role="menuitem" (click)="formGroup.controls.growType.setValue('CLASSIC')">Classic</li>
+                    <li role="menuitem" (click)="formGroup.controls.growType.setValue('EXPONENTIAL')">Ewponential</li>
+                </ul>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="resourceName">Self grow</label>
+            <input type="text" formControlName="selfGrow" name="resourceName" class="form-control"
+                placeholder="If resource self grow">
+            <small class="form-text text-muted">If resource self grow</small>
+        </div>
+        <div class="form-group">
+            <label for="maintenance">Blockers</label>
+            <app-edit-blockers [formSrc]="formGroup.controls.blockers" [context]="context"></app-edit-blockers>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Save</button>
+    </form>
+</div>

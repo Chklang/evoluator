@@ -1,0 +1,34 @@
+<div class="modal-header" *ngIf="element">
+    <h4 class="modal-title pull-left">Modification de {{element.name}}</h4>
+    <button type="button" class="close pull-right" aria-label="Close" (click)="bsModalRef.hide()">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<div class="modal-body" *ngIf="context">
+    <form [formGroup]="formGroup" (ngSubmit)="save()">
+        <div class="form-group">
+            <label for="researchName">Name</label>
+            <input type="text" formControlName="name" name="researchName" class="form-control"
+                placeholder="Research name" [ngClass]="{'is-invalid': formGroup.controls.name.errors}">
+            <small class="form-text text-muted">Name of the achievement</small>
+        </div>
+        <div class="form-group">
+            <label for="researchlevels">Levels</label>
+            <button class="btn btn-primary" type="button" (click)="addLevel()">+</button>
+            <div formArrayName="levels">
+                <fieldset *ngFor="let level of formGroup.controls.levels['controls']; let i = index"
+                    [formGroupName]="i">
+                    <legend>For level {{level.value.levelNumber}}</legend>
+                    <div>
+                        <app-edit-blockers [formSrc]="level.controls.goals" [context]="context"></app-edit-blockers>
+                    </div>
+                    <div>
+                        <button class="btn btn-danger btn-block" type="button"
+                            (click)="remove(i)">Remove level {{level.value.levelNumber}}</button>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Save</button>
+    </form>
+</div>

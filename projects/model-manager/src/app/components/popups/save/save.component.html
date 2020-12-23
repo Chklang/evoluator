@@ -1,0 +1,9 @@
+<div class="modal-header">
+    <h4 class="modal-title pull-left">Sauvegarde des données</h4>
+    <button type="button" class="close pull-right" aria-label="Close" (click)="bsModalRef.hide()">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<div class="modal-body" *ngIf="datas">
+    <pre><code [highlight]="datas | serializeGameContext" [languages]="['typescript']" [lineNumbers]="true"></code></pre>
+</div>

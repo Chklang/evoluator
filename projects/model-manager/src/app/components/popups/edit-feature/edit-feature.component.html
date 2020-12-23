@@ -1,0 +1,21 @@
+<div class="modal-header" *ngIf="element">
+    <h4 class="modal-title pull-left">Modification de {{element.name}}</h4>
+    <button type="button" class="close pull-right" aria-label="Close" (click)="bsModalRef.hide()">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<div class="modal-body" *ngIf="context">
+    <form [formGroup]="formGroup" (ngSubmit)="save()">
+        <div class="form-group">
+            <label for="researchName">Name</label>
+            <input type="text" formControlName="name" name="researchName" class="form-control"
+                placeholder="Research name" [ngClass]="{'is-invalid': formGroup.controls.name.errors}">
+            <small class="form-text text-muted">Name of the feature</small>
+        </div>
+        <div class="form-group">
+            <label for="maintenance">Blockers</label>
+            <app-edit-blockers [formSrc]="formGroup.controls.blockers" [context]="context"></app-edit-blockers>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Save</button>
+    </form>
+</div>
