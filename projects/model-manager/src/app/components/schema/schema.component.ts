@@ -119,7 +119,7 @@ export class SchemaComponent implements OnInit {
     gameContext.allResearchs.forEach((research, index) => this.appendResearch(research, { index }));
     gameContext.allFeatures.forEach((feature, index) => this.appendFeature(feature, { index }));
     gameContext.allBuildings.forEach((building, index) => this.appendBuilding(building, { index }));
-    gameContext.allAchievements.forEach((achievement, index) => this.appendAchivement(achievement, { index }));
+    gameContext.allAchievements.forEach((achievement, index) => this.appendAchievement(achievement, { index }));
 
     const addResource = document.createElementNS(svgns, 'rect');
     addResource.style.fill = 'yellow';
@@ -421,7 +421,7 @@ export class SchemaComponent implements OnInit {
     return result;
   };
 
-  private appendAchivement(achievement: IAchievement, params?: { index?: number, posx?: number, posy?: number }) {
+  private appendAchievement(achievement: IAchievement, params?: { index?: number, posx?: number, posy?: number }) {
     const result = this.appendElement(achievement, {
       color: '#cfc',
       getTexts: (e) => {
