@@ -1,1 +1,17 @@
-<p>edit-achievement works!</p>
+<div class="modal-header">
+    <h4 class="modal-title pull-left">Modification de {{element.name}}</h4>
+    <button type="button" class="close pull-right" aria-label="Close" (click)="bsModalRef.hide()">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<div class="modal-body">
+    <form [formGroup]="formGroup" (ngSubmit)="save()">
+        <div class="form-group">
+            <label for="researchName">Name</label>
+            <input type="text" formControlName="name" name="researchName" class="form-control"
+                placeholder="Research name" [ngClass]="{'is-invalid': formGroup.controls.name.errors}">
+            <small class="form-text text-muted">Name of the achievement</small>
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>
