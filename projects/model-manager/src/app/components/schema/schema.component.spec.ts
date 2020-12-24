@@ -14,6 +14,7 @@ describe('SchemaComponent', () => {
       declarations: [ SchemaComponent ],
       providers: [
         { provide: BsModalService, useValue: modalService },
+        { provide: 'BASE_URL', useValue: '/' },
       ]
     })
     .compileComponents();

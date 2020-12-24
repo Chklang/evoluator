@@ -24,6 +24,15 @@ import { ResourcesNamePipe } from './pipes/resources-name.pipe';
 import { BuildingsNamePipe } from './pipes/buildings-name.pipe';
 import { FeaturesNamePipe } from './pipes/features-name.pipe';
 
+// Get base-href value
+export function getBaseUrl(): string {
+  try {
+    return document.getElementsByTagName('base')[0].href;
+  } catch (e) {
+    return '/';
+  }
+}
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -63,7 +72,8 @@ import { FeaturesNamePipe } from './pipes/features-name.pipe';
           typescript: () => import('highlight.js/lib/languages/typescript'),
         }
       }
-    }
+    },
+    { provide: 'BASE_URL', useFactory: getBaseUrl, deps: [] },
   ],
   bootstrap: [AppComponent]
 })

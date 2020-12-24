@@ -1,4 +1,4 @@
-import { Component, Directive, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, Directive, Inject, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import * as d3 from 'd3';
 import { DragBehavior } from 'd3';
 import * as PreHistory from '../../../../../pre-history/src/app/database';
@@ -59,6 +59,7 @@ export class SchemaComponent implements OnInit {
 
   constructor(
     private readonly modalService: BsModalService,
+    @Inject('BASE_URL') public baseUrl: string,
   ) { }
 
   private createGameContext(): IGameContext {
