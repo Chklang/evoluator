@@ -20,15 +20,15 @@
         </div>
         <div class="form-group">
             <label for="cost">Cost</label>
-            <app-resource-type-form [formSrc]="formGroup.controls.cost" [allResources]="context.allResources"></app-resource-type-form>
+            <app-select-value-form [formSrc]="formGroup.controls.cost" [allValues]="context.allResources | resourcesName"></app-select-value-form>
         </div>
         <div class="form-group">
             <label for="bonusResources">Bonus Resources</label>
-            <app-resource-type-form [formSrc]="formGroup.controls.bonusResources" [allResources]="context.allResources"></app-resource-type-form>
+            <app-select-value-form [formSrc]="formGroup.controls.bonusResources" [allValues]="context.allResources | resourcesName"></app-select-value-form>
         </div>
         <div class="form-group">
             <label for="bonusBuildingCosts">Bonus Building Costs</label>
-            <app-resource-type-form [formSrc]="formGroup.controls.bonusBuildingCosts" [allResources]="context.allResources"></app-resource-type-form>
+            <app-select-value-form [formSrc]="formGroup.controls.bonusBuildingCosts" [allValues]="context.allResources | resourcesName"></app-select-value-form>
         </div>
         <button type="submit" class="btn btn-primary">Save</button>
     </form>

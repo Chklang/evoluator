@@ -6,10 +6,10 @@
         </div>
     </div>
     <div formArrayName="selected">
-        <div name="cost" class="form-row"
-            *ngFor="let resourceValue of formSrc.controls.selected['controls']; let i = index" [formGroupName]="i">
-            <label class="col-6">{{resourceValue.value.name}}</label>
-            <input class="col-4" type="number" formControlName="value" />
+        <div class="form-row" *ngFor="let resourceValue of formSrc.controls.selected['controls']; let i = index"
+            [formGroupName]="i">
+            <label [ngClass]="{'col-6': withValue, 'col-10': !withValue}">{{resourceValue.value.name}}</label>
+            <input *ngIf="withValue" class="col-4" type="number" formControlName="value" />
             <button class="col-2 btn btn-outline-secondary" type="button" (click)="remove(i)">Remove</button>
         </div>
     </div>

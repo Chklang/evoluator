@@ -12,6 +12,23 @@
                 placeholder="Research name" [ngClass]="{'is-invalid': formGroup.controls.name.errors}">
             <small class="form-text text-muted">Name of the achievement</small>
         </div>
+        <div class="form-group">
+            <label for="researchlevels">Levels</label>
+            <button class="btn btn-primary" type="button" (click)="addLevel()">+</button>
+            <div formArrayName="levels">
+                <fieldset *ngFor="let level of formGroup.controls.levels['controls']; let i = index"
+                    [formGroupName]="i">
+                    <legend>For level {{level.value.levelNumber}}</legend>
+                    <div>
+                        <app-edit-blockers [formSrc]="level.controls.goals" [context]="context"></app-edit-blockers>
+                    </div>
+                    <div>
+                        <button class="btn btn-danger btn-block" type="button"
+                            (click)="remove(i)">Remove level {{level.value.levelNumber}}</button>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
         <button type="submit" class="btn btn-primary">Save</button>
     </form>
 </div>

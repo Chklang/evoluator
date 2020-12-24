@@ -18,7 +18,11 @@ import { EditBuildingComponent } from './components/popups/edit-building/edit-bu
 import { EditAchievementComponent } from './components/popups/edit-achievement/edit-achievement.component';
 import { HighlightModule, HIGHLIGHT_OPTIONS } from 'ngx-highlightjs';
 import { RemoveUsedFromFormgroupPipe } from './pipes/remove-used-from-fromgroup.pipe';
-import { ResourceTypeFormComponent } from './components/resource-type-form/resource-type-form.component';
+import { SelectValueFormComponent } from './components/select-value-form/select-value-form.component';
+import { EditBlockersComponent } from './components/edit-blockers/edit-blockers.component';
+import { ResourcesNamePipe } from './pipes/resources-name.pipe';
+import { BuildingsNamePipe } from './pipes/buildings-name.pipe';
+import { FeaturesNamePipe } from './pipes/features-name.pipe';
 
 @NgModule({
   declarations: [
@@ -33,7 +37,11 @@ import { ResourceTypeFormComponent } from './components/resource-type-form/resou
     EditBuildingComponent,
     EditAchievementComponent,
     RemoveUsedFromFormgroupPipe,
-    ResourceTypeFormComponent,
+    SelectValueFormComponent,
+    EditBlockersComponent,
+    ResourcesNamePipe,
+    BuildingsNamePipe,
+    FeaturesNamePipe,
   ],
   imports: [
     BrowserModule,

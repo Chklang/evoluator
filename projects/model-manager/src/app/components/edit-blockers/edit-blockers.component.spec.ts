@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ResourceTypeFormComponent } from './resource-type-form.component';
+import { EditBlockersComponent } from './edit-blockers.component';
 
-describe('ResourceTypeFormComponent', () => {
-  let component: ResourceTypeFormComponent;
-  let fixture: ComponentFixture<ResourceTypeFormComponent>;
+describe('EditBlockersComponent', () => {
+  let component: EditBlockersComponent;
+  let fixture: ComponentFixture<EditBlockersComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ResourceTypeFormComponent ]
+      declarations: [ EditBlockersComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ResourceTypeFormComponent);
+    fixture = TestBed.createComponent(EditBlockersComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

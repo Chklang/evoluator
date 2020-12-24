@@ -1,0 +1,22 @@
+<div role="group" [formGroup]="formSrc">
+    <div formGroupName="buildings" class="form-group">
+        <label for="buildings">Buildings</label>
+        <app-select-value-form [formSrc]="formSrc.controls.buildings"
+            [allValues]="context.allBuildings | buildingsName"></app-select-value-form>
+    </div>
+    <div formGroupName="features" class="form-group">
+        <label for="features">Features</label>
+        <app-select-value-form [formSrc]="formSrc.controls.features" [allValues]="context.allFeatures | featuresName" [withValue]="false">
+        </app-select-value-form>
+    </div>
+    <div formGroupName="resources" class="form-group">
+        <label for="resources">Resources</label>
+        <app-select-value-form [formSrc]="formSrc.controls.resources"
+            [allValues]="context.allResources | resourcesName"></app-select-value-form>
+    </div>
+    <div formGroupName="resourcesTotal" class="form-group">
+        <label for="resourcesTotal">Resources totales</label>
+        <app-select-value-form [formSrc]="formSrc.controls.resourcesTotal"
+            [allValues]="context.allResources | resourcesName"></app-select-value-form>
+    </div>
+</div>
