@@ -10,6 +10,7 @@ import { EditResearchComponent } from '../popups/edit-research/edit-research.com
 import { EditAchievementComponent } from '../popups/edit-achievement/edit-achievement.component';
 import { EditBuildingComponent } from '../popups/edit-building/edit-building.component';
 import { EditFeatureComponent } from '../popups/edit-feature/edit-feature.component';
+import { IBlocker, IBuildingBlocker, IFeatureBlocker, IResourceBlocker } from 'dist/game-engine/lib/model';
 
 @Directive({
   selector: '[svgZone]',
@@ -192,6 +193,7 @@ export class SchemaComponent implements OnInit {
       main: d3.select(addButton),
       edit: null,
       texts: [],
+      updated: null,
     }
     d3.select(addButton).call(
       d3.drag()
@@ -206,7 +208,6 @@ export class SchemaComponent implements OnInit {
             posy: (event.y - (this.transformCurrent ? this.transformCurrent.y : 0) - 25) / factor,
           };
           this.currentAdd = onAdd(event, pos);
-          this.currentAdd.d3.forEach(e => e.attr("cursor", "grabbing"));
           return this.currentAdd.d3;
         })
     );
@@ -223,7 +224,7 @@ export class SchemaComponent implements OnInit {
     return textElement;
   }
 
-  private appendElement<T>(element: T, params: { getTexts: (e: T) => string[], editComponent: any, onDelete: (e: T) => void, color: string, index?: number, posx?: number, posy: number }) {
+  private appendElement<T>(element: T, params: IAppendParameters<T>) {
     const rect = document.createElementNS(svgns, "rect");
     const edit = document.createElementNS(svgns, "use");
     edit.setAttribute("transform", "translate(130, -20)");
@@ -241,6 +242,24 @@ export class SchemaComponent implements OnInit {
     const textElements: SVGTextElement[] = texts.map((line, indexLine) => {
       return this.addText(g, line, indexLine, indexLine === 0);
     });
+
+    const updateElement = () => {
+      const newTexts = params.getTexts(element);
+      newTexts.forEach((text, indexText) => {
+        while (result.texts.length <= indexText) {
+          const textToAdd = this.addText(g, text, result.texts.length, result.texts.length === 0);
+          result.texts.push(textToAdd);
+          textToAdd.setAttribute("x", String(result.posx));
+          textToAdd.setAttribute("y", String(result.posy));
+        }
+        result.texts[indexText].innerHTML = text;
+      });
+      for (let i = newTexts.length; i < result.texts.length; i++) {
+        g.removeChild(result.texts[i]);
+      }
+      result.texts.length = newTexts.length;
+      rect.setAttribute("height", String(newTexts.length * 25 + 5));
+    };
     const result: rects = {
       posx: params.posx || (params.index || 0) * 200,
       posy: params.posy,
@@ -255,6 +274,7 @@ export class SchemaComponent implements OnInit {
       main: d3.select(g),
       edit,
       texts: textElements,
+      updated: () => updateElement(),
     };
     result.d3.push(...textElements.map(e => d3.select(e)));
 
@@ -276,21 +296,8 @@ export class SchemaComponent implements OnInit {
         },
       });
       this.modalRef.onHidden.subscribe(() => {
-        const newTexts = params.getTexts(element);
-        newTexts.forEach((text, indexText) => {
-          while (result.texts.length <= indexText) {
-            const textToAdd = this.addText(g, text, result.texts.length, result.texts.length === 0);
-            result.texts.push(textToAdd);
-            textToAdd.setAttribute("x", String(result.posx));
-            textToAdd.setAttribute("y", String(result.posy));
-          }
-          result.texts[indexText].innerHTML = text;
-        });
-        for (let i = newTexts.length; i < result.texts.length; i++) {
-          g.removeChild(result.texts[i]);
-        }
-        result.texts.length = newTexts.length;
-        rect.setAttribute("height", String(newTexts.length * 25 + 5));
+        updateElement();
+        params.onUpdate(element);
       });
     };
     deleteBtn.onclick = () => {
@@ -306,6 +313,82 @@ export class SchemaComponent implements OnInit {
   }
 
   private appendResource(resource: IResource, params?: { index?: number, posx?: number, posy?: number }) {
+    let originalName = resource.name;
+    const needToUpdate: rects[] = [];
+    const onUpdateBlockers = (rect: rects, blockers?: IBlocker<any>[]) => {
+      if (blockers) {
+        blockers.forEach(b => {
+          switch (b.type) {
+            case 'building':
+              // Nothing
+              break;
+            case 'feature':
+              // Nothing
+              break;
+            case 'resource':
+            case 'resourceTotal':
+              const typedBlocker = b as IResourceBlocker;
+              if (typedBlocker.params.name === originalName) {
+                typedBlocker.params.name = resource.name;
+                if (!needToUpdate.find(e => e === rect)) {
+                  needToUpdate.push(rect);
+                }
+              }
+              break;
+          }
+        });
+      }
+    };
+    const onUpdateRecord = (rect: rects, values?: Record<string, number>) => {
+      if (!values) {
+        return;
+      }
+      if (values[originalName] === undefined) {
+        return;
+      }
+      values[resource.name] = values[originalName];
+      delete values[originalName];
+      if (!needToUpdate.find(e => e === rect)) {
+        needToUpdate.push(rect);
+      }
+    };
+    const onDeleteBlockers = (rect: rects, blockers?: IBlocker<any>[]) => {
+      if (!blockers) {
+        return undefined;
+      }
+      return blockers.filter(b => {
+        switch (b.type) {
+          case 'building':
+            // Nothing
+            return true;
+          case 'feature':
+            // Nothing
+            return true;
+          case 'resource':
+          case 'resourceTotal':
+            const typedBlocker = b as IResourceBlocker;
+            if (typedBlocker.params.name === originalName) {
+              if (!needToUpdate.find(e => e === rect)) {
+                needToUpdate.push(rect);
+              }
+              return false;
+            }
+            return true;
+        }
+      });
+    };
+    const onDeleteRecord = (rect: rects, values?: Record<string, number>) => {
+      if (!values) {
+        return;
+      }
+      if (values[originalName] === undefined) {
+        return;
+      }
+      delete values[originalName];
+      if (!needToUpdate.find(e => e === rect)) {
+        needToUpdate.push(rect);
+      }
+    };
     const result = this.appendElement<IResource>(resource, {
       color: 'yellow',
       getTexts: (e) => {
@@ -325,6 +408,68 @@ export class SchemaComponent implements OnInit {
       editComponent: EditResourceComponent,
       onDelete: () => {
         this.currentResources.splice(this.currentResources.findIndex(e => e.resource === resource), 1);
+
+        // Update all references
+        needToUpdate.length = 0;
+        this.currentResources.forEach(e => {
+          e.resource.blockedBy = onDeleteBlockers(e.rect, e.resource.blockedBy);
+        });
+        this.currentAchivements.forEach(e => {
+          e.achievement.levels.forEach(level => {
+            level.blockers = onDeleteBlockers(e.rect, level.blockers);
+          });
+        });
+        this.currentBuildings.forEach(e => {
+          e.building.blockedBy = onDeleteBlockers(e.rect, e.building.blockedBy);
+          onDeleteRecord(e.rect, e.building.consume);
+          onDeleteRecord(e.rect, e.building.cost);
+          onDeleteRecord(e.rect, e.building.maintenance);
+          onDeleteRecord(e.rect, e.building.produce);
+          onDeleteRecord(e.rect, e.building.storage);
+        });
+        this.currentFeatures.forEach(e => {
+          e.feature.blockedBy = onDeleteBlockers(e.rect, e.feature.blockedBy);
+        });
+        this.currentResearchs.forEach(e => {
+          e.research.blockedBy = onDeleteBlockers(e.rect, e.research.blockedBy);
+          onDeleteRecord(e.rect, e.research.bonusBuildingCosts);
+          onDeleteRecord(e.rect, e.research.bonusResources);
+          onDeleteRecord(e.rect, e.research.cost);
+        });
+        needToUpdate.forEach(e => e.updated());
+      },
+      onUpdate: () => {
+        needToUpdate.length = 0;
+        if (originalName !== resource.name) {
+          // Update all references
+          this.currentResources.forEach(e => {
+            onUpdateBlockers(e.rect, e.resource.blockedBy);
+          });
+          this.currentAchivements.forEach(e => {
+            e.achievement.levels.forEach(level => {
+              onUpdateBlockers(e.rect, level.blockers);
+            });
+          });
+          this.currentBuildings.forEach(e => {
+            onUpdateBlockers(e.rect, e.building.blockedBy);
+            onUpdateRecord(e.rect, e.building.consume);
+            onUpdateRecord(e.rect, e.building.cost);
+            onUpdateRecord(e.rect, e.building.maintenance);
+            onUpdateRecord(e.rect, e.building.produce);
+            onUpdateRecord(e.rect, e.building.storage);
+          });
+          this.currentFeatures.forEach(e => {
+            onUpdateBlockers(e.rect, e.feature.blockedBy);
+          });
+          this.currentResearchs.forEach(e => {
+            onUpdateBlockers(e.rect, e.research.blockedBy);
+            onUpdateRecord(e.rect, e.research.bonusBuildingCosts);
+            onUpdateRecord(e.rect, e.research.bonusResources);
+            onUpdateRecord(e.rect, e.research.cost);
+          });
+          originalName = resource.name;
+        }
+        needToUpdate.forEach(e => e.updated());
       },
     });
     this.currentResources.push({
@@ -364,6 +509,7 @@ export class SchemaComponent implements OnInit {
       onDelete: () => {
         this.currentResearchs.splice(this.currentResearchs.findIndex(e => e.research === research), 1);
       },
+      onUpdate: () => {},
     });
     this.currentResearchs.push({
       research,
@@ -374,6 +520,60 @@ export class SchemaComponent implements OnInit {
   };
 
   private appendFeature(feature: IFeature, params?: { index?: number, posx?: number, posy?: number }) {
+    let originalName = feature.name;
+    const needToUpdate: rects[] = [];
+    const onUpdateBlockers = (rect: rects, blockers?: IBlocker<any>[]) => {
+      if (blockers) {
+        blockers.forEach(b => {
+          switch (b.type) {
+            case 'building':
+              // Nothing
+              break;
+            case 'feature':
+              const typedBlocker = b as IFeatureBlocker;
+              if (typedBlocker.params.name === originalName) {
+                typedBlocker.params.name = feature.name;
+                if (!needToUpdate.find(e => e === rect)) {
+                  needToUpdate.push(rect);
+                }
+              }
+              // Nothing
+              break;
+            case 'resource':
+              // Nothing
+              break;
+            case 'resourceTotal':
+              // Nothing
+              break;
+          }
+        });
+      }
+    };
+    const onDeleteBlockers = (rect: rects, blockers?: IBlocker<any>[]) => {
+      if (!blockers) {
+        return undefined;
+      }
+      return blockers.filter(b => {
+        switch (b.type) {
+          case 'building':
+            // Nothing
+            return true;
+          case 'feature':
+            const typedBlocker = b as IFeatureBlocker;
+            if (typedBlocker.params.name === originalName) {
+              if (!needToUpdate.find(e => e === rect)) {
+                needToUpdate.push(rect);
+              }
+              return false;
+            }
+            return true;
+          case 'resource':
+            return true;
+          case 'resourceTotal':
+            return true;
+        }
+      });
+    };
     const result = this.appendElement(feature, {
       color: '#fcf',
       getTexts: (e) => {
@@ -387,6 +587,52 @@ export class SchemaComponent implements OnInit {
       editComponent: EditFeatureComponent,
       onDelete: () => {
         this.currentFeatures.splice(this.currentFeatures.findIndex(e => e.feature === feature), 1);
+
+        // Update all references
+        needToUpdate.length = 0;
+        this.currentResources.forEach(e => {
+          e.resource.blockedBy = onDeleteBlockers(e.rect, e.resource.blockedBy);
+        });
+        this.currentAchivements.forEach(e => {
+          e.achievement.levels.forEach(level => {
+            level.blockers = onDeleteBlockers(e.rect, level.blockers);
+          });
+        });
+        this.currentBuildings.forEach(e => {
+          e.building.blockedBy = onDeleteBlockers(e.rect, e.building.blockedBy);
+        });
+        this.currentFeatures.forEach(e => {
+          e.feature.blockedBy = onDeleteBlockers(e.rect, e.feature.blockedBy);
+        });
+        this.currentResearchs.forEach(e => {
+          e.research.blockedBy = onDeleteBlockers(e.rect, e.research.blockedBy);
+        });
+        needToUpdate.forEach(e => e.updated());
+      },
+      onUpdate: () => {
+        needToUpdate.length = 0;
+        if (originalName !== feature.name) {
+          // Update all references
+          this.currentResources.forEach(e => {
+            onUpdateBlockers(e.rect, e.resource.blockedBy);
+          });
+          this.currentAchivements.forEach(e => {
+            e.achievement.levels.forEach(level => {
+              onUpdateBlockers(e.rect, level.blockers);
+            });
+          });
+          this.currentBuildings.forEach(e => {
+            onUpdateBlockers(e.rect, e.building.blockedBy);
+          });
+          this.currentFeatures.forEach(e => {
+            onUpdateBlockers(e.rect, e.feature.blockedBy);
+          });
+          this.currentResearchs.forEach(e => {
+            onUpdateBlockers(e.rect, e.research.blockedBy);
+          });
+          originalName = feature.name;
+        }
+        needToUpdate.forEach(e => e.updated());
       },
     });
     this.currentFeatures.push({
@@ -398,6 +644,58 @@ export class SchemaComponent implements OnInit {
   };
 
   private appendBuilding(building: IBuilding, params?: { index?: number, posx?: number, posy?: number }) {
+    let originalName = building.name;
+    const needToUpdate: rects[] = [];
+    const onUpdateBlockers = (rect: rects, blockers?: IBlocker<any>[]) => {
+      if (blockers) {
+        blockers.forEach(b => {
+          switch (b.type) {
+            case 'building':
+              const typedBlocker = b as IBuildingBlocker;
+              if (typedBlocker.params.name === originalName) {
+                typedBlocker.params.name = building.name;
+                if (!needToUpdate.find(e => e === rect)) {
+                  needToUpdate.push(rect);
+                }
+              }
+              break;
+            case 'feature':
+              // Nothing
+              break;
+            case 'resource':
+              // Nothing
+              break;
+            case 'resourceTotal':
+              // Nothing
+              break;
+          }
+        });
+      }
+    };
+    const onDeleteBlockers = (rect: rects, blockers?: IBlocker<any>[]) => {
+      if (!blockers) {
+        return undefined;
+      }
+      return blockers.filter(b => {
+        switch (b.type) {
+          case 'building':
+            const typedBlocker = b as IBuildingBlocker;
+            if (typedBlocker.params.name === originalName) {
+              if (!needToUpdate.find(e => e === rect)) {
+                needToUpdate.push(rect);
+              }
+              return false;
+            }
+            return true;
+          case 'feature':
+            return true;
+          case 'resource':
+            return true;
+          case 'resourceTotal':
+            return true;
+        }
+      });
+    };
     const result = this.appendElement(building, {
       color: '#cff',
       getTexts: (e) => {
@@ -431,6 +729,52 @@ export class SchemaComponent implements OnInit {
       editComponent: EditBuildingComponent,
       onDelete: () => {
         this.currentBuildings.splice(this.currentBuildings.findIndex(e => e.building === building), 1);
+
+        // Update all references
+        needToUpdate.length = 0;
+        this.currentResources.forEach(e => {
+          e.resource.blockedBy = onDeleteBlockers(e.rect, e.resource.blockedBy);
+        });
+        this.currentAchivements.forEach(e => {
+          e.achievement.levels.forEach(level => {
+            level.blockers = onDeleteBlockers(e.rect, level.blockers);
+          });
+        });
+        this.currentBuildings.forEach(e => {
+          e.building.blockedBy = onDeleteBlockers(e.rect, e.building.blockedBy);
+        });
+        this.currentFeatures.forEach(e => {
+          e.feature.blockedBy = onDeleteBlockers(e.rect, e.feature.blockedBy);
+        });
+        this.currentResearchs.forEach(e => {
+          e.research.blockedBy = onDeleteBlockers(e.rect, e.research.blockedBy);
+        });
+        needToUpdate.forEach(e => e.updated());
+      },
+      onUpdate: () => {
+        needToUpdate.length = 0;
+        if (originalName !== building.name) {
+          // Update all references
+          this.currentResources.forEach(e => {
+            onUpdateBlockers(e.rect, e.resource.blockedBy);
+          });
+          this.currentAchivements.forEach(e => {
+            e.achievement.levels.forEach(level => {
+              onUpdateBlockers(e.rect, level.blockers);
+            });
+          });
+          this.currentBuildings.forEach(e => {
+            onUpdateBlockers(e.rect, e.building.blockedBy);
+          });
+          this.currentFeatures.forEach(e => {
+            onUpdateBlockers(e.rect, e.feature.blockedBy);
+          });
+          this.currentResearchs.forEach(e => {
+            onUpdateBlockers(e.rect, e.research.blockedBy);
+          });
+          originalName = building.name;
+        }
+        needToUpdate.forEach(e => e.updated());
       },
     });
     this.currentBuildings.push({
@@ -456,6 +800,7 @@ export class SchemaComponent implements OnInit {
       onDelete: () => {
         this.currentAchivements.splice(this.currentAchivements.findIndex(e => e.achievement === achievement), 1);
       },
+      onUpdate: () => {},
     });
     this.currentAchivements.push({
       achievement,
@@ -475,7 +820,7 @@ export class SchemaComponent implements OnInit {
           return rect.rect;
         })
       );
-      if (e.attr("action") === "edit") {
+      if (e.attr("action")) {
         e.attr("cursor", "pointer");
       } else {
         e.attr("cursor", "grab");
@@ -527,4 +872,17 @@ interface rects {
   main: d3.Selection<SVGGElement, any, null, undefined>;
   startDragEvent?: DragBehavior<Element, unknown, unknown>;
   texts: SVGTextElement[];
+  updated: () => void;
+}
+
+interface IAppendParameters<T> {
+  getTexts: (e: T) => string[];
+  editComponent: any;
+  onUpdate: (e: T) => void;
+  onDelete: (e: T) => void;
+  color: string;
+  index?: number;
+  posx?: number;
+  posy: number;
+
 }
