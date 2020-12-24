@@ -1,1 +1,37 @@
-<p>edit-building works!</p>
+<div class="modal-header">
+    <h4 class="modal-title pull-left">Modification de {{element.name}}</h4>
+    <button type="button" class="close pull-right" aria-label="Close" (click)="bsModalRef.hide()">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<div class="modal-body">
+    <form [formGroup]="formGroup" (ngSubmit)="save()">
+        <div class="form-group">
+            <label for="researchName">Name</label>
+            <input type="text" formControlName="name" name="researchName" class="form-control"
+                placeholder="Research name" [ngClass]="{'is-invalid': formGroup.controls.name.errors}">
+            <small class="form-text text-muted">Name of the research</small>
+        </div>
+        <div class="form-group">
+            <label for="cost">Cost</label>
+            <app-resource-type-form [formSrc]="formGroup.controls.cost" [allResources]="context.allResources"></app-resource-type-form>
+        </div>
+        <div class="form-group">
+            <label for="produce">Produce</label>
+            <app-resource-type-form [formSrc]="formGroup.controls.produce" [allResources]="context.allResources"></app-resource-type-form>
+        </div>
+        <div class="form-group">
+            <label for="consume">Consume</label>
+            <app-resource-type-form [formSrc]="formGroup.controls.consume" [allResources]="context.allResources"></app-resource-type-form>
+        </div>
+        <div class="form-group">
+            <label for="storage">Storage</label>
+            <app-resource-type-form [formSrc]="formGroup.controls.storage" [allResources]="context.allResources"></app-resource-type-form>
+        </div>
+        <div class="form-group">
+            <label for="maintenance">Maintenance</label>
+            <app-resource-type-form [formSrc]="formGroup.controls.maintenance" [allResources]="context.allResources"></app-resource-type-form>
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>
