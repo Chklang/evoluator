@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { IResearch, IGameContext } from 'game-engine';
 import { BsModalRef } from 'ngx-bootstrap/modal';
+import { EditBlockersComponent } from '../../edit-blockers/edit-blockers.component';
 import { SelectValueFormComponent } from '../../select-value-form/select-value-form.component';
 
 @Component({
@@ -29,6 +30,7 @@ export class EditResearchComponent implements OnInit {
       cost: SelectValueFormComponent.create(this.formBuilder, this.element.cost),
       bonusResources: SelectValueFormComponent.create(this.formBuilder, this.element.bonusResources),
       bonusBuildingCosts: SelectValueFormComponent.create(this.formBuilder, this.element.bonusBuildingCosts),
+      blockers: EditBlockersComponent.create(this.formBuilder, this.element.blockedBy),
     });
   }
 
@@ -41,6 +43,7 @@ export class EditResearchComponent implements OnInit {
     this.element.cost = SelectValueFormComponent.selected(this.formGroup.controls.cost as FormGroup);
     this.element.bonusResources = SelectValueFormComponent.selected(this.formGroup.controls.bonusResources as FormGroup);
     this.element.bonusBuildingCosts = SelectValueFormComponent.selected(this.formGroup.controls.bonusBuildingCosts as FormGroup);
+    this.element.blockedBy = EditBlockersComponent.selected(this.formGroup.controls.blockers as FormGroup);
     this.bsModalRef.hide();
   }
 

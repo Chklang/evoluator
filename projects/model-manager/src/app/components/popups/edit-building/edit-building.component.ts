@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { IBuilding, IGameContext } from 'game-engine';
 import { BsModalRef } from 'ngx-bootstrap/modal';
+import { EditBlockersComponent } from '../../edit-blockers/edit-blockers.component';
 import { SelectValueFormComponent } from '../../select-value-form/select-value-form.component';
 
 @Component({
@@ -30,6 +31,7 @@ export class EditBuildingComponent implements OnInit {
       consume: SelectValueFormComponent.create(this.formBuilder, this.element.consume),
       storage: SelectValueFormComponent.create(this.formBuilder, this.element.storage),
       maintenance: SelectValueFormComponent.create(this.formBuilder, this.element.maintenance),
+      blockers: EditBlockersComponent.create(this.formBuilder, this.element.blockedBy),
     });
   }
 
@@ -43,6 +45,7 @@ export class EditBuildingComponent implements OnInit {
     this.element.consume = SelectValueFormComponent.selected(this.formGroup.controls.consume as FormGroup);
     this.element.storage = SelectValueFormComponent.selected(this.formGroup.controls.storage as FormGroup);
     this.element.maintenance = SelectValueFormComponent.selected(this.formGroup.controls.maintenance as FormGroup);
+    this.element.blockedBy = EditBlockersComponent.selected(this.formGroup.controls.blockers as FormGroup);
     this.bsModalRef.hide();
   }
 

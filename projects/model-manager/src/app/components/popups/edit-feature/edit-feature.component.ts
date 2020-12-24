@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { IFeature } from 'game-engine';
+import { IFeature, IGameContext } from 'game-engine';
 import { BsModalRef } from 'ngx-bootstrap/modal';
+import { EditBlockersComponent } from '../../edit-blockers/edit-blockers.component';
 
 @Component({
   selector: 'app-edit-feature',
@@ -10,6 +11,7 @@ import { BsModalRef } from 'ngx-bootstrap/modal';
 })
 export class EditFeatureComponent implements OnInit {
   public element: IFeature;
+  public context: IGameContext;
   public formGroup: FormGroup;
 
   constructor(
@@ -21,6 +23,7 @@ export class EditFeatureComponent implements OnInit {
   public ngOnInit(): void {
     this.formGroup = this.formBuilder.group({
       name: [this.element.name, Validators.required],
+      blockers: EditBlockersComponent.create(this.formBuilder, this.element.blockedBy),
     });
   }
 
@@ -29,6 +32,7 @@ export class EditFeatureComponent implements OnInit {
       return;
     }
     this.element.name = this.formGroup.controls.name.value;
+    this.element.blockedBy = EditBlockersComponent.selected(this.formGroup.controls.blockers as FormGroup);
     this.bsModalRef.hide();
   }
 

@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { IResource } from 'game-engine';
+import { IResource, IGameContext } from 'game-engine';
 import { BsModalRef } from 'ngx-bootstrap/modal';
+import { EditBlockersComponent } from '../../edit-blockers/edit-blockers.component';
 
 @Component({
   selector: 'app-edit-resource',
@@ -10,6 +11,7 @@ import { BsModalRef } from 'ngx-bootstrap/modal';
 })
 export class EditResourceComponent implements OnInit {
   public element: IResource;
+  public context: IGameContext;
   public formGroup: FormGroup;
 
   constructor(
@@ -26,6 +28,7 @@ export class EditResourceComponent implements OnInit {
       max: [this.element.max, Validators.required],
       growType: [this.element.growType, Validators.required],
       selfGrow: [this.element.selfGrow],
+      blockers: EditBlockersComponent.create(this.formBuilder, this.element.blockedBy),
     });
   }
 
@@ -40,6 +43,7 @@ export class EditResourceComponent implements OnInit {
     this.element.max = this.formGroup.controls.max.value;
     this.element.growType = this.formGroup.controls.growType.value;
     this.element.selfGrow = this.formGroup.controls.selfGrow.value || undefined;
+    this.element.blockedBy = EditBlockersComponent.selected(this.formGroup.controls.blockers as FormGroup);
     this.bsModalRef.hide();
   }
 }

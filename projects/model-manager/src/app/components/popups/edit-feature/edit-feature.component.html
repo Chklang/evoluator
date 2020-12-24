@@ -12,6 +12,10 @@
                 placeholder="Research name" [ngClass]="{'is-invalid': formGroup.controls.name.errors}">
             <small class="form-text text-muted">Name of the feature</small>
         </div>
-        <button type="submit" class="btn btn-primary">Save</button>
+        <div class="form-group">
+            <label for="maintenance">Blockers</label>
+            <app-edit-blockers [formSrc]="formGroup.controls.blockers" [context]="context"></app-edit-blockers>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Save</button>
     </form>
 </div>

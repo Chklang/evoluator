@@ -2,7 +2,7 @@ import { Component, Directive, OnInit, ViewChild, ViewContainerRef } from '@angu
 import * as d3 from 'd3';
 import { DragBehavior } from 'd3';
 import * as PreHistory from "../../../../../pre-history/src/app/database";
-import { IBuilding, IAchievement, IResource, IResearch, IFeature, IGameContext } from 'game-engine';
+import { IBuilding, IAchievement, IResource, IResearch, IFeature, IGameContext, IBlocker, IBuildingBlocker, IFeatureBlocker, IResourceBlocker } from 'game-engine';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { EditResourceComponent } from '../popups/edit-resource/edit-resource.component';
 import { SaveComponent } from '../popups/save/save.component';
@@ -10,7 +10,6 @@ import { EditResearchComponent } from '../popups/edit-research/edit-research.com
 import { EditAchievementComponent } from '../popups/edit-achievement/edit-achievement.component';
 import { EditBuildingComponent } from '../popups/edit-building/edit-building.component';
 import { EditFeatureComponent } from '../popups/edit-feature/edit-feature.component';
-import { IBlocker, IBuildingBlocker, IFeatureBlocker, IResourceBlocker } from 'dist/game-engine/lib/model';
 
 @Directive({
   selector: '[svgZone]',
@@ -224,6 +223,33 @@ export class SchemaComponent implements OnInit {
     return textElement;
   }
 
+  private formatBlockers(blockers?: IBlocker<any>[]): string[] {
+    if (!blockers) {
+      return [];
+    }
+    return blockers.map(blocker => {
+      switch (blocker.type) {
+        case 'building': {
+          const typedBlocker = blocker as IBuildingBlocker;
+          return '&nbsp;&nbsp;[B] ' + typedBlocker.params.name + ' (' + typedBlocker.params.quantity + ')';
+        }
+        case 'feature': {
+          const typedBlocker = blocker as IFeatureBlocker;
+          return '&nbsp;&nbsp;[F] ' + typedBlocker.params.name;
+        }
+        case 'resource': {
+          const typedBlocker = blocker as IResourceBlocker;
+          return '&nbsp;&nbsp;[R] ' + typedBlocker.params.name + ' (' + typedBlocker.params.quantity + ')';
+        }
+        case 'resourceTotal': {
+          const typedBlocker = blocker as IResourceBlocker;
+          return '&nbsp;&nbsp;[RT] ' + typedBlocker.params.name + ' (' + typedBlocker.params.quantity + ')';
+        }
+      }
+      return '';
+    });
+  }
+
   private appendElement<T>(element: T, params: IAppendParameters<T>) {
     const rect = document.createElementNS(svgns, "rect");
     const edit = document.createElementNS(svgns, "use");
@@ -400,6 +426,8 @@ export class SchemaComponent implements OnInit {
           'Type: ' + e.resourceType,
           'Self grow: ' + e.selfGrow,
           'icon: ' + e.icon,
+          'Blockers:',
+          ...this.formatBlockers(e.blockedBy),
         ];
       },
       posx: params.posx,
@@ -486,7 +514,7 @@ export class SchemaComponent implements OnInit {
       getTexts: (e) => {
         const result: string[] = [
           e.name,
-          'Max level: ' + (e.maxLevel || 0),
+          'Max level: ' + (e.maxLevel || 'Infinity'),
           'Costs: ',
           ...Object.keys(e.cost).map((costKey) => {
             return '&nbsp;&nbsp;' + costKey + ': ' + e.cost[costKey];
@@ -499,6 +527,8 @@ export class SchemaComponent implements OnInit {
           ...Object.keys(e.bonusBuildingCosts || {}).map((key) => {
             return '&nbsp;&nbsp;' + key + ': ' + e.bonusBuildingCosts[key];
           }),
+          'Blockers:',
+          ...this.formatBlockers(e.blockedBy),
         ];
         return result;
       },
@@ -509,7 +539,7 @@ export class SchemaComponent implements OnInit {
       onDelete: () => {
         this.currentResearchs.splice(this.currentResearchs.findIndex(e => e.research === research), 1);
       },
-      onUpdate: () => {},
+      onUpdate: () => { },
     });
     this.currentResearchs.push({
       research,
@@ -579,6 +609,8 @@ export class SchemaComponent implements OnInit {
       getTexts: (e) => {
         return [
           e.name,
+          'Blockers:',
+          ...this.formatBlockers(e.blockedBy),
         ];
       },
       posx: params.posx,
@@ -721,6 +753,8 @@ export class SchemaComponent implements OnInit {
           ...Object.keys(e.maintenance || {}).map((key) => {
             return '&nbsp;&nbsp;' + key + ': ' + e.maintenance[key];
           }),
+          'Blockers:',
+          ...this.formatBlockers(e.blockedBy),
         ];
       },
       posx: params.posx,
@@ -789,8 +823,15 @@ export class SchemaComponent implements OnInit {
     const result = this.appendElement(achievement, {
       color: '#cfc',
       getTexts: (e) => {
+        const blockers: string[] = [];
+        e.levels.forEach(level => {
+          blockers.push('&nbsp;&nbsp;' + level.level + ':')
+          blockers.push(...this.formatBlockers(level.blockers).map(f => '&nbsp;&nbsp;' + f));
+        });
         return [
           e.name,
+          'Blockers:',
+          ...blockers,
         ];
       },
       posx: params.posx,
@@ -800,7 +841,7 @@ export class SchemaComponent implements OnInit {
       onDelete: () => {
         this.currentAchivements.splice(this.currentAchivements.findIndex(e => e.achievement === achievement), 1);
       },
-      onUpdate: () => {},
+      onUpdate: () => { },
     });
     this.currentAchivements.push({
       achievement,
@@ -884,5 +925,4 @@ interface IAppendParameters<T> {
   index?: number;
   posx?: number;
   posy: number;
-
 }
