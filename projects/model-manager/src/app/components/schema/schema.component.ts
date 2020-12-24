@@ -1,8 +1,19 @@
 import { Component, Directive, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import * as d3 from 'd3';
 import { DragBehavior } from 'd3';
-import * as PreHistory from "../../../../../pre-history/src/app/database";
-import { IBuilding, IAchievement, IResource, IResearch, IFeature, IGameContext, IBlocker, IBuildingBlocker, IFeatureBlocker, IResourceBlocker } from 'game-engine';
+import * as PreHistory from '../../../../../pre-history/src/app/database';
+import {
+  IBuilding,
+  IAchievement,
+  IResource,
+  IResearch,
+  IFeature,
+  IGameContext,
+  IBlocker,
+  IBuildingBlocker,
+  IFeatureBlocker,
+  IResourceBlocker
+} from 'game-engine';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
 import { EditResourceComponent } from '../popups/edit-resource/edit-resource.component';
 import { SaveComponent } from '../popups/save/save.component';
@@ -12,7 +23,7 @@ import { EditBuildingComponent } from '../popups/edit-building/edit-building.com
 import { EditFeatureComponent } from '../popups/edit-feature/edit-feature.component';
 
 @Directive({
-  selector: '[svgZone]',
+  selector: '[appSvgZone]',
 })
 export class SchemaDirective extends Directive {
   constructor(public viewContainerRef: ViewContainerRef) {
@@ -20,7 +31,7 @@ export class SchemaDirective extends Directive {
   }
 }
 
-const svgns = "http://www.w3.org/2000/svg";
+const svgns = 'http://www.w3.org/2000/svg';
 
 @Component({
   selector: 'app-schema',
@@ -33,18 +44,18 @@ export class SchemaComponent implements OnInit {
 
   public modalRef: BsModalRef;
 
-  private currentAdd: rects | undefined;
+  private currentAdd: IGraphicalElement | undefined;
   private transformCurrent: d3.ZoomTransform;
   private isAddMode = false;
 
   private menuGroup: SVGElement;
   private drawGroup: SVGElement;
 
-  private currentResources: { resource: IResource, rect: rects }[] = [];
-  private currentResearchs: { research: IResearch, rect: rects }[] = [];
-  private currentFeatures: { feature: IFeature, rect: rects }[] = [];
-  private currentBuildings: { building: IBuilding, rect: rects }[] = [];
-  private currentAchivements: { achievement: IAchievement, rect: rects }[] = [];
+  private currentResources: { resource: IResource, rect: IGraphicalElement }[] = [];
+  private currentResearchs: { research: IResearch, rect: IGraphicalElement }[] = [];
+  private currentFeatures: { feature: IFeature, rect: IGraphicalElement }[] = [];
+  private currentBuildings: { building: IBuilding, rect: IGraphicalElement }[] = [];
+  private currentAchivements: { achievement: IAchievement, rect: IGraphicalElement }[] = [];
 
   constructor(
     private readonly modalService: BsModalService,
@@ -92,6 +103,9 @@ export class SchemaComponent implements OnInit {
   }
 
   public ngOnInit(): void {
+    if (!this.svgZone) {
+      return;
+    }
     const svgZone = this.svgZone.viewContainerRef.element.nativeElement as SVGElement;
     this.init(svgZone, {
       allAchievements: PreHistory.achievements,
@@ -106,8 +120,8 @@ export class SchemaComponent implements OnInit {
   private init(svg: SVGElement, gameContext: IGameContext): void {
     const width = svg.clientWidth;
     const height = svg.clientHeight;
-    this.menuGroup = document.createElementNS(svgns, "g");
-    this.drawGroup = document.createElementNS(svgns, "g");
+    this.menuGroup = document.createElementNS(svgns, 'g');
+    this.drawGroup = document.createElementNS(svgns, 'g');
 
     svg.appendChild(this.drawGroup);
     svg.appendChild(this.menuGroup);
@@ -166,39 +180,29 @@ export class SchemaComponent implements OnInit {
     svgD3.call(d3.zoom()
       .extent([[0, 0], [width, height]])
       .scaleExtent([0.001, 1000])
-      .on("zoom", ({ transform }) => {
+      .on('zoom', ({ transform }) => {
         this.transformCurrent = transform;
-        d3.select(drawGroup).attr("transform", transform);
+        d3.select(drawGroup).attr('transform', transform);
       }));
   }
 
-  private addButton(index: number, color: string, onAdd: (event: d3.D3DragEvent<Element, any, any>, pos: { posx: number, posy: number }) => rects) {
+  private addButton(
+    index: number,
+    color: string,
+    onAdd: (event: d3.D3DragEvent<Element, any, any>, pos: { posx: number, posy: number }) => IGraphicalElement
+  ): void {
     const addButton = document.createElementNS(svgns, 'rect');
     addButton.style.fill = color;
-    addButton.setAttribute("x", String(35 * index + 5));
-    addButton.setAttribute("y", "5");
-    addButton.setAttribute("width", String(30));
-    addButton.setAttribute("height", String(30));
+    addButton.setAttribute('x', String(35 * index + 5));
+    addButton.setAttribute('y', '5');
+    addButton.setAttribute('width', String(30));
+    addButton.setAttribute('height', String(30));
     this.menuGroup.appendChild(addButton);
-    (addButton as any).obj = <rects>{
-      color,
-      posx: 5,
-      posy: 5,
-      rect: addButton,
-      d3: [
-        d3.select(addButton)
-      ],
-      name: "toto",
-      main: d3.select(addButton),
-      edit: null,
-      texts: [],
-      updated: null,
-    }
     d3.select(addButton).call(
       d3.drag()
-        .on("start", (e) => this.dragstarted(e, this.currentAdd))
-        .on("drag", (e) => this.dragged(e, this.currentAdd))
-        .on("end", () => this.dragended(this.currentAdd))
+        .on('start', (e) => this.dragstarted(e, this.currentAdd))
+        .on('drag', (e) => this.dragged(e, this.currentAdd))
+        .on('end', () => this.dragended(this.currentAdd))
         .subject((event, d) => {
           this.isAddMode = true;
           const factor = this.transformCurrent ? this.transformCurrent.k : 1;
@@ -210,15 +214,15 @@ export class SchemaComponent implements OnInit {
           return this.currentAdd.d3;
         })
     );
-    d3.select(addButton).attr("cursor", "grab");
+    d3.select(addButton).attr('cursor', 'grab');
   }
 
-  private addText(group: SVGGElement, text: string, line: number, horizontalCenter: boolean) {
-    const textElement = document.createElementNS(svgns, "text");
-    textElement.setAttribute("dominant-baseline", "middle");
-    textElement.setAttribute("text-anchor", horizontalCenter ? "middle" : "left");
+  private addText(group: SVGGElement, text: string, line: number, horizontalCenter: boolean): SVGTextElement {
+    const textElement = document.createElementNS(svgns, 'text');
+    textElement.setAttribute('dominant-baseline', 'middle');
+    textElement.setAttribute('text-anchor', horizontalCenter ? 'middle' : 'left');
     textElement.innerHTML = text;
-    textElement.setAttribute("transform", "translate(" + (horizontalCenter ? 90 : 5) + ", " + ((line * 25) + 15) + ")");
+    textElement.setAttribute('transform', 'translate(' + (horizontalCenter ? 90 : 5) + ', ' + ((line * 25) + 15) + ')');
     group.appendChild(textElement);
     return textElement;
   }
@@ -250,17 +254,17 @@ export class SchemaComponent implements OnInit {
     });
   }
 
-  private appendElement<T>(element: T, params: IAppendParameters<T>) {
-    const rect = document.createElementNS(svgns, "rect");
-    const edit = document.createElementNS(svgns, "use");
-    edit.setAttribute("transform", "translate(130, -20)");
-    edit.setAttribute("href", "#editButton");
-    edit.setAttribute("action", "edit");
-    const deleteBtn = document.createElementNS(svgns, "use");
-    deleteBtn.setAttribute("transform", "translate(160, -20)");
-    deleteBtn.setAttribute("href", "#deleteButton");
-    deleteBtn.setAttribute("action", "delete");
-    const g = document.createElementNS(svgns, "g");
+  private appendElement<T>(element: T, params: IAppendParameters<T>): IGraphicalElement {
+    const rect = document.createElementNS(svgns, 'rect');
+    const edit = document.createElementNS(svgns, 'use');
+    edit.setAttribute('transform', 'translate(130, -20)');
+    edit.setAttribute('href', '#editButton');
+    edit.setAttribute('action', 'edit');
+    const deleteBtn = document.createElementNS(svgns, 'use');
+    deleteBtn.setAttribute('transform', 'translate(160, -20)');
+    deleteBtn.setAttribute('href', '#deleteButton');
+    deleteBtn.setAttribute('action', 'delete');
+    const g = document.createElementNS(svgns, 'g');
     g.appendChild(rect);
     g.appendChild(edit);
     g.appendChild(deleteBtn);
@@ -275,8 +279,8 @@ export class SchemaComponent implements OnInit {
         while (result.texts.length <= indexText) {
           const textToAdd = this.addText(g, text, result.texts.length, result.texts.length === 0);
           result.texts.push(textToAdd);
-          textToAdd.setAttribute("x", String(result.posx));
-          textToAdd.setAttribute("y", String(result.posy));
+          textToAdd.setAttribute('x', String(result.posx));
+          textToAdd.setAttribute('y', String(result.posy));
         }
         result.texts[indexText].innerHTML = text;
       });
@@ -284,9 +288,9 @@ export class SchemaComponent implements OnInit {
         g.removeChild(result.texts[i]);
       }
       result.texts.length = newTexts.length;
-      rect.setAttribute("height", String(newTexts.length * 25 + 5));
+      rect.setAttribute('height', String(newTexts.length * 25 + 5));
     };
-    const result: rects = {
+    const result: IGraphicalElement = {
       posx: params.posx || (params.index || 0) * 200,
       posy: params.posy,
       color: params.color,
@@ -305,11 +309,11 @@ export class SchemaComponent implements OnInit {
     result.d3.push(...textElements.map(e => d3.select(e)));
 
     for (let currentChild = 0; currentChild < g.children.length; currentChild++) {
-      g.children.item(currentChild).setAttribute("x", String(result.posx));
-      g.children.item(currentChild).setAttribute("y", String(result.posy));
+      g.children.item(currentChild).setAttribute('x', String(result.posx));
+      g.children.item(currentChild).setAttribute('y', String(result.posy));
     }
-    rect.setAttribute("width", String(180));
-    rect.setAttribute("height", String(textElements.length * 25 + 5));
+    rect.setAttribute('width', String(180));
+    rect.setAttribute('height', String(textElements.length * 25 + 5));
     rect.style.fill = result.color;
     this.drawGroup.appendChild(g);
     this.addDragFeature(result);
@@ -333,15 +337,15 @@ export class SchemaComponent implements OnInit {
       }
       this.drawGroup.removeChild(g);
       params.onDelete(element);
-    }
+    };
 
     return result;
   }
 
-  private appendResource(resource: IResource, params?: { index?: number, posx?: number, posy?: number }) {
+  private appendResource(resource: IResource, params?: { index?: number, posx?: number, posy?: number }): IGraphicalElement {
     let originalName = resource.name;
-    const needToUpdate: rects[] = [];
-    const onUpdateBlockers = (rect: rects, blockers?: IBlocker<any>[]) => {
+    const needToUpdate: IGraphicalElement[] = [];
+    const onUpdateBlockers = (rect: IGraphicalElement, blockers?: IBlocker<any>[]) => {
       if (blockers) {
         blockers.forEach(b => {
           switch (b.type) {
@@ -365,7 +369,7 @@ export class SchemaComponent implements OnInit {
         });
       }
     };
-    const onUpdateRecord = (rect: rects, values?: Record<string, number>) => {
+    const onUpdateRecord = (rect: IGraphicalElement, values?: Record<string, number>) => {
       if (!values) {
         return;
       }
@@ -378,7 +382,7 @@ export class SchemaComponent implements OnInit {
         needToUpdate.push(rect);
       }
     };
-    const onDeleteBlockers = (rect: rects, blockers?: IBlocker<any>[]) => {
+    const onDeleteBlockers = (rect: IGraphicalElement, blockers?: IBlocker<any>[]) => {
       if (!blockers) {
         return undefined;
       }
@@ -403,7 +407,7 @@ export class SchemaComponent implements OnInit {
         }
       });
     };
-    const onDeleteRecord = (rect: rects, values?: Record<string, number>) => {
+    const onDeleteRecord = (rect: IGraphicalElement, values?: Record<string, number>) => {
       if (!values) {
         return;
       }
@@ -506,13 +510,13 @@ export class SchemaComponent implements OnInit {
     });
 
     return result;
-  };
+  }
 
-  private appendResearch(research: IResearch, params?: { index?: number, posx?: number, posy?: number }) {
+  private appendResearch(research: IResearch, params?: { index?: number, posx?: number, posy?: number }): IGraphicalElement {
     const result = this.appendElement(research, {
       color: 'red',
       getTexts: (e) => {
-        const result: string[] = [
+        const resultTexts: string[] = [
           e.name,
           'Max level: ' + (e.maxLevel || 'Infinity'),
           'Costs: ',
@@ -530,7 +534,7 @@ export class SchemaComponent implements OnInit {
           'Blockers:',
           ...this.formatBlockers(e.blockedBy),
         ];
-        return result;
+        return resultTexts;
       },
       posx: params.posx,
       posy: params.posy || 320,
@@ -547,12 +551,12 @@ export class SchemaComponent implements OnInit {
     });
 
     return result;
-  };
+  }
 
-  private appendFeature(feature: IFeature, params?: { index?: number, posx?: number, posy?: number }) {
+  private appendFeature(feature: IFeature, params?: { index?: number, posx?: number, posy?: number }): IGraphicalElement {
     let originalName = feature.name;
-    const needToUpdate: rects[] = [];
-    const onUpdateBlockers = (rect: rects, blockers?: IBlocker<any>[]) => {
+    const needToUpdate: IGraphicalElement[] = [];
+    const onUpdateBlockers = (rect: IGraphicalElement, blockers?: IBlocker<any>[]) => {
       if (blockers) {
         blockers.forEach(b => {
           switch (b.type) {
@@ -579,7 +583,7 @@ export class SchemaComponent implements OnInit {
         });
       }
     };
-    const onDeleteBlockers = (rect: rects, blockers?: IBlocker<any>[]) => {
+    const onDeleteBlockers = (rect: IGraphicalElement, blockers?: IBlocker<any>[]) => {
       if (!blockers) {
         return undefined;
       }
@@ -673,12 +677,12 @@ export class SchemaComponent implements OnInit {
     });
 
     return result;
-  };
+  }
 
-  private appendBuilding(building: IBuilding, params?: { index?: number, posx?: number, posy?: number }) {
+  private appendBuilding(building: IBuilding, params?: { index?: number, posx?: number, posy?: number }): IGraphicalElement {
     let originalName = building.name;
-    const needToUpdate: rects[] = [];
-    const onUpdateBlockers = (rect: rects, blockers?: IBlocker<any>[]) => {
+    const needToUpdate: IGraphicalElement[] = [];
+    const onUpdateBlockers = (rect: IGraphicalElement, blockers?: IBlocker<any>[]) => {
       if (blockers) {
         blockers.forEach(b => {
           switch (b.type) {
@@ -704,7 +708,7 @@ export class SchemaComponent implements OnInit {
         });
       }
     };
-    const onDeleteBlockers = (rect: rects, blockers?: IBlocker<any>[]) => {
+    const onDeleteBlockers = (rect: IGraphicalElement, blockers?: IBlocker<any>[]) => {
       if (!blockers) {
         return undefined;
       }
@@ -817,15 +821,15 @@ export class SchemaComponent implements OnInit {
     });
 
     return result;
-  };
+  }
 
-  private appendAchievement(achievement: IAchievement, params?: { index?: number, posx?: number, posy?: number }) {
+  private appendAchievement(achievement: IAchievement, params?: { index?: number, posx?: number, posy?: number }): IGraphicalElement {
     const result = this.appendElement(achievement, {
       color: '#cfc',
       getTexts: (e) => {
         const blockers: string[] = [];
         e.levels.forEach(level => {
-          blockers.push('&nbsp;&nbsp;' + level.level + ':')
+          blockers.push('&nbsp;&nbsp;' + level.level + ':');
           blockers.push(...this.formatBlockers(level.blockers).map(f => '&nbsp;&nbsp;' + f));
         });
         return [
@@ -849,32 +853,32 @@ export class SchemaComponent implements OnInit {
     });
 
     return result;
-  };
+  }
 
-  private addDragFeature(rect: rects) {
+  private addDragFeature(rect: IGraphicalElement): void {
     rect.d3.forEach(e => {
       e.call(d3.drag()
-        .on("start", (e) => this.dragstarted(e, rect))
-        .on("drag", (e) => this.dragged(e, rect))
-        .on("end", () => this.dragended(rect))
+        .on('start', (f) => this.dragstarted(f, rect))
+        .on('drag', (f) => this.dragged(f, rect))
+        .on('end', () => this.dragended(rect))
         .subject(() => {
           return rect.rect;
         })
       );
-      if (e.attr("action")) {
-        e.attr("cursor", "pointer");
+      if (e.attr('action')) {
+        e.attr('cursor', 'pointer');
       } else {
-        e.attr("cursor", "grab");
+        e.attr('cursor', 'grab');
       }
     });
   }
 
-  private dragstarted(event: d3.D3DragEvent<d3.DraggedElementBaseType, any, any>, def: rects) {
+  private dragstarted(event: d3.D3DragEvent<d3.DraggedElementBaseType, any, any>, def: IGraphicalElement): void {
     def.main.raise();
-    def.d3.filter(e => !e.attr("action")).forEach(e => e.attr("cursor", "grabbing"));
+    def.d3.filter(e => !e.attr('action')).forEach(e => e.attr('cursor', 'grabbing'));
   }
 
-  private dragged(event: d3.D3DragEvent<d3.DraggedElementBaseType, any, any>, def: rects) {
+  private dragged(event: d3.D3DragEvent<d3.DraggedElementBaseType, any, any>, def: IGraphicalElement): void {
     let dx = event.dx;
     let dy = event.dy;
     if (this.isAddMode && this.transformCurrent) {
@@ -883,12 +887,12 @@ export class SchemaComponent implements OnInit {
     }
     def.posx += dx;
     def.posy += dy;
-    def.d3.forEach(e => e.attr("x", String(def.posx)).attr("y", String(def.posy)));
+    def.d3.forEach(e => e.attr('x', String(def.posx)).attr('y', String(def.posy)));
   }
 
-  private dragended(def: rects) {
+  private dragended(def: IGraphicalElement): void {
     this.isAddMode = false;
-    def.d3.filter(e => !e.attr("action")).forEach(e => e.attr("cursor", "grab"));
+    def.d3.filter(e => !e.attr('action')).forEach(e => e.attr('cursor', 'grab'));
     this.currentAdd = undefined;
   }
 
@@ -902,7 +906,7 @@ export class SchemaComponent implements OnInit {
     });
   }
 }
-interface rects {
+interface IGraphicalElement {
   rect: SVGGElement;
   posx: number;
   posy: number;

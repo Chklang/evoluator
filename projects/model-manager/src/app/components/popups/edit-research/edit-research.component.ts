@@ -23,6 +23,9 @@ export class EditResearchComponent implements OnInit {
   }
 
   public ngOnInit(): void {
+    if (!this.context) {
+      return;
+    }
     this.resources = this.context.allResources.map(e => e.name);
     this.formGroup = this.formBuilder.group({
       name: [this.element.name, Validators.required],

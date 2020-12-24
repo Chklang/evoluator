@@ -9,7 +9,24 @@ import { filter, map, shareReplay, take } from 'rxjs/operators';
   styleUrls: ['./select-value-form.component.css']
 })
 export class SelectValueFormComponent implements OnInit {
-  public static create(formBuilder: FormBuilder, init?: Record<string, number>) {
+
+  private allValues$: Subject<string[]> = new BehaviorSubject([]);
+  @Input()
+  public set allValues(value: string[]) {
+    this.allValues$.next(value);
+  }
+  @Input()
+  public formSrc: FormGroup;
+
+  @Input()
+  public withValue = true;
+
+  private valuesUsed: Subject<AbstractControl[]> = new BehaviorSubject([]);
+  private costsUsed: Subject<AbstractControl[]> = new BehaviorSubject([]);
+  private currentAdd: Observable<string>;
+  public canAdd: Observable<string[]>;
+
+  public static create(formBuilder: FormBuilder, init?: Record<string, number>): FormGroup {
     return formBuilder.group({
       currentAdd: '',
       selected: formBuilder.array(Object.keys(init || {}).map(key => {
@@ -20,7 +37,7 @@ export class SelectValueFormComponent implements OnInit {
       })),
     });
   }
-  public static createFromArray(formBuilder: FormBuilder, init?: { key: string, value: number }[]) {
+  public static createFromArray(formBuilder: FormBuilder, init?: { key: string, value: number }[]): FormGroup {
     return formBuilder.group({
       currentAdd: '',
       selected: formBuilder.array((init || []).map(entry => {
@@ -40,27 +57,14 @@ export class SelectValueFormComponent implements OnInit {
     return result;
   }
 
-  private allValues$: Subject<string[]> = new BehaviorSubject([]);
-  @Input()
-  public set allValues(value: string[]) {
-    this.allValues$.next(value);
-  }
-  @Input()
-  public formSrc: FormGroup;
-
-  @Input()
-  public withValue = true;
-
-  private valuesUsed: Subject<AbstractControl[]> = new BehaviorSubject([]);
-  private costsUsed: Subject<AbstractControl[]> = new BehaviorSubject([]);
-  private currentAdd: Observable<string>;
-  public canAdd: Observable<string[]>;
-
   constructor(
     private readonly formBuilder: FormBuilder,
   ) { }
 
   public ngOnInit(): void {
+    if (!this.formSrc) {
+      return;
+    }
     this.currentAdd = this.formSrc.controls.currentAdd.valueChanges;
 
     this.canAdd = combineLatest([this.currentAdd, this.costsUsed, this.allValues$]).pipe(
@@ -95,7 +99,7 @@ export class SelectValueFormComponent implements OnInit {
           name: valueSelected,
           value: 0,
         }));
-        (selectedValue.value as { name: string }[]).sort((a, b) => a.name.localeCompare(b.name))
+        (selectedValue.value as { name: string }[]).sort((a, b) => a.name.localeCompare(b.name));
         selectedValue.patchValue(selectedValue.value);
         this.formSrc.controls.currentAdd.setValue('');
         this.valuesUsed.next(selectedValue.controls);

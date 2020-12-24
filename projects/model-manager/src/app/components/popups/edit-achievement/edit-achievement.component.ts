@@ -21,6 +21,9 @@ export class EditAchievementComponent implements OnInit {
   }
 
   public ngOnInit(): void {
+    if (!this.context) {
+      return;
+    }
     this.formGroup = this.formBuilder.group({
       name: [this.element.name, Validators.required],
       levels: this.formBuilder.array(this.element.levels.map(level => {

@@ -9,7 +9,14 @@ import { SelectValueFormComponent } from '../select-value-form/select-value-form
   styleUrls: ['./edit-blockers.component.css']
 })
 export class EditBlockersComponent implements OnInit {
-  public static create(formBuilder: FormBuilder, blockers?: IBlocker<any>[]) {
+
+  @Input()
+  public formSrc: FormGroup;
+
+  @Input()
+  public context: IGameContext;
+
+  public static create(formBuilder: FormBuilder, blockers?: IBlocker<any>[]): FormGroup {
 
     const result = formBuilder.group({
       buildings: SelectValueFormComponent.createFromArray(formBuilder, (blockers || [])
@@ -63,16 +70,16 @@ export class EditBlockersComponent implements OnInit {
           params: {
             name: key,
             quantity: buildings[key],
-          }
-        }
+          },
+        };
       }),
       ...Object.keys(features).map((key): IFeatureBlocker => {
         return {
           type: 'feature',
           params: {
             name: key,
-          }
-        }
+          },
+        };
       }),
       ...Object.keys(resources).map((key): IResourceBlocker => {
         return {
@@ -80,8 +87,8 @@ export class EditBlockersComponent implements OnInit {
           params: {
             name: key,
             quantity: resources[key],
-          }
-        }
+          },
+        };
       }),
       ...Object.keys(resourcesTotal).map((key): IResourceBlocker => {
         return {
@@ -89,22 +96,13 @@ export class EditBlockersComponent implements OnInit {
           params: {
             name: key,
             quantity: resourcesTotal[key],
-          }
-        }
+          },
+        };
       }),
     ];
   }
 
-  @Input()
-  public formSrc: FormGroup;
-
-  @Input()
-  public context: IGameContext;
-
   constructor() { }
 
-  public ngOnInit(): void {
-    console.log("Blockers", this);
-  }
-
+  public ngOnInit(): void { }
 }

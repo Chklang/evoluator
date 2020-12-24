@@ -21,6 +21,9 @@ export class EditFeatureComponent implements OnInit {
   }
 
   public ngOnInit(): void {
+    if (!this.context) {
+      return;
+    }
     this.formGroup = this.formBuilder.group({
       name: [this.element.name, Validators.required],
       blockers: EditBlockersComponent.create(this.formBuilder, this.element.blockedBy),

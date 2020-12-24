@@ -8,7 +8,7 @@ import { IGameContext } from 'game-engine';
 export class SerializeGameContextPipe implements PipeTransform {
 
   transform(gameContext: IGameContext): string {
-    let result: string[] = [
+    const result: string[] = [
       'import { IAchievement, IBuilding, IFeature, IResource, IResearch } from \'game-engine\';',
       ''
     ];

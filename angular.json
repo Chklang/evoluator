@@ -198,6 +198,10 @@
               "./node_modules/highlight.js/styles/vs2015.css",
               "projects/model-manager/src/styles.css"
             ],
+            "allowedCommonJsDependencies": [
+               "stringify-object",
+               "arrayplus"
+            ],
             "scripts": []
           },
           "configurations": {

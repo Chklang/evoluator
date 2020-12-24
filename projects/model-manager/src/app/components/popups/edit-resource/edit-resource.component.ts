@@ -20,6 +20,9 @@ export class EditResourceComponent implements OnInit {
   ) { }
 
   public ngOnInit(): void {
+    if (!this.context) {
+      return;
+    }
     this.formGroup = this.formBuilder.group({
       name: [this.element.name, Validators.required],
       resourceType: [this.element.resourceType, Validators.required],

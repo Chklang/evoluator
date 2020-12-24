@@ -1,4 +1,4 @@
-<div role="group" [formGroup]="formSrc">
+<div role="group" [formGroup]="formSrc" *ngIf="context">
     <div formGroupName="buildings" class="form-group">
         <label for="buildings">Buildings</label>
         <app-select-value-form [formSrc]="formSrc.controls.buildings"
