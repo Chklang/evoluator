@@ -223,15 +223,20 @@ export class SchemaComponent implements OnInit {
     return textElement;
   }
 
-  private appendElement<T>(element: T, params: { getTexts: (e: T) => string[], editComponent: any, color: string, index?: number, posx?: number, posy: number }) {
+  private appendElement<T>(element: T, params: { getTexts: (e: T) => string[], editComponent: any, onDelete: (e: T) => void, color: string, index?: number, posx?: number, posy: number }) {
     const rect = document.createElementNS(svgns, "rect");
     const edit = document.createElementNS(svgns, "use");
-    edit.setAttribute("transform", "translate(160, -20)");
+    edit.setAttribute("transform", "translate(130, -20)");
     edit.setAttribute("href", "#editButton");
     edit.setAttribute("action", "edit");
+    const deleteBtn = document.createElementNS(svgns, "use");
+    deleteBtn.setAttribute("transform", "translate(160, -20)");
+    deleteBtn.setAttribute("href", "#deleteButton");
+    deleteBtn.setAttribute("action", "delete");
     const g = document.createElementNS(svgns, "g");
     g.appendChild(rect);
     g.appendChild(edit);
+    g.appendChild(deleteBtn);
     const texts = params.getTexts(element);
     const textElements: SVGTextElement[] = texts.map((line, indexLine) => {
       return this.addText(g, line, indexLine, indexLine === 0);
@@ -245,6 +250,7 @@ export class SchemaComponent implements OnInit {
       d3: [
         d3.select(rect),
         d3.select(edit),
+        d3.select(deleteBtn),
       ],
       main: d3.select(g),
       edit,
@@ -287,6 +293,14 @@ export class SchemaComponent implements OnInit {
         rect.setAttribute("height", String(newTexts.length * 25 + 5));
       });
     };
+    deleteBtn.onclick = () => {
+      const confirmation = confirm('Are you sure to delete ' + result.name + '?');
+      if (!confirmation) {
+        return;
+      }
+      this.drawGroup.removeChild(g);
+      params.onDelete(element);
+    }
 
     return result;
   }
@@ -309,6 +323,9 @@ export class SchemaComponent implements OnInit {
       posy: params.posy || 100,
       index: params.index,
       editComponent: EditResourceComponent,
+      onDelete: () => {
+        this.currentResources.splice(this.currentResources.findIndex(e => e.resource === resource), 1);
+      },
     });
     this.currentResources.push({
       resource,
@@ -344,6 +361,9 @@ export class SchemaComponent implements OnInit {
       posy: params.posy || 320,
       index: params.index,
       editComponent: EditResearchComponent,
+      onDelete: () => {
+        this.currentResearchs.splice(this.currentResearchs.findIndex(e => e.research === research), 1);
+      },
     });
     this.currentResearchs.push({
       research,
@@ -365,6 +385,9 @@ export class SchemaComponent implements OnInit {
       posy: params.posy || 420,
       index: params.index,
       editComponent: EditFeatureComponent,
+      onDelete: () => {
+        this.currentFeatures.splice(this.currentFeatures.findIndex(e => e.feature === feature), 1);
+      },
     });
     this.currentFeatures.push({
       feature,
@@ -406,6 +429,9 @@ export class SchemaComponent implements OnInit {
       posy: params.posy || 480,
       index: params.index,
       editComponent: EditBuildingComponent,
+      onDelete: () => {
+        this.currentBuildings.splice(this.currentBuildings.findIndex(e => e.building === building), 1);
+      },
     });
     this.currentBuildings.push({
       building,
@@ -427,6 +453,9 @@ export class SchemaComponent implements OnInit {
       posy: params.posy || 530,
       index: params.index,
       editComponent: EditAchievementComponent,
+      onDelete: () => {
+        this.currentAchivements.splice(this.currentAchivements.findIndex(e => e.achievement === achievement), 1);
+      },
     });
     this.currentAchivements.push({
       achievement,
