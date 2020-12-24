@@ -121,95 +121,48 @@ export class SchemaComponent implements OnInit {
     gameContext.allBuildings.forEach((building, index) => this.appendBuilding(building, { index }));
     gameContext.allAchievements.forEach((achievement, index) => this.appendAchievement(achievement, { index }));
 
-    const addResource = document.createElementNS(svgns, 'rect');
-    addResource.style.fill = 'yellow';
-    addResource.setAttribute("x", '5');
-    addResource.setAttribute("y", "5");
-    addResource.setAttribute("width", String(30));
-    addResource.setAttribute("height", String(30));
-    this.menuGroup.appendChild(addResource);
-    (addResource as any).obj = <rects>{
-      color: 'yellow',
-      posx: 5,
-      posy: 5,
-      rect: addResource,
-      d3: [
-        d3.select(addResource)
-      ],
-      type: "addResource",
-      name: "toto",
-      main: d3.select(addResource),
-      edit: null,
-      texts: [],
-    }
-    d3.select(addResource).call(
-      d3.drag()
-        .on("start", (e) => this.dragstarted(e, this.currentAdd))
-        .on("drag", (e) => this.dragged(e, this.currentAdd))
-        .on("end", () => this.dragended(this.currentAdd))
-        .subject((event, d) => {
-          this.isAddMode = true;
-          const factor = this.transformCurrent ? this.transformCurrent.k : 1;
-          const newResource: IResource = {
-            icon: '',
-            max: 100,
-            name: 'NewRes',
-            resourceType: 'CLASSIC',
-          };
-          this.currentAdd = this.appendResource(newResource, {
-            posx: (event.x - (this.transformCurrent ? this.transformCurrent.x : 0) - 90) / factor,
-            posy: (event.y - (this.transformCurrent ? this.transformCurrent.y : 0) - 25) / factor,
-          });
-          this.currentAdd.d3.forEach(e => e.attr("cursor", "grabbing"));
-          return this.currentAdd.d3;
-        })
-    );
-    d3.select(addResource).attr("cursor", "grab");
+    this.addButton(0, 'yellow', (event, pos) => {
+      const newResource: IResource = {
+        icon: '',
+        max: 100,
+        name: 'NewResource',
+        resourceType: 'CLASSIC',
+      };
+      return this.appendResource(newResource, pos);
+    });
 
-    const addResearch = document.createElementNS(svgns, 'rect');
-    addResearch.style.fill = 'red';
-    addResearch.setAttribute("x", '40');
-    addResearch.setAttribute("y", "5");
-    addResearch.setAttribute("width", String(30));
-    addResearch.setAttribute("height", String(30));
-    this.menuGroup.appendChild(addResearch);
-    (addResearch as any).obj = <rects>{
-      color: 'red',
-      posx: 5,
-      posy: 5,
-      rect: addResearch,
-      d3: [
-        d3.select(addResearch)
-      ],
-      type: "addResearch",
-      name: "toto",
-      main: d3.select(addResearch),
-      edit: null,
-      texts: [],
-    }
-    d3.select(addResearch).call(
-      d3.drag()
-        .on("start", (e) => this.dragstarted(e, this.currentAdd))
-        .on("drag", (e) => this.dragged(e, this.currentAdd))
-        .on("end", () => this.dragended(this.currentAdd))
-        .subject((event, d) => {
-          this.isAddMode = true;
-          const factor = this.transformCurrent ? this.transformCurrent.k : 1;
-          const newResearch: IResearch = {
-            name: 'NewResearch',
-            cost: {},
-            bonusResources: {},
-            bonusBuildingCosts: {},
-          };
-          this.currentAdd = this.appendResearch(newResearch, {
-            posx: (event.x - (this.transformCurrent ? this.transformCurrent.x : 0) - 90) / factor,
-            posy: (event.y - (this.transformCurrent ? this.transformCurrent.y : 0) - 25) / factor,
-          });
-          this.currentAdd.d3.forEach(e => e.attr("cursor", "grabbing"));
-          return this.currentAdd.d3;
-        })
-    );
-    d3.select(addResearch).attr("cursor", "grab");
+    this.addButton(1, 'red', (event, pos) => {
+      const newResearch: IResearch = {
+        name: 'NewResearch',
+        cost: {},
+        bonusResources: {},
+        bonusBuildingCosts: {},
+      };
+      return this.appendResearch(newResearch, pos);
+    });
+
+    this.addButton(2, '#fcf', (event, pos) => {
+      const newFeature: IFeature = {
+        name: 'NewFeature',
+      };
+      return this.appendFeature(newFeature, pos);
+    });
+
+    this.addButton(3, '#cff', (event, pos) => {
+      const newBuilding: IBuilding = {
+        name: 'NewBuilding',
+        cost: {},
+      };
+      return this.appendBuilding(newBuilding, pos);
+    });
+
+    this.addButton(4, '#cfc', (event, pos) => {
+      const newAchievement: IAchievement = {
+        name: 'NewAchievement',
+        levels: [],
+      };
+      return this.appendAchievement(newAchievement, pos);
+    });
     svgD3.call(d3.zoom()
       .extent([[0, 0], [width, height]])
       .scaleExtent([0.001, 1000])
@@ -217,6 +170,47 @@ export class SchemaComponent implements OnInit {
         this.transformCurrent = transform;
         d3.select(drawGroup).attr("transform", transform);
       }));
+  }
+
+  private addButton(index: number, color: string, onAdd: (event: d3.D3DragEvent<Element, any, any>, pos: { posx: number, posy: number }) => rects) {
+    const addButton = document.createElementNS(svgns, 'rect');
+    addButton.style.fill = color;
+    addButton.setAttribute("x", String(35 * index + 5));
+    addButton.setAttribute("y", "5");
+    addButton.setAttribute("width", String(30));
+    addButton.setAttribute("height", String(30));
+    this.menuGroup.appendChild(addButton);
+    (addButton as any).obj = <rects>{
+      color,
+      posx: 5,
+      posy: 5,
+      rect: addButton,
+      d3: [
+        d3.select(addButton)
+      ],
+      name: "toto",
+      main: d3.select(addButton),
+      edit: null,
+      texts: [],
+    }
+    d3.select(addButton).call(
+      d3.drag()
+        .on("start", (e) => this.dragstarted(e, this.currentAdd))
+        .on("drag", (e) => this.dragged(e, this.currentAdd))
+        .on("end", () => this.dragended(this.currentAdd))
+        .subject((event, d) => {
+          this.isAddMode = true;
+          const factor = this.transformCurrent ? this.transformCurrent.k : 1;
+          const pos = {
+            posx: (event.x - (this.transformCurrent ? this.transformCurrent.x : 0) - 90) / factor,
+            posy: (event.y - (this.transformCurrent ? this.transformCurrent.y : 0) - 25) / factor,
+          };
+          this.currentAdd = onAdd(event, pos);
+          this.currentAdd.d3.forEach(e => e.attr("cursor", "grabbing"));
+          return this.currentAdd.d3;
+        })
+    );
+    d3.select(addButton).attr("cursor", "grab");
   }
 
   private addText(group: SVGGElement, text: string, line: number, horizontalCenter: boolean) {
@@ -502,7 +496,6 @@ interface rects {
   edit: SVGUseElement;
   d3: d3.Selection<SVGGraphicsElement, any, null, undefined>[];
   main: d3.Selection<SVGGElement, any, null, undefined>;
-  type?: "addResource" | "addResearch";
   startDragEvent?: DragBehavior<Element, unknown, unknown>;
   texts: SVGTextElement[];
 }
