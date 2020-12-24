@@ -20,15 +20,6 @@ export class SchemaDirective extends Directive {
   }
 }
 
-// @Directive({
-//   selector: '[editResource]',
-// })
-// export class EditResourceDirective extends Directive {
-//   constructor(public viewContainerRef: ViewContainerRef) {
-//     super();
-//   }
-// }
-
 const svgns = "http://www.w3.org/2000/svg";
 
 @Component({
@@ -41,8 +32,6 @@ export class SchemaComponent implements OnInit {
   public svgZone: SchemaDirective;
 
   public modalRef: BsModalRef;
-  // @ViewChild(EditResourceDirective, { static: true })
-  // public editResourceDirective: EditResourceDirective;
 
   private currentAdd: rects | undefined;
   private transformCurrent: d3.ZoomTransform;
@@ -61,7 +50,48 @@ export class SchemaComponent implements OnInit {
     private readonly modalService: BsModalService,
   ) { }
 
-  ngOnInit(): void {
+  private createGameContext(): IGameContext {
+    return {
+      allAchievements: this.currentAchivements.map(e => {
+        e.achievement.metadatas = {
+          x: e.rect.posx,
+          y: e.rect.posy,
+        };
+        return e.achievement;
+      }),
+      allBuildings: this.currentBuildings.map(e => {
+        e.building.metadatas = {
+          x: e.rect.posx,
+          y: e.rect.posy,
+        };
+        return e.building;
+      }),
+      allFeatures: this.currentFeatures.map(e => {
+        e.feature.metadatas = {
+          x: e.rect.posx,
+          y: e.rect.posy,
+        };
+        return e.feature;
+      }),
+      allResearchs: this.currentResearchs.map(e => {
+        e.research.metadatas = {
+          x: e.rect.posx,
+          y: e.rect.posy,
+        };
+        return e.research;
+      }),
+      allResources: this.currentResources.map(e => {
+        e.resource.metadatas = {
+          x: e.rect.posx,
+          y: e.rect.posy,
+        };
+        return e.resource;
+      }),
+      gameFromScratch: null,
+    };
+  }
+
+  public ngOnInit(): void {
     const svgZone = this.svgZone.viewContainerRef.element.nativeElement as SVGElement;
     this.init(svgZone, {
       allAchievements: PreHistory.achievements,
@@ -83,10 +113,6 @@ export class SchemaComponent implements OnInit {
     svg.appendChild(this.menuGroup);
 
     const drawGroup = this.drawGroup;
-    function zoomed({ transform }) {
-      this.transformCurrent = transform;
-      d3.select(drawGroup).attr("transform", transform);
-    }
 
     const svgD3 = d3.select(svg);
     gameContext.allResources.forEach((resource, index) => this.appendResource(resource, { index }));
@@ -96,14 +122,14 @@ export class SchemaComponent implements OnInit {
     gameContext.allAchievements.forEach((achievement, index) => this.appendAchivement(achievement, { index }));
 
     const addResource = document.createElementNS(svgns, 'rect');
-    addResource.style.fill = 'purple';
+    addResource.style.fill = 'yellow';
     addResource.setAttribute("x", '5');
     addResource.setAttribute("y", "5");
     addResource.setAttribute("width", String(30));
     addResource.setAttribute("height", String(30));
     this.menuGroup.appendChild(addResource);
     (addResource as any).obj = <rects>{
-      color: 'purple',
+      color: 'yellow',
       posx: 5,
       posy: 5,
       rect: addResource,
@@ -131,8 +157,8 @@ export class SchemaComponent implements OnInit {
             resourceType: 'CLASSIC',
           };
           this.currentAdd = this.appendResource(newResource, {
-            posx: (event.x - (this.transformCurrent ? this.transformCurrent.x : 0)) / factor - 90,
-            posy: (event.y - (this.transformCurrent ? this.transformCurrent.y : 0)) / factor - 25,
+            posx: (event.x - (this.transformCurrent ? this.transformCurrent.x : 0) - 90) / factor,
+            posy: (event.y - (this.transformCurrent ? this.transformCurrent.y : 0) - 25) / factor,
           });
           this.currentAdd.d3.forEach(e => e.attr("cursor", "grabbing"));
           return this.currentAdd.d3;
@@ -141,14 +167,14 @@ export class SchemaComponent implements OnInit {
     d3.select(addResource).attr("cursor", "grab");
 
     const addResearch = document.createElementNS(svgns, 'rect');
-    addResearch.style.fill = 'purple';
-    addResearch.setAttribute("x", '5');
+    addResearch.style.fill = 'red';
+    addResearch.setAttribute("x", '40');
     addResearch.setAttribute("y", "5");
     addResearch.setAttribute("width", String(30));
     addResearch.setAttribute("height", String(30));
     this.menuGroup.appendChild(addResearch);
     (addResearch as any).obj = <rects>{
-      color: 'purple',
+      color: 'red',
       posx: 5,
       posy: 5,
       rect: addResearch,
@@ -176,8 +202,8 @@ export class SchemaComponent implements OnInit {
             bonusBuildingCosts: {},
           };
           this.currentAdd = this.appendResearch(newResearch, {
-            posx: (event.x - (this.transformCurrent ? this.transformCurrent.x : 0)) / factor - 90,
-            posy: (event.y - (this.transformCurrent ? this.transformCurrent.y : 0)) / factor - 25,
+            posx: (event.x - (this.transformCurrent ? this.transformCurrent.x : 0) - 90) / factor,
+            posy: (event.y - (this.transformCurrent ? this.transformCurrent.y : 0) - 25) / factor,
           });
           this.currentAdd.d3.forEach(e => e.attr("cursor", "grabbing"));
           return this.currentAdd.d3;
@@ -187,7 +213,10 @@ export class SchemaComponent implements OnInit {
     svgD3.call(d3.zoom()
       .extent([[0, 0], [width, height]])
       .scaleExtent([0.001, 1000])
-      .on("zoom", zoomed));
+      .on("zoom", ({ transform }) => {
+        this.transformCurrent = transform;
+        d3.select(drawGroup).attr("transform", transform);
+      }));
   }
 
   private addText(group: SVGGElement, text: string, line: number, horizontalCenter: boolean) {
@@ -200,7 +229,7 @@ export class SchemaComponent implements OnInit {
     return textElement;
   }
 
-  private appendElement<T>(element: T, params: { getTexts: (e: T) => string[], editComponent: any, color: string, index?: number, posx?: number, posy: number, height: number }) {
+  private appendElement<T>(element: T, params: { getTexts: (e: T) => string[], editComponent: any, color: string, index?: number, posx?: number, posy: number }) {
     const rect = document.createElementNS(svgns, "rect");
     const edit = document.createElementNS(svgns, "use");
     edit.setAttribute("transform", "translate(160, -20)");
@@ -234,7 +263,7 @@ export class SchemaComponent implements OnInit {
       g.children.item(currentChild).setAttribute("y", String(result.posy));
     }
     rect.setAttribute("width", String(180));
-    rect.setAttribute("height", String(params.height));
+    rect.setAttribute("height", String(textElements.length * 25 + 5));
     rect.style.fill = result.color;
     this.drawGroup.appendChild(g);
     this.addDragFeature(result);
@@ -243,12 +272,25 @@ export class SchemaComponent implements OnInit {
         animated: true,
         initialState: {
           element,
+          context: this.createGameContext(),
         },
       });
       this.modalRef.onHidden.subscribe(() => {
-        params.getTexts(element).forEach((text, indexText) => {
+        const newTexts = params.getTexts(element);
+        newTexts.forEach((text, indexText) => {
+          while (result.texts.length <= indexText) {
+            const textToAdd = this.addText(g, text, result.texts.length, result.texts.length === 0);
+            result.texts.push(textToAdd);
+            textToAdd.setAttribute("x", String(result.posx));
+            textToAdd.setAttribute("y", String(result.posy));
+          }
           result.texts[indexText].innerHTML = text;
         });
+        for (let i = newTexts.length; i < result.texts.length; i++) {
+          g.removeChild(result.texts[i]);
+        }
+        result.texts.length = newTexts.length;
+        rect.setAttribute("height", String(newTexts.length * 25 + 5));
       });
     };
 
@@ -271,7 +313,6 @@ export class SchemaComponent implements OnInit {
       },
       posx: params.posx,
       posy: params.posy || 100,
-      height: 180,
       index: params.index,
       editComponent: EditResourceComponent,
     });
@@ -287,14 +328,26 @@ export class SchemaComponent implements OnInit {
     const result = this.appendElement(research, {
       color: 'red',
       getTexts: (e) => {
-        return [
+        const result: string[] = [
           e.name,
           'Max level: ' + (e.maxLevel || 0),
+          'Costs: ',
+          ...Object.keys(e.cost).map((costKey) => {
+            return '&nbsp;&nbsp;' + costKey + ': ' + e.cost[costKey];
+          }),
+          'Bonus resource: ',
+          ...Object.keys(e.bonusResources || {}).map((key) => {
+            return '&nbsp;&nbsp;' + key + ': ' + e.bonusResources[key];
+          }),
+          'Bonus building: ',
+          ...Object.keys(e.bonusBuildingCosts || {}).map((key) => {
+            return '&nbsp;&nbsp;' + key + ': ' + e.bonusBuildingCosts[key];
+          }),
         ];
+        return result;
       },
       posx: params.posx,
       posy: params.posy || 320,
-      height: 60,
       index: params.index,
       editComponent: EditResearchComponent,
     });
@@ -308,7 +361,7 @@ export class SchemaComponent implements OnInit {
 
   private appendFeature(feature: IFeature, params?: { index?: number, posx?: number, posy?: number }) {
     const result = this.appendElement(feature, {
-      color: '#ccf',
+      color: '#fcf',
       getTexts: (e) => {
         return [
           e.name,
@@ -316,7 +369,6 @@ export class SchemaComponent implements OnInit {
       },
       posx: params.posx,
       posy: params.posy || 420,
-      height: 30,
       index: params.index,
       editComponent: EditFeatureComponent,
     });
@@ -330,15 +382,34 @@ export class SchemaComponent implements OnInit {
 
   private appendBuilding(building: IBuilding, params?: { index?: number, posx?: number, posy?: number }) {
     const result = this.appendElement(building, {
-      color: '#ccf',
+      color: '#cff',
       getTexts: (e) => {
         return [
           e.name,
+          'Costs: ',
+          ...Object.keys(e.cost).map((costKey) => {
+            return '&nbsp;&nbsp;' + costKey + ': ' + e.cost[costKey];
+          }),
+          'Consume: ',
+          ...Object.keys(e.consume || {}).map((key) => {
+            return '&nbsp;&nbsp;' + key + ': ' + e.consume[key];
+          }),
+          'Produce: ',
+          ...Object.keys(e.produce || {}).map((key) => {
+            return '&nbsp;&nbsp;' + key + ': ' + e.produce[key];
+          }),
+          'Storage: ',
+          ...Object.keys(e.storage || {}).map((key) => {
+            return '&nbsp;&nbsp;' + key + ': ' + e.storage[key];
+          }),
+          'Maintenance: ',
+          ...Object.keys(e.maintenance || {}).map((key) => {
+            return '&nbsp;&nbsp;' + key + ': ' + e.maintenance[key];
+          }),
         ];
       },
       posx: params.posx,
       posy: params.posy || 480,
-      height: 30,
       index: params.index,
       editComponent: EditBuildingComponent,
     });
@@ -352,7 +423,7 @@ export class SchemaComponent implements OnInit {
 
   private appendAchivement(achievement: IAchievement, params?: { index?: number, posx?: number, posy?: number }) {
     const result = this.appendElement(achievement, {
-      color: '#ccf',
+      color: '#cfc',
       getTexts: (e) => {
         return [
           e.name,
@@ -360,7 +431,6 @@ export class SchemaComponent implements OnInit {
       },
       posx: params.posx,
       posy: params.posy || 530,
-      height: 30,
       index: params.index,
       editComponent: EditAchievementComponent,
     });
@@ -418,44 +488,7 @@ export class SchemaComponent implements OnInit {
       animated: true,
       class: 'modal-lg',
       initialState: {
-        datas: {
-          allAchievements:  this.currentAchivements.map(e => {
-            e.achievement.metadatas = {
-              x: e.rect.posx,
-              y: e.rect.posy,
-            };
-            return e.achievement;
-          }),
-          allBuildings:  this.currentBuildings.map(e => {
-            e.building.metadatas = {
-              x: e.rect.posx,
-              y: e.rect.posy,
-            };
-            return e.building;
-          }),
-          allFeatures: this.currentFeatures.map(e => {
-            e.feature.metadatas = {
-              x: e.rect.posx,
-              y: e.rect.posy,
-            };
-            return e.feature;
-          }),
-          allResearchs: this.currentResearchs.map(e => {
-            e.research.metadatas = {
-              x: e.rect.posx,
-              y: e.rect.posy,
-            };
-            return e.research;
-          }),
-          allResources: this.currentResources.map(e => {
-            e.resource.metadatas = {
-              x: e.rect.posx,
-              y: e.rect.posy,
-            };
-            return e.resource;
-          }),
-          gameFromScratch: null,
-        },
+        datas: this.createGameContext(),
       },
     });
   }

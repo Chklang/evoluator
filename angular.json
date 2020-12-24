@@ -195,6 +195,7 @@
             ],
             "styles": [
               "./node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "./node_modules/highlight.js/styles/vs2015.css",
               "projects/model-manager/src/styles.css"
             ],
             "scripts": []
@@ -259,6 +260,7 @@
             ],
             "styles": [
               "./node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "./node_modules/highlight.js/styles/vs2015.css",
               "projects/model-manager/src/styles.css"
             ],
             "scripts": []

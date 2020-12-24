@@ -27,7 +27,6 @@ export class EditResourceComponent implements OnInit {
       growType: [this.element.growType, Validators.required],
       selfGrow: [this.element.selfGrow],
     });
-    (window as any).tt = this.formGroup;
   }
 
   public save(): void {
