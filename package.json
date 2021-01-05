@@ -25,7 +25,11 @@
     "start": "npm run clean && run-p watch-lib:* serve:pre-history",
     "build-watch": "npm run clean && run-p watch-lib:game-engine build-watch:pre-history",
     "build-watch:pre-history": "wait-on dist/game-engine/public-api.d.ts && ng build --project=pre-history --watch --base-href=\"/pre-history/\" --poll=10",
-    "build-watch:model-manager": "wait-on dist/game-engine/public-api.d.ts && ng build --project=model-manager --watch --base-href=\"/model-manager/\" --poll=10"
+    "build-watch:model-manager": "wait-on dist/game-engine/public-api.d.ts && ng build --project=model-manager --watch --base-href=\"/model-manager/\" --poll=10",
+    "start:backend": "npm run clean && run-p build-watch:backend run:backend",
+    "run:backend": "wait-on dist/backend/lib/main.js && nodemon --watch dist/backend dist/backend/lib/main.js",
+    "build:backend": "tsc -p ./projects/backend",
+    "build-watch:backend": "tsc -w -p ./projects/backend"
   },
   "private": true,
   "dependencies": {
@@ -58,7 +62,7 @@
     "@angular/compiler-cli": "~11.0.0",
     "@types/d3": "^6.2.0",
     "@types/jasmine": "~3.6.0",
-    "@types/node": "^12.11.1",
+    "@types/node": "^12.19.12",
     "@types/stringify-object": "^3.3.0",
     "codelyzer": "^6.0.0",
     "copyfiles": "^2.4.0",
@@ -70,6 +74,7 @@
     "karma-jasmine": "~4.0.0",
     "karma-jasmine-html-reporter": "^1.5.0",
     "ng-packagr": "^11.0.0",
+    "nodemon": "^2.0.6",
     "npm-run-all": "^4.1.5",
     "protractor": "~7.0.0",
     "rimraf": "^3.0.2",
