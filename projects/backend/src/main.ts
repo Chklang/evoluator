@@ -45,6 +45,19 @@ function writeFile(pathToWrite: string[], content: string): Promise<void> {
         })
     );
 }
+
+function list(pathToRead: string[]): Promise<string[]> {
+    const pathConcat = path.resolve('./projects/', ...pathToRead);
+    return Promise.resolve().then(() =>
+        fs.promises.access(pathConcat).catch(err => {
+            throw 'Path ' + pathConcat + ' not exists!';
+        })
+    ).then(() =>
+        fs.promises.readdir(pathConcat).catch(err => {
+            throw 'Path ' + pathConcat + ' cannot be read!';
+        })
+    );
+}
 function readBody(request: http.IncomingMessage): Promise<string> {
     return new Promise<string>((resolve, reject) => {
         let body = ''
@@ -56,45 +69,51 @@ function readBody(request: http.IncomingMessage): Promise<string> {
         });
     });
 }
+function reply(res: http.ServerResponse, httpCode: number, content?: any): void {
+    res.writeHead(httpCode, {
+        'Access-Control-Allow-Origin': '*',
+        'Content-type': 'text/plain',
+    });
+    return res.end(content);
+}
 const requestListener = (req: http.IncomingMessage, res: http.ServerResponse) => {
     try {
         const folders = extractPath(req.url);
         if (folders.length === 0) {
-            res.writeHead(200);
-            return res.end('Server works!');
+            return reply(res, 200, 'Server works!');
         }
         switch (folders.shift()) {
             case 'read':
                 readFile(folders).then(result => {
-                    res.writeHead(200);
-                    res.end(result);
+                    return reply(res, 200, result);
                 }, (err) => {
-                    res.writeHead(500);
-                    res.end(err);
+                    return reply(res, 500, err);
+                });
+                break;
+            case 'list':
+                list(folders).then(result => {
+                    return reply(res, 200, JSON.stringify(result));
+                }, (err) => {
+                    return reply(res, 500, err);
                 });
                 break;
             case 'write':
                 readBody(req).then(body => {
                     writeFile(folders, body).then(() => {
-                        res.writeHead(204);
-                        res.end();
+                        return reply(res, 204);
                     }, (err) => {
-                        res.writeHead(500);
-                        res.end(err);
+                        return reply(res, 500, err);
                     });
                 }).catch(err => {
-                    res.writeHead(500);
-                    res.end(err);
+                    return reply(res, 500, err);
                 });
                 break;
             default:
-                res.writeHead(400);
-                res.end('Unsupported method!');
+                return reply(res, 400, 'Unsupported method!');
         }
     } catch (e) {
         console.error(e);
-        res.writeHead(500);
-        res.end(e);
+        return reply(res, 500, e);
     }
 };
 const server = http.createServer(requestListener);

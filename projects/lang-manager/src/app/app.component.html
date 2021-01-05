@@ -1,0 +1,9 @@
+<div class="">
+  <div class="header">
+    <a class="project-link" *ngFor="let project of (projects | async)"
+      [routerLink]="['/projects', project]">{{project}}</a>
+  </div>
+  <div class="content">
+    <router-outlet></router-outlet>
+  </div>
+</div>

@@ -21,6 +21,10 @@
       "game-engine": [
         "dist/game-engine/game-engine",
         "dist/game-engine"
+      ],
+      "managers-lib": [
+        "dist/managers-lib/managers-lib",
+        "dist/managers-lib"
       ]
     }
   }

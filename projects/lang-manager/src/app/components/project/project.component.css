@@ -1,0 +1,45 @@
+.panel {
+    height: 100%;
+    border: 1px solid black;
+    border-radius: 5px;
+    overflow: auto;
+}
+.content {
+    top: 0px;
+    bottom: 40px;
+    left: 0px;
+    right: 0px;
+    position: absolute;
+}
+.bottom {
+    height: 40px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    position: absolute;
+}
+.auto-height {
+    position: relative;
+    height: 100%;
+}
+.row {
+    margin: 0;
+}
+.keys > ul {
+    padding: 0;
+}
+.keys > ul > li {
+    margin: 1px;
+    padding: 3px;
+}
+.langs {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+.langs > fieldset {
+    height: inherit;
+}
+.text-of-lang {
+    width: 100%;
+}

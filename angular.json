@@ -296,6 +296,172 @@
           }
         }
       }
+    },
+    "lang-manager": {
+      "projectType": "application",
+      "schematics": {},
+      "root": "projects/lang-manager",
+      "sourceRoot": "projects/lang-manager/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/lang-manager",
+            "index": "projects/lang-manager/src/index.html",
+            "main": "projects/lang-manager/src/main.ts",
+            "polyfills": "projects/lang-manager/src/polyfills.ts",
+            "tsConfig": "projects/lang-manager/tsconfig.app.json",
+            "aot": true,
+            "assets": [
+              "projects/lang-manager/src/favicon.ico",
+              "projects/lang-manager/src/assets"
+            ],
+            "styles": [
+              "./node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "./node_modules/ngx-bootstrap/datepicker/bs-datepicker.css",
+              "./node_modules/font-awesome/css/font-awesome.css",
+              "./node_modules/fontsource-titillium-web/index.css",
+              "./node_modules/flag-icon-css/css/flag-icon.min.css",
+              "projects/lang-manager/src/styles.css"
+            ],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/lang-manager/src/environments/environment.ts",
+                  "with": "projects/lang-manager/src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "lang-manager:build"
+          },
+          "configurations": {
+            "production": {
+              "browserTarget": "lang-manager:build:production"
+            }
+          }
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "lang-manager:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/lang-manager/src/test.ts",
+            "polyfills": "projects/lang-manager/src/polyfills.ts",
+            "tsConfig": "projects/lang-manager/tsconfig.spec.json",
+            "karmaConfig": "projects/lang-manager/karma.conf.js",
+            "assets": [
+              "projects/lang-manager/src/favicon.ico",
+              "projects/lang-manager/src/assets"
+            ],
+            "styles": [
+              "./node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "./node_modules/ngx-bootstrap/datepicker/bs-datepicker.css",
+              "./node_modules/font-awesome/css/font-awesome.css",
+              "./node_modules/fontsource-titillium-web/index.css",
+              "./node_modules/flag-icon-css/css/flag-icon.min.css",
+              "projects/lang-manager/src/styles.css"
+            ],
+            "scripts": []
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/lang-manager/tsconfig.app.json",
+              "projects/lang-manager/tsconfig.spec.json",
+              "projects/lang-manager/e2e/tsconfig.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        },
+        "e2e": {
+          "builder": "@angular-devkit/build-angular:protractor",
+          "options": {
+            "protractorConfig": "projects/lang-manager/e2e/protractor.conf.js",
+            "devServerTarget": "lang-manager:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "lang-manager:serve:production"
+            }
+          }
+        }
+      }
+    },
+    "managers-lib": {
+      "projectType": "library",
+      "root": "projects/managers-lib",
+      "sourceRoot": "projects/managers-lib/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/managers-lib/tsconfig.lib.json",
+            "project": "projects/managers-lib/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/managers-lib/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/managers-lib/src/test.ts",
+            "tsConfig": "projects/managers-lib/tsconfig.spec.json",
+            "karmaConfig": "projects/managers-lib/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/managers-lib/tsconfig.lib.json",
+              "projects/managers-lib/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
     }
   },
   "defaultProject": "pre-history",

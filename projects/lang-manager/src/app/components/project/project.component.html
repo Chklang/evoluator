@@ -1,0 +1,24 @@
+<form *ngIf="projectDetails | async; let details" class="auto-height" [formGroup]="keys">
+    <!-- <div>Project selected : {{details.name}}</div> -->
+    <div class="content row">
+        <div class="panel keys">
+            <ul>
+                <li *ngFor="let currentKey of details.langStruct" class="btn btn-light btn-block"
+                    (click)="changeKey(currentKey)">
+                    {{currentKey}}
+                </li>
+            </ul>
+        </div>
+        <div class="panel langs">
+            <fieldset *ngFor="let lang of details.langs; let i = index" [formGroupName]="i">
+                <legend>{{lang.ref.name}} {{selectedKey | async}}</legend>
+                <div formGroupName="texts">
+                    <textarea class="text-of-lang" [formControlName]="selectedKey | async"></textarea>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+    <div class="bottom">
+        <button class="btn btn-primary">Save</button>
+    </div>
+</form>
